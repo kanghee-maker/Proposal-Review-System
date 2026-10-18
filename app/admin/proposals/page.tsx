@@ -3,8 +3,8 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { FileText, Search, Building2, User, ChevronRight, Edit, Check, Layers, Clock, AlertCircle } from 'lucide-react';
-import { Proposal, Department, EvaluationSession } from '@/lib/types';
+import { FileText, Search, Building2, User, ChevronRight, Edit, Check, Layers, Clock, AlertCircle, Paperclip, Upload, Download, Trash2, X } from 'lucide-react';
+import { Proposal, ProposalAttachment, Department, EvaluationSession } from '@/lib/types';
 
 function AdminProposalsContent() {
   const router = useRouter();
@@ -28,6 +28,11 @@ function AdminProposalsContent() {
   const [editDepartment, setEditDepartment] = useState<string>('');
   const [editStatus, setEditStatus] = useState<string>('미평가');
   const [saving, setSaving] = useState<boolean>(false);
+
+  // 첨부파일 관리 모달
+  const [attachModalProposal, setAttachModalProposal] = useState<Proposal | null>(null);
+  const [uploadingFiles, setUploadingFiles] = useState<boolean>(false);
+  const [deletingAttId, setDeletingAttId] = useState<string>('');
 
   // 1. 회차 목록 로드 및 현재 회차 결정
   useEffect(() => {
@@ -196,6 +201,104 @@ function AdminProposalsContent() {
     }
   };
 
+  const formatFileSize = (bytes: number) => {
+    if (!bytes || bytes <= 0) return '0 KB';
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+  };
+
+  const readFileAsDataUrl = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ''));
+      reader.onerror = () => reject(new Error('파일 읽기 오류'));
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleUploadAttachments = async (e: React.ChangeEvent<HTMLInputElement>, targetProposal?: Proposal) => {
+    const prop = targetProposal || attachModalProposal;
+    const files = e.target.files;
+    if (!prop || !files || files.length === 0) return;
+
+    setUploadingFiles(true);
+    try {
+      let latestList: ProposalAttachment[] = prop.attachments || [];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const dataUrl = await readFileAsDataUrl(file);
+        const res = await fetch('/api/proposals/attachments', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            proposal_id: prop.id,
+            name: file.name,
+            size: file.size,
+            type: file.type || 'application/octet-stream',
+            data_url: dataUrl
+          })
+        });
+        const data = await res.json();
+        if (data.success && Array.isArray(data.attachments)) {
+          latestList = data.attachments;
+        } else {
+          alert(data.error || `${file.name} 업로드에 실패했습니다.`);
+        }
+      }
+
+      setProposals(prev =>
+        prev.map(p => (p.id === prop.id ? { ...p, attachments: latestList } : p))
+      );
+      setAttachModalProposal(prev =>
+        prev && prev.id === prop.id ? { ...prev, attachments: latestList } : prev
+      );
+      setSelectedProposal(prev =>
+        prev && prev.id === prop.id ? { ...prev, attachments: latestList } : prev
+      );
+    } catch (err) {
+      console.error(err);
+      alert('첨부파일 업로드 중 오류가 발생했습니다.');
+    } finally {
+      setUploadingFiles(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleDeleteAttachment = async (proposalId: string, attachmentId: string, fileName: string) => {
+    if (!confirm(`'${fileName}' 첨부파일을 삭제하시겠습니까?`)) return;
+    setDeletingAttId(attachmentId);
+    try {
+      const res = await fetch('/api/proposals/attachments', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          proposal_id: proposalId,
+          attachment_id: attachmentId
+        })
+      });
+      const data = await res.json();
+      if (data.success && Array.isArray(data.attachments)) {
+        const latestList: ProposalAttachment[] = data.attachments;
+        setProposals(prev =>
+          prev.map(p => (p.id === proposalId ? { ...p, attachments: latestList } : p))
+        );
+        setAttachModalProposal(prev =>
+          prev && prev.id === proposalId ? { ...prev, attachments: latestList } : prev
+        );
+        setSelectedProposal(prev =>
+          prev && prev.id === proposalId ? { ...prev, attachments: latestList } : prev
+        );
+      } else {
+        alert(data.error || '삭제 실패');
+      }
+    } catch (err) {
+      alert('삭제 중 오류가 발생했습니다.');
+    } finally {
+      setDeletingAttId('');
+    }
+  };
+
   const currentSession = sessions.find(s => s.id === selectedSessionId);
 
   const transferCount = proposals.filter(p => p.transfer_requested).length;
@@ -279,7 +382,7 @@ function AdminProposalsContent() {
             <span>[{currentSession?.title || '제안평가'}] 제안 목록 및 담당부서 배정</span>
           </h2>
           <p className="text-[11px] sm:text-xs text-slate-500 mt-1">
-            선택된 제안평가 건의 제안에 대해 담당부서(본부/처/부) 오배정 수정 및 부서 평가(0차 평가) 상태를 관리합니다.
+            선택된 제안평가 건의 제안에 대해 담당부서(본부/처/부) 오배정 수정, 첨부파일 등록 및 부서 평가(0차 평가) 상태를 관리합니다.
           </p>
         </div>
 
@@ -385,139 +488,305 @@ function AdminProposalsContent() {
                     <th className="py-3 px-3">제안자 소속</th>
                     <th className="py-3 px-3">분야</th>
                     <th className="py-3 px-3 font-bold text-sky-900">담당부서 (실행부서)</th>
-                    <th className="py-3 px-4 min-w-[260px]">제안 제목</th>
+                    <th className="py-3 px-4 min-w-[240px]">제안 제목</th>
+                    <th className="py-3 px-3 text-center w-36">첨부파일</th>
                     <th className="py-3 px-3 text-center">부서 평가(0차)</th>
                     <th className="py-3 px-3 text-center w-20">수정</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {filtered.map((p) => (
-                    <tr key={p.id} className="hover:bg-sky-50/30 transition">
-                      <td className="py-3 px-3 text-center text-slate-400 font-mono font-medium">{p.seq_no}</td>
-                      <td className="py-3 px-3 text-center font-mono text-slate-500">{p.board_no}</td>
-                      <td className="py-3 px-3 font-semibold text-slate-800">
-                        {p.proposer_name} <span className="text-[11px] font-normal text-slate-500">({p.proposer_rank})</span>
-                      </td>
-                      <td className="py-3 px-3 text-slate-600">
-                        <span className="text-[11px] text-slate-400 block">{p.proposer_division}</span>
-                        {p.proposer_office === p.proposer_department
-                          ? (p.proposer_department || p.proposer_raw_dept || '-')
-                          : (`${p.proposer_office || ''} ${p.proposer_department || ''}`.trim() || p.proposer_raw_dept || '-')}
-                      </td>
-                      <td className="py-3 px-3">
-                        <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[11px] font-medium">
-                          {p.category}
-                        </span>
-                      </td>
-                      <td className="py-3 px-3">
-                        <span className="text-[11px] text-sky-700 font-bold block">{p.assigned_division}</span>
-                        <strong className="text-slate-900">
-                          {p.assigned_office === p.assigned_department
-                            ? (p.assigned_department || p.assigned_raw_dept || '-')
-                            : (`${p.assigned_office || ''} ${p.assigned_department || ''}`.trim() || p.assigned_raw_dept || '-')}
-                        </strong>
-                        {p.transfer_requested && (
-                          <span className="inline-block mt-1 text-[10px] bg-amber-100 text-amber-800 border border-amber-300 px-1.5 py-0.5 rounded font-bold">
-                            🔄 이관요청: {p.transfer_target_dept}
+                  {filtered.map((p) => {
+                    const attList = p.attachments || [];
+                    return (
+                      <tr key={p.id} className="hover:bg-sky-50/30 transition">
+                        <td className="py-3 px-3 text-center text-slate-400 font-mono font-medium">{p.seq_no}</td>
+                        <td className="py-3 px-3 text-center font-mono text-slate-500">{p.board_no}</td>
+                        <td className="py-3 px-3 font-semibold text-slate-800">
+                          {p.proposer_name} <span className="text-[11px] font-normal text-slate-500">({p.proposer_rank})</span>
+                        </td>
+                        <td className="py-3 px-3 text-slate-600">
+                          <span className="text-[11px] text-slate-400 block">{p.proposer_division}</span>
+                          {p.proposer_office === p.proposer_department
+                            ? (p.proposer_department || p.proposer_raw_dept || '-')
+                            : (`${p.proposer_office || ''} ${p.proposer_department || ''}`.trim() || p.proposer_raw_dept || '-')}
+                        </td>
+                        <td className="py-3 px-3">
+                          <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[11px] font-medium">
+                            {p.category}
                           </span>
-                        )}
-                      </td>
-                      <td className="py-3 px-4">
-                        <div className="font-medium text-slate-900 leading-snug line-clamp-2">
-                          {p.title}
-                        </div>
-                        {p.is_duplicate === '중복' && (
-                          <span className="inline-block mt-1 text-[10px] bg-red-50 text-red-600 border border-red-200 px-1.5 py-0.2 rounded font-semibold">
-                            중복: {p.duplicate_title}
+                        </td>
+                        <td className="py-3 px-3">
+                          <span className="text-[11px] text-sky-700 font-bold block">{p.assigned_division}</span>
+                          <strong className="text-slate-900">
+                            {p.assigned_office === p.assigned_department
+                              ? (p.assigned_department || p.assigned_raw_dept || '-')
+                              : (`${p.assigned_office || ''} ${p.assigned_department || ''}`.trim() || p.assigned_raw_dept || '-')}
+                          </strong>
+                          {p.transfer_requested && (
+                            <span className="inline-block mt-1 text-[10px] bg-amber-100 text-amber-800 border border-amber-300 px-1.5 py-0.5 rounded font-bold">
+                              🔄 이관요청: {p.transfer_target_dept}
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-3 px-4">
+                          <div className="font-medium text-slate-900 leading-snug line-clamp-2">
+                            {p.title}
+                          </div>
+                          {p.is_duplicate === '중복' && (
+                            <span className="inline-block mt-1 text-[10px] bg-red-50 text-red-600 border border-red-200 px-1.5 py-0.2 rounded font-semibold">
+                              중복: {p.duplicate_title}
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-3 px-3 text-center">
+                          <div className="flex flex-col items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => setAttachModalProposal(p)}
+                              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition ${
+                                attList.length > 0
+                                  ? 'bg-sky-50 hover:bg-sky-100 text-sky-700 border-sky-200'
+                                  : 'bg-white hover:bg-slate-50 text-slate-600 border-slate-200 hover:border-sky-300'
+                              }`}
+                            >
+                              <Paperclip className="w-3.5 h-3.5" />
+                              <span>파일 첨부{attList.length > 0 ? ` (${attList.length})` : ''}</span>
+                            </button>
+                            {attList.length > 0 && (
+                              <div className="max-w-[130px] space-y-0.5">
+                                {attList.slice(0, 2).map(att => (
+                                  <a
+                                    key={att.id}
+                                    href={`/api/proposals/attachments?id=${encodeURIComponent(att.id)}&download=1`}
+                                    className="block text-[10px] text-sky-600 hover:underline truncate"
+                                    title={`${att.name} 다운로드`}
+                                  >
+                                    {att.name}
+                                  </a>
+                                ))}
+                                {attList.length > 2 && (
+                                  <span className="block text-[10px] text-slate-400">외 {attList.length - 2}건</span>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                        <td className="py-3 px-3 text-center">
+                          <span className={`inline-block px-2.5 py-1 rounded-full text-[11px] font-semibold ${
+                            p.status === '평가완료'
+                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                              : p.status === '평가작성중'
+                              ? 'bg-sky-50 text-sky-700 border border-sky-200'
+                              : 'bg-slate-100 text-slate-500 border border-slate-200'
+                          }`}>
+                            {p.status}
                           </span>
-                        )}
-                      </td>
-                      <td className="py-3 px-3 text-center">
-                        <span className={`inline-block px-2.5 py-1 rounded-full text-[11px] font-semibold ${
-                          p.status === '평가완료'
-                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                            : p.status === '평가작성중'
-                            ? 'bg-sky-50 text-sky-700 border border-sky-200'
-                            : 'bg-slate-100 text-slate-500 border border-slate-200'
-                        }`}>
-                          {p.status}
-                        </span>
-                      </td>
-                      <td className="py-3 px-3 text-center">
-                        <button
-                          onClick={() => openEditModal(p)}
-                          className="text-xs bg-white hover:bg-sky-50 text-sky-600 border border-slate-200 hover:border-sky-300 px-2.5 py-1 rounded-lg font-medium transition"
-                        >
-                          수정
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                        <td className="py-3 px-3 text-center">
+                          <button
+                            onClick={() => openEditModal(p)}
+                            className="text-xs bg-white hover:bg-sky-50 text-sky-600 border border-slate-200 hover:border-sky-300 px-2.5 py-1 rounded-lg font-medium transition"
+                          >
+                            수정
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
 
             {/* 2. Mobile Card List View (md 미만 터치 친화적 카드) */}
             <div className="md:hidden divide-y divide-slate-100">
-              {filtered.map((p) => (
-                <div key={p.id} className="p-3.5 space-y-2 hover:bg-slate-50 transition">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="font-mono font-bold text-[11px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">
-                        #{p.seq_no}
-                      </span>
-                      <span className="text-[10px] bg-sky-50 text-sky-700 px-2 py-0.5 rounded font-medium">
-                        {p.category}
-                      </span>
-                      <span className="text-[10px] text-slate-400">
-                        {p.proposal_type}
+              {filtered.map((p) => {
+                const attList = p.attachments || [];
+                return (
+                  <div key={p.id} className="p-3.5 space-y-2 hover:bg-slate-50 transition">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="font-mono font-bold text-[11px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">
+                          #{p.seq_no}
+                        </span>
+                        <span className="text-[10px] bg-sky-50 text-sky-700 px-2 py-0.5 rounded font-medium">
+                          {p.category}
+                        </span>
+                        <span className="text-[10px] text-slate-400">
+                          {p.proposal_type}
+                        </span>
+                      </div>
+
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                        p.status === '평가완료'
+                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                          : p.status === '평가작성중'
+                          ? 'bg-sky-50 text-sky-700 border border-sky-200'
+                          : 'bg-slate-100 text-slate-500 border border-slate-200'
+                      }`}>
+                        {p.status}
                       </span>
                     </div>
 
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-                      p.status === '평가완료'
-                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                        : p.status === '평가작성중'
-                        ? 'bg-sky-50 text-sky-700 border border-sky-200'
-                        : 'bg-slate-100 text-slate-500 border border-slate-200'
-                    }`}>
-                      {p.status}
-                    </span>
+                    <h4 className="text-sm font-bold text-slate-900 leading-snug">
+                      {p.title}
+                    </h4>
+
+                    {p.is_duplicate === '중복' && (
+                      <div className="text-[10px] text-red-600 bg-red-50 border border-red-200 p-1.5 rounded">
+                        중복제안: {p.duplicate_title}
+                      </div>
+                    )}
+
+                    <div className="bg-slate-50 rounded-xl p-2.5 text-[11px] space-y-1 text-slate-600 border border-slate-100">
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">제안자:</span>
+                        <strong>{p.proposer_name} ({p.proposer_rank})</strong>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">담당부서:</span>
+                        <strong className="text-sky-700">{p.assigned_office} {p.assigned_department}</strong>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setAttachModalProposal(p)}
+                        className="w-full py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs flex items-center justify-center gap-1 transition"
+                      >
+                        <Paperclip className="w-3.5 h-3.5" />
+                        <span>파일 첨부{attList.length > 0 ? ` (${attList.length})` : ''}</span>
+                      </button>
+                      <button
+                        onClick={() => openEditModal(p)}
+                        className="w-full py-2 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-700 font-semibold text-xs flex items-center justify-center gap-1 transition"
+                      >
+                        <span>담당부서 오배정 수정</span>
+                      </button>
+                    </div>
                   </div>
-
-                  <h4 className="text-sm font-bold text-slate-900 leading-snug">
-                    {p.title}
-                  </h4>
-
-                  {p.is_duplicate === '중복' && (
-                    <div className="text-[10px] text-red-600 bg-red-50 border border-red-200 p-1.5 rounded">
-                      중복제안: {p.duplicate_title}
-                    </div>
-                  )}
-
-                  <div className="bg-slate-50 rounded-xl p-2.5 text-[11px] space-y-1 text-slate-600 border border-slate-100">
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">제안자:</span>
-                      <strong>{p.proposer_name} ({p.proposer_rank})</strong>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">담당부서:</span>
-                      <strong className="text-sky-700">{p.assigned_office} {p.assigned_department}</strong>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => openEditModal(p)}
-                    className="w-full py-2 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-700 font-semibold text-xs flex items-center justify-center gap-1 transition"
-                  >
-                    <span>담당부서 오배정 수정</span>
-                  </button>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </>
         )}
       </div>
+
+      {/* 첨부파일 관리 모달 */}
+      {attachModalProposal && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+              <h3 className="font-bold text-slate-900 text-sm sm:text-base flex items-center gap-2">
+                <Paperclip className="w-4 h-4 text-sky-600" />
+                <span>제안별 첨부파일 추가 및 관리</span>
+              </h3>
+              <button
+                type="button"
+                onClick={() => setAttachModalProposal(null)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-4 text-xs">
+              <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1">
+                <div className="flex items-center justify-between text-[11px] text-slate-400">
+                  <span>연번 #{attachModalProposal.seq_no}</span>
+                  <span>제안자: {attachModalProposal.proposer_name}</span>
+                </div>
+                <div className="text-slate-900 font-bold text-xs sm:text-sm leading-snug">
+                  {attachModalProposal.title}
+                </div>
+              </div>
+
+              {/* 파일 업로드 영역 */}
+              <div className="relative border-2 border-dashed border-sky-300 hover:border-sky-500 rounded-xl p-5 text-center bg-sky-50/40 hover:bg-sky-50/80 transition cursor-pointer">
+                <input
+                  type="file"
+                  multiple
+                  disabled={uploadingFiles}
+                  onChange={(e) => handleUploadAttachments(e, attachModalProposal)}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                />
+                <div className="flex flex-col items-center gap-1.5">
+                  <div className="w-9 h-9 rounded-full bg-sky-100 text-sky-600 flex items-center justify-center">
+                    <Upload className="w-4 h-4" />
+                  </div>
+                  <p className="font-bold text-slate-800 text-xs">
+                    {uploadingFiles ? '첨부파일 업로드 중...' : '클릭하거나 파일을 이곳에 끌어다 놓아 첨부하세요'}
+                  </p>
+                  <p className="text-[11px] text-slate-500">
+                    제안서 원문, 참고자료(HWP, PDF, DOCX, XLSX, 이미지 등) 다중 첨부 가능
+                  </p>
+                </div>
+              </div>
+
+              {/* 등록된 첨부파일 목록 */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between font-semibold text-slate-700">
+                  <span>등록된 첨부파일 목록</span>
+                  <span className="text-[11px] text-sky-600 font-bold">
+                    총 {(attachModalProposal.attachments || []).length}개
+                  </span>
+                </div>
+
+                {(attachModalProposal.attachments || []).length === 0 ? (
+                  <div className="p-6 text-center rounded-xl bg-slate-50 border border-slate-100 text-slate-400 text-[11px]">
+                    아직 등록된 첨부파일이 없습니다. 위 영역을 클릭하여 파일을 추가해주세요.
+                  </div>
+                ) : (
+                  <div className="divide-y divide-slate-100 border border-slate-200 rounded-xl overflow-hidden bg-white">
+                    {(attachModalProposal.attachments || []).map((att) => (
+                      <div key={att.id} className="p-3 flex items-center justify-between gap-2 hover:bg-slate-50 transition">
+                        <div className="min-w-0 flex-1">
+                          <div className="font-semibold text-slate-800 truncate flex items-center gap-1.5">
+                            <Paperclip className="w-3.5 h-3.5 text-sky-600 flex-shrink-0" />
+                            <span className="truncate">{att.name}</span>
+                          </div>
+                          <div className="text-[10px] text-slate-400 mt-0.5">
+                            {formatFileSize(att.size)} · {new Date(att.uploaded_at).toLocaleString('ko-KR')}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                          <a
+                            href={`/api/proposals/attachments?id=${encodeURIComponent(att.id)}&download=1`}
+                            className="px-2.5 py-1.5 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-700 font-semibold text-[11px] flex items-center gap-1 transition"
+                          >
+                            <Download className="w-3 h-3" />
+                            <span>다운로드</span>
+                          </a>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteAttachment(attachModalProposal.id, att.id, att.name)}
+                            disabled={deletingAttId === att.id}
+                            className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 transition disabled:opacity-50"
+                            title="첨부파일 삭제"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="mt-5 pt-3 border-t border-slate-100 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setAttachModalProposal(null)}
+                className="px-5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs transition"
+              >
+                닫기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 제안 세부 및 담당부서 재배정 모달 */}
       {selectedProposal && (

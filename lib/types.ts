@@ -82,6 +82,16 @@ export interface EvaluationSession {
   criteria: EvaluationCriteria[];
 }
 
+export interface ProposalAttachment {
+  id: string;
+  proposal_id: string;
+  name: string;
+  size: number;
+  type: string;
+  uploaded_at: string;
+  data_url?: string;
+}
+
 export interface Proposal {
   id: string;
   session_id: string;
@@ -107,6 +117,7 @@ export interface Proposal {
   is_duplicate: string;
   duplicate_title: string;
   status: '미평가' | '평가작성중' | '평가완료';
+  attachments?: ProposalAttachment[];
   transfer_requested?: boolean;
   transfer_target_dept?: string;
   transfer_reason?: string;

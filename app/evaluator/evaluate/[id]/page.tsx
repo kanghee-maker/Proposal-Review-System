@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
-import { ArrowLeft, CheckCircle2, XCircle, Save, Send, AlertCircle, Building2, User, FileText, Check } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, XCircle, Save, Send, AlertCircle, Building2, User, FileText, Check, Paperclip, Download } from 'lucide-react';
 import { Proposal, Evaluation, Department } from '@/lib/types';
 
 export default function EvaluateProposalPage() {
@@ -393,6 +393,37 @@ export default function EvaluateProposalPage() {
                 * 해당 제안이 부서의 실무 여건상 실현 가능한지, 예산 및 인력 배치가 타당한지 종합적으로 검토하여 우측 평가표를 작성해 주시기 바랍니다.
               </p>
             </div>
+          </div>
+
+          {/* 첨부파일 섹션 */}
+          <div className="space-y-2 pt-2">
+            <h4 className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+              <Paperclip className="w-4 h-4 text-sky-600" />
+              <span>제안서 첨부파일 ({(proposal.attachments || []).length}건)</span>
+            </h4>
+            {(proposal.attachments || []).length === 0 ? (
+              <div className="bg-slate-50 rounded-xl p-3 border border-slate-100 text-xs text-slate-400">
+                등록된 첨부파일이 없습니다.
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-100 border border-slate-200 rounded-xl overflow-hidden bg-white">
+                {(proposal.attachments || []).map((att) => (
+                  <div key={att.id} className="p-3 flex items-center justify-between gap-2 hover:bg-slate-50 transition text-xs">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Paperclip className="w-3.5 h-3.5 text-sky-600 flex-shrink-0" />
+                      <span className="font-semibold text-slate-800 truncate">{att.name}</span>
+                    </div>
+                    <a
+                      href={`/api/proposals/attachments?id=${encodeURIComponent(att.id)}&download=1`}
+                      className="px-3 py-1.5 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-700 font-semibold text-[11px] flex items-center gap-1 flex-shrink-0 transition"
+                    >
+                      <Download className="w-3 h-3" />
+                      <span>다운로드</span>
+                    </a>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 

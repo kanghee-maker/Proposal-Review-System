@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { OrganizationChart, EvaluationSession, Proposal, Evaluation, EvaluationCriteria, Department, CommitteeJudge, CommitteeScore, EvaluationStage } from './types';
+import { OrganizationChart, EvaluationSession, Proposal, ProposalAttachment, Evaluation, EvaluationCriteria, Department, CommitteeJudge, CommitteeScore, EvaluationStage } from './types';
 import { supabase } from './supabaseClient';
 
 const DATA_DIR = path.join(process.cwd(), 'data');
@@ -45,7 +45,7 @@ function writeJson<T>(filename: string, data: T): void {
 // 1. 조직도 관리
 export async function getOrganizationChartAsync(): Promise<OrganizationChart> {
   try {
-    const { data: chartData } = await supabase.from('organization_charts').select('*').limit(1).single();
+    const { data: chartData } = await supabase.from('organization_charts').select('*').eq('id', 'org-2026').single();
     const { data: deptData } = await supabase.from('departments').select('*');
     if (deptData && deptData.length > 0) {
       return {
@@ -581,9 +581,133 @@ export async function saveCustomProposalsForSessionAsync(
   return proposals;
 }
 
+const ATTACHMENTS_INDEX_ID = 'proposal_attachments_index';
+
+export async function getAttachmentsIndexAsync(): Promise<Record<string, ProposalAttachment[]>> {
+  const localIndex = readJson<Record<string, ProposalAttachment[]>>('proposal_attachments_index.json', {});
+  try {
+    const { data, error } = await supabase
+      .from('organization_charts')
+      .select('description')
+      .eq('id', ATTACHMENTS_INDEX_ID)
+      .single();
+    if (!error && data?.description) {
+      const parsed = JSON.parse(data.description);
+      if (parsed && typeof parsed === 'object') {
+        writeJson('proposal_attachments_index.json', parsed);
+        return parsed;
+      }
+    }
+  } catch (err) {}
+  return localIndex;
+}
+
+async function saveAttachmentsIndexAsync(indexMap: Record<string, ProposalAttachment[]>): Promise<void> {
+  writeJson('proposal_attachments_index.json', indexMap);
+  try {
+    await supabase.from('organization_charts').upsert({
+      id: ATTACHMENTS_INDEX_ID,
+      name: 'PROPOSAL_ATTACHMENTS_INDEX',
+      version: '2026-v1.0',
+      description: JSON.stringify(indexMap),
+      updated_at: new Date().toISOString()
+    });
+  } catch (err) {
+    console.error('Error saving attachments index to Supabase:', err);
+  }
+}
+
+export async function addProposalAttachmentAsync(
+  proposalId: string,
+  fileData: { name: string; size: number; type: string; data_url: string }
+): Promise<{ attachment: ProposalAttachment; list: ProposalAttachment[] }> {
+  const attachmentId = `att-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+  const uploadedAt = new Date().toISOString();
+
+  const meta: ProposalAttachment = {
+    id: attachmentId,
+    proposal_id: proposalId,
+    name: fileData.name,
+    size: fileData.size,
+    type: fileData.type || 'application/octet-stream',
+    uploaded_at: uploadedAt
+  };
+
+  const fullPayload: ProposalAttachment = {
+    ...meta,
+    data_url: fileData.data_url
+  };
+
+  // 1. Save full file payload locally & in Supabase
+  const localFiles = readJson<Record<string, ProposalAttachment>>('proposal_attachments_files.json', {});
+  localFiles[attachmentId] = fullPayload;
+  writeJson('proposal_attachments_files.json', localFiles);
+
+  try {
+    await supabase.from('organization_charts').upsert({
+      id: `attachment_file_${attachmentId}`,
+      name: fileData.name,
+      version: fileData.type || 'application/octet-stream',
+      description: JSON.stringify(fullPayload),
+      updated_at: uploadedAt
+    });
+  } catch (err) {
+    console.error('Error saving attachment file to Supabase:', err);
+  }
+
+  // 2. Update attachments index
+  const indexMap = await getAttachmentsIndexAsync();
+  const currentList = Array.isArray(indexMap[proposalId]) ? indexMap[proposalId] : [];
+  const nextList = [...currentList, meta];
+  indexMap[proposalId] = nextList;
+  await saveAttachmentsIndexAsync(indexMap);
+
+  return { attachment: meta, list: nextList };
+}
+
+export async function deleteProposalAttachmentAsync(
+  proposalId: string,
+  attachmentId: string
+): Promise<ProposalAttachment[]> {
+  // 1. Remove from index
+  const indexMap = await getAttachmentsIndexAsync();
+  const currentList = Array.isArray(indexMap[proposalId]) ? indexMap[proposalId] : [];
+  const nextList = currentList.filter(a => a.id !== attachmentId);
+  indexMap[proposalId] = nextList;
+  await saveAttachmentsIndexAsync(indexMap);
+
+  // 2. Remove file payload locally & in Supabase
+  const localFiles = readJson<Record<string, ProposalAttachment>>('proposal_attachments_files.json', {});
+  delete localFiles[attachmentId];
+  writeJson('proposal_attachments_files.json', localFiles);
+
+  try {
+    await supabase.from('organization_charts').delete().eq('id', `attachment_file_${attachmentId}`);
+  } catch (err) {}
+
+  return nextList;
+}
+
+export async function getAttachmentFileAsync(attachmentId: string): Promise<ProposalAttachment | null> {
+  try {
+    const { data, error } = await supabase
+      .from('organization_charts')
+      .select('description')
+      .eq('id', `attachment_file_${attachmentId}`)
+      .single();
+    if (!error && data?.description) {
+      return JSON.parse(data.description);
+    }
+  } catch (err) {}
+
+  const localFiles = readJson<Record<string, ProposalAttachment>>('proposal_attachments_files.json', {});
+  return localFiles[attachmentId] || null;
+}
+
 export async function getProposalsAsync(sessionId?: string): Promise<Proposal[]> {
   const localList = getProposals(sessionId);
   const localMap = new Map(localList.map(p => [p.id, p]));
+  const attachmentsIndex = await getAttachmentsIndexAsync();
 
   try {
     let query = supabase.from('proposals').select('*').order('seq_no', { ascending: true });
@@ -617,6 +741,7 @@ export async function getProposalsAsync(sessionId?: string): Promise<Proposal[]>
           is_duplicate: p.is_duplicate,
           duplicate_title: p.duplicate_title,
           status: p.status,
+          attachments: attachmentsIndex[p.id] || local?.attachments || [],
           transfer_requested: p.transfer_requested ?? local?.transfer_requested,
           transfer_target_dept: p.transfer_target_dept ?? local?.transfer_target_dept,
           transfer_reason: p.transfer_reason ?? local?.transfer_reason,
@@ -635,11 +760,15 @@ export async function getProposalsAsync(sessionId?: string): Promise<Proposal[]>
     }
   } catch (err) {}
 
-  return localList;
+  return localList.map(p => ({
+    ...p,
+    attachments: attachmentsIndex[p.id] || p.attachments || []
+  }));
 }
 
 export function getProposals(sessionId?: string): Proposal[] {
   let proposals = readJson<Proposal[]>('proposals_store.json', []);
+  const localIndex = readJson<Record<string, ProposalAttachment[]>>('proposal_attachments_index.json', {});
   if (!isSystemInitialized() && proposals.length === 0) {
     const rawProposals = readJson<any[]>('proposals_2026_structured.json', []);
     const evaluations = getEvaluations(DEFAULT_SESSION_ID);
@@ -680,11 +809,16 @@ export function getProposals(sessionId?: string): Proposal[] {
     writeJson('proposals_store.json', proposals);
   }
 
+  const enriched = proposals.map(p => ({
+    ...p,
+    attachments: localIndex[p.id] || p.attachments || []
+  }));
+
   if (sessionId) {
-    return proposals.filter(p => p.session_id === sessionId);
+    return enriched.filter(p => p.session_id === sessionId);
   }
 
-  return proposals;
+  return enriched;
 }
 
 export async function updateProposalAsync(updated: Proposal): Promise<void> {
@@ -920,6 +1054,23 @@ export async function createStage1SessionFromStage0Async(params: {
   let currentStore = readJson<Proposal[]>('proposals_store.json', []);
   currentStore.push(...clonedProposals);
   writeJson('proposals_store.json', currentStore);
+
+  // 첨부파일 인덱스 연계 복제 (0차 제안의 첨부파일을 1차 제안에서도 조회 가능하도록 연결)
+  try {
+    const indexMap = await getAttachmentsIndexAsync();
+    let changed = false;
+    targetProposals.forEach((srcProp, idx) => {
+      const clonedProp = clonedProposals[idx];
+      const srcAtts = indexMap[srcProp.id];
+      if (clonedProp && Array.isArray(srcAtts) && srcAtts.length > 0) {
+        indexMap[clonedProp.id] = srcAtts.map(a => ({ ...a, proposal_id: clonedProp.id }));
+        changed = true;
+      }
+    });
+    if (changed) {
+      await saveAttachmentsIndexAsync(indexMap);
+    }
+  } catch (err) {}
 
   // Supabase에 저장 시도
   try {
