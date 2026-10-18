@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getProposals, getEvaluations, getSessions } from '@/lib/store';
+import { getProposalsAsync, getEvaluationsAsync } from '@/lib/store';
 import * as XLSX from 'xlsx';
 
 export async function GET(req: Request) {
@@ -7,8 +7,8 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const sessionId = searchParams.get('session_id') || undefined;
 
-    const proposals = getProposals(sessionId);
-    const evaluations = getEvaluations(sessionId);
+    const proposals = await getProposalsAsync(sessionId);
+    const evaluations = await getEvaluationsAsync(sessionId);
     const evalMap = new Map(evaluations.map(e => [e.proposal_id, e]));
 
     const exportRows = proposals.map(p => {
@@ -42,26 +42,12 @@ export async function GET(req: Request) {
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet(exportRows);
 
-    // 컬럼 너비 설정
     ws['!cols'] = [
-      { wch: 6 },  // 연번
-      { wch: 10 }, // 게시판번호
-      { wch: 10 }, // 제안자
-      { wch: 10 }, // 직급
-      { wch: 15 }, // 제안자 본부
-      { wch: 18 }, // 제안자 처/실
-      { wch: 16 }, // 제안자 부
-      { wch: 10 }, // 제안구분
-      { wch: 14 }, // 분야
-      { wch: 15 }, // 실행 본부
-      { wch: 18 }, // 실행 처/실
-      { wch: 16 }, // 실행 부
-      { wch: 20 }, // 접수일자
-      { wch: 45 }, // 제안제목
-      { wch: 14 }, // 부서평가상태
-      { wch: 20 }, // 검토결과
-      { wch: 45 }, // 검토의견
-      { wch: 20 }  // 제출일시
+      { wch: 6 },  { wch: 10 }, { wch: 10 }, { wch: 10 },
+      { wch: 15 }, { wch: 18 }, { wch: 16 }, { wch: 10 },
+      { wch: 14 }, { wch: 15 }, { wch: 18 }, { wch: 16 },
+      { wch: 20 }, { wch: 45 }, { wch: 14 }, { wch: 20 },
+      { wch: 45 }, { wch: 20 }
     ];
 
     XLSX.utils.book_append_sheet(wb, ws, '0차_부서평가_최종결과');

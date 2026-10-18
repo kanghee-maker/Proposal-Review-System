@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getProposals, updateProposal, addProposalsBatch } from '@/lib/store';
+import { getProposalsAsync, updateProposalAsync } from '@/lib/store';
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -8,7 +8,7 @@ export async function GET(req: Request) {
   const status = searchParams.get('status');
   const search = searchParams.get('search');
 
-  let list = getProposals(sessionId);
+  let list = await getProposalsAsync(sessionId);
 
   if (department) {
     list = list.filter(p => 
@@ -41,22 +41,8 @@ export async function PUT(req: Request) {
     if (!body.id) {
       return NextResponse.json({ success: false, error: 'ID is required' }, { status: 400 });
     }
-    updateProposal(body);
+    await updateProposalAsync(body);
     return NextResponse.json({ success: true, proposal: body });
-  } catch (err: any) {
-    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
-  }
-}
-
-export async function POST(req: Request) {
-  try {
-    const body = await req.json();
-    const proposals = body.proposals || [];
-    if (!Array.isArray(proposals) || proposals.length === 0) {
-      return NextResponse.json({ success: false, error: 'No proposals provided' }, { status: 400 });
-    }
-    addProposalsBatch(proposals);
-    return NextResponse.json({ success: true, count: proposals.length });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }

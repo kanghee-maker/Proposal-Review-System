@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import { getSessions, saveSession, getDefaultCriteria } from '@/lib/store';
+import { getSessionsAsync, saveSessionAsync, getDefaultCriteria } from '@/lib/store';
 
 export async function GET() {
-  const sessions = getSessions();
+  const sessions = await getSessionsAsync();
   return NextResponse.json(sessions);
 }
 
@@ -19,7 +19,7 @@ export async function POST(req: Request) {
       proposals_count: body.proposals_count || 0,
       criteria: body.criteria && body.criteria.length > 0 ? body.criteria : getDefaultCriteria()
     };
-    saveSession(newSession);
+    await saveSessionAsync(newSession);
     return NextResponse.json({ success: true, session: newSession });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });

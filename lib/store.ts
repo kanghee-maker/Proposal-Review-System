@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { OrganizationChart, EvaluationSession, Proposal, Evaluation, EvaluationCriteria, Department } from './types';
+import { supabase } from './supabaseClient';
 
 const DATA_DIR = path.join(process.cwd(), 'data');
 
@@ -29,6 +30,32 @@ function writeJson<T>(filename: string, data: T): void {
 }
 
 // 1. 조직도 관리
+export async function getOrganizationChartAsync(): Promise<OrganizationChart> {
+  try {
+    const { data: chartData } = await supabase.from('organization_charts').select('*').limit(1).single();
+    const { data: deptData } = await supabase.from('departments').select('*');
+    if (deptData && deptData.length > 0) {
+      return {
+        name: chartData?.name || '2026_조직도',
+        version: chartData?.version || '2026-v1.0',
+        updated_at: chartData?.updated_at || new Date().toISOString(),
+        description: chartData?.description || '과천도시공사 2026 조직도',
+        departments: deptData.map(d => ({
+          code: d.code,
+          division: d.division,
+          office: d.office,
+          department: d.department,
+          name: d.name,
+          head_title: d.head_title
+        }))
+      };
+    }
+  } catch (err) {
+    // Supabase fallback to local
+  }
+  return getOrganizationChart();
+}
+
 export function getOrganizationChart(): OrganizationChart {
   return readJson<OrganizationChart>('organization_2026.json', {
     name: '2026_조직도',
@@ -39,9 +66,35 @@ export function getOrganizationChart(): OrganizationChart {
   });
 }
 
-export function updateOrganizationChart(chart: OrganizationChart): void {
+export async function updateOrganizationChartAsync(chart: OrganizationChart): Promise<void> {
   chart.updated_at = new Date().toISOString();
+  try {
+    await supabase.from('organization_charts').upsert({
+      id: 'org-2026',
+      name: chart.name,
+      version: chart.version,
+      description: chart.description,
+      updated_at: chart.updated_at
+    });
+    if (chart.departments && chart.departments.length > 0) {
+      await supabase.from('departments').upsert(chart.departments.map(d => ({
+        code: d.code,
+        org_id: 'org-2026',
+        division: d.division,
+        office: d.office,
+        department: d.department,
+        name: d.name,
+        head_title: d.head_title
+      })));
+    }
+  } catch (err) {
+    // ignore
+  }
   writeJson('organization_2026.json', chart);
+}
+
+export function updateOrganizationChart(chart: OrganizationChart): void {
+  updateOrganizationChartAsync(chart);
 }
 
 // 2. 기본 평가 항목
@@ -73,6 +126,27 @@ export function getDefaultCriteria(): EvaluationCriteria[] {
 // 3. 제안평가 건 (Sessions)
 const DEFAULT_SESSION_ID = 'session-2026-gwacheon';
 
+export async function getSessionsAsync(): Promise<EvaluationSession[]> {
+  try {
+    const { data, error } = await supabase.from('evaluation_sessions').select('*');
+    if (data && data.length > 0) {
+      return data.map(s => ({
+        id: s.id,
+        title: s.title,
+        year: s.year,
+        description: s.description,
+        status: s.status,
+        created_at: s.created_at,
+        proposals_count: s.proposals_count || 0,
+        criteria: s.criteria || getDefaultCriteria()
+      }));
+    }
+  } catch (err) {
+    // fallback
+  }
+  return getSessions();
+}
+
 export function getSessions(): EvaluationSession[] {
   let sessions = readJson<EvaluationSession[]>('sessions.json', []);
   if (sessions.length === 0) {
@@ -93,18 +167,64 @@ export function getSessions(): EvaluationSession[] {
   return sessions;
 }
 
+export async function saveSessionAsync(session: EvaluationSession): Promise<void> {
+  try {
+    await supabase.from('evaluation_sessions').upsert({
+      id: session.id,
+      title: session.title,
+      year: session.year,
+      description: session.description,
+      status: session.status,
+      proposals_count: session.proposals_count,
+      criteria: session.criteria,
+      created_at: session.created_at
+    });
+  } catch (err) {}
+  saveSession(session);
+}
+
 export function saveSession(session: EvaluationSession): void {
   const sessions = getSessions();
   const idx = sessions.findIndex(s => s.id === session.id);
-  if (idx >= 0) {
-    sessions[idx] = session;
-  } else {
-    sessions.unshift(session);
-  }
+  if (idx >= 0) sessions[idx] = session;
+  else sessions.unshift(session);
   writeJson('sessions.json', sessions);
 }
 
 // 4. 제안 목록 (Proposals)
+export async function getProposalsAsync(sessionId: string = DEFAULT_SESSION_ID): Promise<Proposal[]> {
+  try {
+    const { data } = await supabase.from('proposals').select('*').order('seq_no', { ascending: true });
+    if (data && data.length > 0) {
+      return data.map(p => ({
+        id: p.id,
+        session_id: p.session_id,
+        seq_no: p.seq_no,
+        board_no: p.board_no,
+        proposer_name: p.proposer_name,
+        proposer_rank: p.proposer_rank,
+        proposer_division: p.proposer_division,
+        proposer_office: p.proposer_office,
+        proposer_department: p.proposer_department,
+        proposer_raw_dept: p.proposer_raw_dept,
+        proposal_type: p.proposal_type,
+        category: p.category,
+        assigned_division: p.assigned_division,
+        assigned_office: p.assigned_office,
+        assigned_department: p.assigned_department,
+        assigned_raw_dept: p.assigned_raw_dept,
+        submitted_at: p.submitted_at,
+        title: p.title,
+        content: p.content,
+        is_duplicate: p.is_duplicate,
+        duplicate_title: p.duplicate_title,
+        status: p.status
+      }));
+    }
+  } catch (err) {}
+  return getProposals(sessionId);
+}
+
 export function getProposals(sessionId: string = DEFAULT_SESSION_ID): Proposal[] {
   let proposals = readJson<Proposal[]>('proposals_store.json', []);
   if (proposals.length === 0) {
@@ -149,6 +269,19 @@ export function getProposals(sessionId: string = DEFAULT_SESSION_ID): Proposal[]
   return proposals.filter(p => !sessionId || p.session_id === sessionId);
 }
 
+export async function updateProposalAsync(updated: Proposal): Promise<void> {
+  try {
+    await supabase.from('proposals').update({
+      assigned_division: updated.assigned_division,
+      assigned_office: updated.assigned_office,
+      assigned_department: updated.assigned_department,
+      assigned_raw_dept: updated.assigned_raw_dept,
+      status: updated.status
+    }).eq('id', updated.id);
+  } catch (err) {}
+  updateProposal(updated);
+}
+
 export function updateProposal(updated: Proposal): void {
   const proposals = getProposals();
   const idx = proposals.findIndex(p => p.id === updated.id);
@@ -158,19 +291,56 @@ export function updateProposal(updated: Proposal): void {
   }
 }
 
-export function addProposalsBatch(newProposals: Proposal[]): void {
-  const proposals = getProposals();
-  proposals.push(...newProposals);
-  writeJson('proposals_store.json', proposals);
+// 5. 0차 부서평가 결과 (Evaluations)
+export async function getEvaluationsAsync(sessionId?: string): Promise<Evaluation[]> {
+  try {
+    let query = supabase.from('evaluations').select('*');
+    if (sessionId) query = query.eq('session_id', sessionId);
+    const { data } = await query;
+    if (data && data.length > 0) {
+      return data.map(e => ({
+        id: e.id,
+        proposal_id: e.proposal_id,
+        session_id: e.session_id,
+        department_name: e.department_name,
+        evaluator_name: e.evaluator_name,
+        answers: e.answers || {},
+        is_submitted: e.is_submitted,
+        submitted_at: e.submitted_at,
+        updated_at: e.updated_at
+      }));
+    }
+  } catch (err) {}
+  return getEvaluations(sessionId);
 }
 
-// 5. 0차 부서평가 결과 (Evaluations)
 export function getEvaluations(sessionId?: string): Evaluation[] {
   let evals = readJson<Evaluation[]>('evaluations_store.json', []);
   if (sessionId) {
     return evals.filter(e => e.session_id === sessionId);
   }
   return evals;
+}
+
+export async function saveEvaluationAsync(evaluation: Evaluation): Promise<void> {
+  try {
+    await supabase.from('evaluations').upsert({
+      id: evaluation.id,
+      proposal_id: evaluation.proposal_id,
+      session_id: evaluation.session_id,
+      department_name: evaluation.department_name,
+      evaluator_name: evaluation.evaluator_name,
+      answers: evaluation.answers,
+      is_submitted: evaluation.is_submitted,
+      submitted_at: evaluation.submitted_at,
+      updated_at: evaluation.updated_at
+    });
+    // 제안 상태 업데이트
+    await supabase.from('proposals').update({
+      status: evaluation.is_submitted ? '평가완료' : '평가작성중'
+    }).eq('id', evaluation.proposal_id);
+  } catch (err) {}
+  saveEvaluation(evaluation);
 }
 
 export function saveEvaluation(evaluation: Evaluation): void {
@@ -183,7 +353,6 @@ export function saveEvaluation(evaluation: Evaluation): void {
   }
   writeJson('evaluations_store.json', evals);
 
-  // 제안 상태도 동기화
   const proposals = getProposals(evaluation.session_id);
   const pIdx = proposals.findIndex(p => p.id === evaluation.proposal_id);
   if (pIdx >= 0) {

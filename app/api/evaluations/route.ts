@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
-import { getEvaluations, saveEvaluation } from '@/lib/store';
+import { getEvaluationsAsync, saveEvaluationAsync } from '@/lib/store';
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const sessionId = searchParams.get('session_id') || undefined;
   const proposalId = searchParams.get('proposal_id');
 
-  const evals = getEvaluations(sessionId);
+  const evals = await getEvaluationsAsync(sessionId);
   if (proposalId) {
     const found = evals.find(e => e.proposal_id === proposalId);
     return NextResponse.json(found || null);
@@ -34,7 +34,7 @@ export async function POST(req: Request) {
       updated_at: new Date().toISOString()
     };
 
-    saveEvaluation(evaluation);
+    await saveEvaluationAsync(evaluation);
     return NextResponse.json({ success: true, evaluation });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
