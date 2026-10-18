@@ -3,7 +3,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { FileText, Search, Building2, User, ChevronRight, Edit, Check, Layers, Clock, AlertCircle, Paperclip, Upload, Download, Trash2, X } from 'lucide-react';
+import { FileText, Search, Building2, User, ChevronRight, Edit, Check, Layers, Clock, AlertCircle, Paperclip, Upload, Download, Trash2, X, Eye } from 'lucide-react';
 import { Proposal, ProposalAttachment, Department, EvaluationSession } from '@/lib/types';
 
 function AdminProposalsContent() {
@@ -491,7 +491,7 @@ function AdminProposalsContent() {
                     <th className="py-3 px-4 min-w-[240px]">제안 제목</th>
                     <th className="py-3 px-3 text-center w-36">첨부파일</th>
                     <th className="py-3 px-3 text-center">부서 평가(0차)</th>
-                    <th className="py-3 px-3 text-center w-20">수정</th>
+                    <th className="py-3 px-3 text-center w-36">관리 / 평가자 화면</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -584,12 +584,22 @@ function AdminProposalsContent() {
                           </span>
                         </td>
                         <td className="py-3 px-3 text-center">
-                          <button
-                            onClick={() => openEditModal(p)}
-                            className="text-xs bg-white hover:bg-sky-50 text-sky-600 border border-slate-200 hover:border-sky-300 px-2.5 py-1 rounded-lg font-medium transition"
-                          >
-                            수정
-                          </button>
+                          <div className="flex flex-col items-center justify-center gap-1.5">
+                            <Link
+                              href={`/evaluator/evaluate/${encodeURIComponent(p.id)}?readonly=1`}
+                              className="inline-flex items-center justify-center gap-1 text-[11px] bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-lg font-semibold transition w-full"
+                              title="평가자가 보는 제안 상세 및 평가 화면을 조회 전용으로 확인합니다"
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                              <span>평가자 화면</span>
+                            </Link>
+                            <button
+                              onClick={() => openEditModal(p)}
+                              className="text-[11px] bg-white hover:bg-sky-50 text-sky-600 border border-slate-200 hover:border-sky-300 px-2.5 py-1 rounded-lg font-medium transition w-full"
+                            >
+                              배정 수정
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -649,20 +659,27 @@ function AdminProposalsContent() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-3 gap-1.5">
                       <button
                         type="button"
                         onClick={() => setAttachModalProposal(p)}
-                        className="w-full py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs flex items-center justify-center gap-1 transition"
+                        className="w-full py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-[11px] flex items-center justify-center gap-1 transition"
                       >
                         <Paperclip className="w-3.5 h-3.5" />
-                        <span>파일 첨부{attList.length > 0 ? ` (${attList.length})` : ''}</span>
+                        <span>첨부{attList.length > 0 ? ` (${attList.length})` : ''}</span>
                       </button>
+                      <Link
+                        href={`/evaluator/evaluate/${encodeURIComponent(p.id)}?readonly=1`}
+                        className="w-full py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-semibold text-[11px] flex items-center justify-center gap-1 transition"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>평가자 화면</span>
+                      </Link>
                       <button
                         onClick={() => openEditModal(p)}
-                        className="w-full py-2 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-700 font-semibold text-xs flex items-center justify-center gap-1 transition"
+                        className="w-full py-2 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-700 font-semibold text-[11px] flex items-center justify-center gap-1 transition"
                       >
-                        <span>담당부서 오배정 수정</span>
+                        <span>배정 수정</span>
                       </button>
                     </div>
                   </div>

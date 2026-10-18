@@ -1,15 +1,17 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter, useParams } from 'next/navigation';
-import { ArrowLeft, CheckCircle2, XCircle, Save, Send, AlertCircle, Building2, User, FileText, Check, Paperclip, Download } from 'lucide-react';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
+import { ArrowLeft, CheckCircle2, XCircle, Save, Send, AlertCircle, Building2, User, FileText, Check, Paperclip, Download, Eye } from 'lucide-react';
 import { Proposal, Evaluation, Department } from '@/lib/types';
 
-export default function EvaluateProposalPage() {
+function EvaluateProposalContent() {
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
   const proposalId = params.id as string;
+  const isReadOnly = searchParams.get('readonly') === '1';
 
   const [proposal, setProposal] = useState<Proposal | null>(null);
   const [evaluation, setEvaluation] = useState<Evaluation | null>(null);
@@ -56,6 +58,7 @@ export default function EvaluateProposalPage() {
   }, [proposalId]);
 
   const handleSave = async (isSubmit: boolean) => {
+    if (isReadOnly) return;
     if (isSubmit && !result) {
       alert('부서 평가(0차 평가) 결과(Yes 또는 No)를 선택해 주세요.');
       return;
@@ -109,7 +112,7 @@ export default function EvaluateProposalPage() {
   // 실행 부서 변경 요청 제출
   const handleRequestTransfer = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!proposal) return;
+    if (isReadOnly || !proposal) return;
     if (!transferReason.trim()) {
       alert('실행 부서 변경 요청 사유를 작성해 주세요.');
       return;
@@ -148,7 +151,7 @@ export default function EvaluateProposalPage() {
 
   // 실행 부서 변경 요청 취소
   const handleCancelTransfer = async () => {
-    if (!proposal) return;
+    if (isReadOnly || !proposal) return;
     if (!confirm('실행 부서 변경 요청을 취소하시겠습니까?')) return;
 
     setTransferSaving(true);
@@ -186,7 +189,7 @@ export default function EvaluateProposalPage() {
     return (
       <div className="bg-white rounded-2xl p-8 text-center border border-slate-200">
         <p className="text-sm text-slate-600 mb-4">해당 제안을 찾을 수 없습니다.</p>
-        <Link href="/evaluator" className="text-xs text-sky-600 font-semibold underline">
+        <Link href={isReadOnly ? `/admin/proposals?session_id=${encodeURIComponent('')}` : '/evaluator'} className="text-xs text-sky-600 font-semibold underline">
           목록으로 돌아가기
         </Link>
       </div>
@@ -196,14 +199,21 @@ export default function EvaluateProposalPage() {
   return (
     <div className="space-y-6">
       {/* Top Bar */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <Link
-          href="/evaluator"
+          href={isReadOnly ? `/admin/proposals?session_id=${encodeURIComponent(proposal.session_id || '')}` : '/evaluator'}
           className="inline-flex items-center gap-1.5 text-xs text-slate-600 hover:text-slate-900 bg-white border border-slate-200 px-3.5 py-2 rounded-xl transition shadow-sm font-semibold"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>담당 제안 목록으로 돌아가기</span>
+          <span>{isReadOnly ? '관리자 제안 목록/배정으로 돌아가기' : '담당 제안 목록으로 돌아가기'}</span>
         </Link>
+
+        {isReadOnly && (
+          <div className="inline-flex items-center gap-1.5 text-xs text-sky-800 bg-sky-50 border border-sky-200 px-3.5 py-2 rounded-xl font-bold shadow-xs">
+            <Eye className="w-4 h-4 text-sky-600" />
+            <span>관리자 조회 전용 모드 (평가자 화면 미리보기 — 항목 수정 불가)</span>
+          </div>
+        )}
 
         {saveToast && (
           <span className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl font-semibold flex items-center gap-1 animate-pulse">
@@ -274,7 +284,7 @@ export default function EvaluateProposalPage() {
                 <span className="px-2 py-0.5 rounded-md bg-amber-200 text-amber-900 font-bold text-[10px]">
                   변경 요청 심사 대기중
                 </span>
-              ) : (
+              ) : !isReadOnly ? (
                 <button
                   type="button"
                   onClick={() => setIsTransferOpen(!isTransferOpen)}
@@ -282,6 +292,8 @@ export default function EvaluateProposalPage() {
                 >
                   {isTransferOpen ? '닫기' : '부서 변경 요청하기'}
                 </button>
+              ) : (
+                <span className="text-[11px] text-amber-700/70 font-medium">조회 전용</span>
               )}
             </div>
 
@@ -295,18 +307,20 @@ export default function EvaluateProposalPage() {
                   <span className="text-slate-400 block mb-0.5">요청 사유:</span>
                   "{proposal.transfer_reason}"
                 </div>
-                <div className="pt-2 flex justify-end">
-                  <button
-                    type="button"
-                    onClick={handleCancelTransfer}
-                    disabled={transferSaving}
-                    className="text-[10px] text-red-600 hover:text-red-700 underline font-medium"
-                  >
-                    {transferSaving ? '취소 처리 중...' : '변경 요청 취소'}
-                  </button>
-                </div>
+                {!isReadOnly && (
+                  <div className="pt-2 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={handleCancelTransfer}
+                      disabled={transferSaving}
+                      className="text-[10px] text-red-600 hover:text-red-700 underline font-medium"
+                    >
+                      {transferSaving ? '취소 처리 중...' : '변경 요청 취소'}
+                    </button>
+                  </div>
+                )}
               </div>
-            ) : isTransferOpen ? (
+            ) : !isReadOnly && isTransferOpen ? (
               <form onSubmit={handleRequestTransfer} className="bg-white p-3.5 rounded-lg border border-amber-200 space-y-3">
                 <p className="text-[11px] text-slate-600">
                   해당 제안이 귀 부서 소관 업무가 아닌 경우, 실제 담당해야 할 타 부서를 지정하여 변경을 요청할 수 있습니다. (총괄 관리자 승인 후 배정 변경)
@@ -530,7 +544,7 @@ export default function EvaluateProposalPage() {
                     <CheckCircle2 className="w-3.5 h-3.5" /> 제출 완료
                   </span>
                 ) : (
-                  <span className="text-amber-600 font-semibold">작성 중</span>
+                  <span className="text-amber-600 font-semibold">{evaluation ? '작성 중' : '미작성'}</span>
                 )}
               </span>
             </div>
@@ -548,12 +562,13 @@ export default function EvaluateProposalPage() {
                 {/* Yes Button */}
                 <button
                   type="button"
-                  onClick={() => setResult('Yes')}
+                  disabled={isReadOnly}
+                  onClick={() => !isReadOnly && setResult('Yes')}
                   className={`p-4 rounded-xl border-2 transition flex flex-col items-center justify-center gap-1.5 text-center ${
                     result === 'Yes'
                       ? 'border-emerald-500 bg-emerald-50 text-emerald-800 shadow-md shadow-emerald-500/10'
-                      : 'border-slate-200 hover:border-emerald-300 bg-slate-50 text-slate-700'
-                  }`}
+                      : 'border-slate-200 bg-slate-50 text-slate-700'
+                  } ${isReadOnly ? 'cursor-not-allowed opacity-85' : 'hover:border-emerald-300'}`}
                 >
                   <CheckCircle2 className={`w-6 h-6 ${result === 'Yes' ? 'text-emerald-600' : 'text-slate-400'}`} />
                   <strong className="text-sm font-bold">Yes (수용 / 채택)</strong>
@@ -563,12 +578,13 @@ export default function EvaluateProposalPage() {
                 {/* No Button */}
                 <button
                   type="button"
-                  onClick={() => setResult('No')}
+                  disabled={isReadOnly}
+                  onClick={() => !isReadOnly && setResult('No')}
                   className={`p-4 rounded-xl border-2 transition flex flex-col items-center justify-center gap-1.5 text-center ${
                     result === 'No'
                       ? 'border-red-500 bg-red-50 text-red-800 shadow-md shadow-red-500/10'
-                      : 'border-slate-200 hover:border-red-300 bg-slate-50 text-slate-700'
-                  }`}
+                      : 'border-slate-200 bg-slate-50 text-slate-700'
+                  } ${isReadOnly ? 'cursor-not-allowed opacity-85' : 'hover:border-red-300'}`}
                 >
                   <XCircle className={`w-6 h-6 ${result === 'No' ? 'text-red-500' : 'text-slate-400'}`} />
                   <strong className="text-sm font-bold">No (불수용)</strong>
@@ -593,37 +609,58 @@ export default function EvaluateProposalPage() {
               <textarea
                 rows={6}
                 value={opinion}
-                onChange={(e) => setOpinion(e.target.value)}
-                placeholder="검토 의견을 구체적으로 작성해 주십시오..."
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 leading-relaxed"
+                readOnly={isReadOnly}
+                disabled={isReadOnly}
+                onChange={(e) => !isReadOnly && setOpinion(e.target.value)}
+                placeholder={isReadOnly ? '부서 평가자가 작성한 검토 의견이 아직 없습니다.' : '검토 의견을 구체적으로 작성해 주십시오...'}
+                className={`w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs text-slate-800 leading-relaxed ${
+                  isReadOnly ? 'cursor-not-allowed opacity-85' : 'focus:outline-none focus:ring-2 focus:ring-emerald-500'
+                }`}
               />
             </div>
           </div>
 
           {/* Action Buttons */}
-          <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-3 text-xs">
-            <button
-              type="button"
-              onClick={() => handleSave(false)}
-              disabled={submitting}
-              className="flex-1 py-3 px-4 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-700 font-semibold transition flex items-center justify-center gap-1.5"
-            >
-              <Save className="w-4 h-4" />
-              <span>임시저장</span>
-            </button>
+          {isReadOnly ? (
+            <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-3 text-xs">
+              <div className="w-full py-3 px-4 rounded-xl bg-slate-100 border border-slate-200 text-slate-600 font-semibold flex items-center justify-center gap-1.5">
+                <Eye className="w-4 h-4 text-slate-500" />
+                <span>조회 전용 화면입니다 (항목 수정 및 제출 불가)</span>
+              </div>
+            </div>
+          ) : (
+            <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-3 text-xs">
+              <button
+                type="button"
+                onClick={() => handleSave(false)}
+                disabled={submitting}
+                className="flex-1 py-3 px-4 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-700 font-semibold transition flex items-center justify-center gap-1.5"
+              >
+                <Save className="w-4 h-4" />
+                <span>임시저장</span>
+              </button>
 
-            <button
-              type="button"
-              onClick={() => handleSave(true)}
-              disabled={submitting}
-              className="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold transition shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-1.5"
-            >
-              <Send className="w-4 h-4" />
-              <span>최종 제출하기</span>
-            </button>
-          </div>
+              <button
+                type="button"
+                onClick={() => handleSave(true)}
+                disabled={submitting}
+                className="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold transition shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-1.5"
+              >
+                <Send className="w-4 h-4" />
+                <span>최종 제출하기</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
+  );
+}
+
+export default function EvaluateProposalPage() {
+  return (
+    <Suspense fallback={<div className="text-center py-20 text-slate-500 text-sm">제안 정보를 불러오는 중...</div>}>
+      <EvaluateProposalContent />
+    </Suspense>
   );
 }

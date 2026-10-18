@@ -16,8 +16,13 @@ export default function EvaluatorLayout({ children }: { children: React.ReactNod
       const d = localStorage.getItem('gcuc_dept_name') || '';
       const u = localStorage.getItem('gcuc_user_name') || '부서 평가자';
       const isAuth = d ? localStorage.getItem(`gcuc_dept_auth_${d}`) : null;
+      const isAdminAuth = localStorage.getItem('gcuc_admin_auth') === 'true';
 
-      if (!d || isAuth !== 'true') {
+      if (isAdminAuth && (!d || isAuth !== 'true')) {
+        setDeptName('총괄 관리자 (미리보기)');
+        setUserName('조회 전용 모드');
+        setAuthorized(true);
+      } else if (!d || isAuth !== 'true') {
         router.push('/');
       } else {
         setDeptName(d);
