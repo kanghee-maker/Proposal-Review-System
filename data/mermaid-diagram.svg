@@ -1,0 +1,198 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2850.42675 401.6" width="2850.42675" height="401.6" style="--bg:#1F1F1F;--fg:#CCCCCC;--line:#CCCCCC;--accent:#0078D4;--muted:#CCCCCCCC;--surface:#181818;--border:#CCCCCC;background:var(--bg)">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap');
+  text { font-family: 'Inter', system-ui, sans-serif; }
+  svg {
+    /* Derived from --bg and --fg (overridable via --line, --accent, etc.) */
+    --_text:          var(--fg);
+    --_text-sec:      var(--muted, color-mix(in srgb, var(--fg) 60%, var(--bg)));
+    --_text-muted:    var(--muted, color-mix(in srgb, var(--fg) 40%, var(--bg)));
+    --_text-faint:    color-mix(in srgb, var(--fg) 25%, var(--bg));
+    --_line:          var(--line, color-mix(in srgb, var(--fg) 50%, var(--bg)));
+    --_arrow:         var(--accent, color-mix(in srgb, var(--fg) 85%, var(--bg)));
+    --_node-fill:     var(--surface, color-mix(in srgb, var(--fg) 3%, var(--bg)));
+    --_node-stroke:   var(--border, color-mix(in srgb, var(--fg) 20%, var(--bg)));
+    --_group-fill:    var(--bg);
+    --_group-hdr:     color-mix(in srgb, var(--fg) 5%, var(--bg));
+    --_inner-stroke:  color-mix(in srgb, var(--fg) 12%, var(--bg));
+    --_key-badge:     color-mix(in srgb, var(--fg) 10%, var(--bg));
+  }
+</style>
+<defs>
+  <marker id="arrowhead" markerWidth="8" markerHeight="5" refX="7" refY="2.5" orient="auto">
+    <polygon points="0 0, 8 2.5, 0 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+  <marker id="arrowhead-start" markerWidth="8" markerHeight="5" refX="1" refY="2.5" orient="auto-start-reverse">
+    <polygon points="8 0, 0 2.5, 8 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+</defs>
+<g class="subgraph" data-id="Direct" data-label="사장 직속">
+  <rect x="40" y="100.9" width="292.1" height="96.9" rx="0" ry="0" fill="var(--_group-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <rect x="40" y="100.9" width="292.1" height="28" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="52" y="114.9" font-size="12" font-weight="600" fill="var(--_text-sec)" dy="4.199999999999999">사장 직속</text>
+</g>
+<g class="subgraph" data-id="DevDiv" data-label="개발사업본부 (상임이사)">
+  <rect x="360.10000000000036" y="112.90000000000003" width="292.1" height="96.9" rx="0" ry="0" fill="var(--_group-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <rect x="360.10000000000036" y="112.90000000000003" width="292.1" height="28" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="372.10000000000036" y="126.90000000000003" font-size="12" font-weight="600" fill="var(--_text-sec)" dy="4.199999999999999">개발사업본부 (상임이사)</text>
+</g>
+<g class="subgraph" data-id="OpsDiv" data-label="운영관리본부 (대행사업본부)">
+  <rect x="1157.1067500000004" y="112.9" width="539.89" height="96.9" rx="0" ry="0" fill="var(--_group-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <rect x="1157.1067500000004" y="112.9" width="539.89" height="28" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="1169.1067500000004" y="126.9" font-size="12" font-weight="600" fill="var(--_text-sec)" dy="4.199999999999999">운영관리본부 (대행사업본부)</text>
+</g>
+<g class="subgraph" data-id="MgmtDiv" data-label="경영부문">
+  <rect x="2324.0309166666666" y="100.9" width="292.1" height="96.9" rx="0" ry="0" fill="var(--_group-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <rect x="2324.0309166666666" y="100.9" width="292.1" height="28" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="2336.0309166666666" y="114.9" font-size="12" font-weight="600" fill="var(--_text-sec)" dy="4.199999999999999">경영부문</text>
+</g>
+<polyline class="edge" data-from="CEO" data-to="Direct" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="865.5847500000007,76.9 865.5847500000007,88.9 186.05000000000018,88.9 186.05000000000018,100.9" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="CEO" data-to="DevDiv" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="879.9027500000007,76.9 879.9027500000007,100.90000000000003 448.12500000000045,100.90000000000003 448.12500000000045,112.90000000000003" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="CEO" data-to="OpsDiv" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="894.2207500000006,76.9 894.2207500000006,100.9 1370.8092500000002,100.9 1370.8092500000002,112.9" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="CEO" data-to="MgmtDiv" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="908.5387500000006,76.9 908.5387500000006,88.9 2430.2659166666667,88.9 2430.2659166666667,100.9" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="P_Plan" data-to="D_Plan" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="434.12500000000034,187.80000000000004 434.12500000000034,222.80000000000007 182.50775000000013,222.80000000000007 182.50775000000013,257.80000000000007" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="P_Plan" data-to="D_Sales" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="434.12500000000034,187.80000000000004 434.12500000000034,222.80000000000007 330.2627500000003,222.80000000000007 330.2627500000003,257.80000000000007" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="P_Dev" data-to="D_Dev1" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="578.1750000000003,187.80000000000004 578.1750000000003,222.80000000000007 464.67975000000035,222.80000000000007 464.67975000000035,257.80000000000007" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="P_Dev" data-to="D_Dev2" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="578.1750000000003,187.80000000000004 578.1750000000003,222.80000000000007 584.2767500000006,222.80000000000007 584.2767500000006,257.80000000000007" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="P_Dev" data-to="D_Tech" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="578.1750000000003,187.80000000000004 578.1750000000003,222.80000000000007 717.2117500000003,222.80000000000007 717.2117500000003,324.70000000000005" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="F_Manage" data-to="D_FPlan" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="1231.1317500000005,187.80000000000004 1231.1317500000005,222.80000000000007 786.2367500000006,222.80000000000007 786.2367500000006,257.80000000000007" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="F_Manage" data-to="D_FOps" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="1231.1317500000005,187.80000000000004 1231.1317500000005,222.80000000000007 930.2867500000006,222.80000000000007 930.2867500000006,257.80000000000007" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="F_Manage" data-to="D_Parking" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="1231.1317500000005,187.80000000000004 1231.1317500000005,222.80000000000007 1074.3367500000006,222.80000000000007 1074.3367500000006,257.80000000000007" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="S_Sports" data-to="D_Leisure" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="1404.8217500000003,187.80000000000004 1404.8217500000003,222.80000000000007 1218.3867500000006,222.80000000000007 1218.3867500000006,257.80000000000007" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="S_Sports" data-to="D_Swim" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="1404.8217500000003,187.80000000000004 1404.8217500000003,222.80000000000007 1347.6167500000006,222.80000000000007 1347.6167500000006,257.80000000000007" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="S_Sports" data-to="D_Ice" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="1404.8217500000003,187.80000000000004 1404.8217500000003,222.80000000000007 1462.0267500000004,222.80000000000007 1462.0267500000004,257.80000000000007" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="S_Sports" data-to="D_Bowling" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="1404.8217500000003,187.80000000000004 1404.8217500000003,222.80000000000007 1591.2567500000007,222.80000000000007 1591.2567500000007,257.80000000000007" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="P_Park" data-to="D_ParkOps" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="1600.7417500000006,187.80000000000004 1600.7417500000006,222.80000000000007 1735.3067500000006,222.80000000000007 1735.3067500000006,257.80000000000007" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="P_Park" data-to="D_FSupport" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="1600.7417500000006,187.80000000000004 1600.7417500000006,222.80000000000007 1879.3567500000006,222.80000000000007 1879.3567500000006,257.80000000000007" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="P_Park" data-to="D_Youth" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="1600.7417500000006,187.80000000000004 1600.7417500000006,222.80000000000007 2030.8167500000004,222.80000000000007 2030.8167500000004,257.80000000000007" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="M_Support" data-to="D_Admin" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="2398.0559166666667,187.80000000000004 2398.0559166666667,222.80000000000007 2106.2517500000004,222.80000000000007 2106.2517500000004,324.70000000000005" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="M_Support" data-to="D_Finance" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="2398.0559166666667,187.80000000000004 2398.0559166666667,222.80000000000007 2235.4817500000004,222.80000000000007 2235.4817500000004,257.80000000000007" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="M_Support" data-to="D_Account" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="2398.0559166666667,187.80000000000004 2398.0559166666667,222.80000000000007 2349.8917500000002,222.80000000000007 2349.8917500000002,257.80000000000007" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="M_Support" data-to="D_HR" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="2398.0559166666667,187.80000000000004 2398.0559166666667,222.80000000000007 2464.30175,222.80000000000007 2464.30175,257.80000000000007" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="M_Future" data-to="D_FutureInn" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="2542.105916666667,187.80000000000004 2542.105916666667,222.80000000000007 2593.53175,222.80000000000007 2593.53175,257.80000000000007" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="M_Future" data-to="D_Smart" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="2542.105916666667,187.80000000000004 2542.105916666667,222.80000000000007 2744.99175,222.80000000000007 2744.99175,257.80000000000007" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<g class="node" data-id="CEO" data-label="사장" data-shape="rectangle">
+  <rect x="851.2667500000007" y="40" width="71.59" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="887.0617500000006" y="58.45" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">사장</text>
+</g>
+<g class="node" data-id="D_Plan" data-label="사업계획부" data-shape="rectangle">
+  <rect x="124.48275000000012" y="257.80000000000007" width="116.05" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="182.50775000000013" y="276.25000000000006" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">사업계획부</text>
+</g>
+<g class="node" data-id="D_Sales" data-label="판매·보상부" data-shape="rectangle">
+  <rect x="268.5327500000003" y="257.80000000000007" width="123.46" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="330.2627500000003" y="276.25000000000006" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">판매·보상부</text>
+</g>
+<g class="node" data-id="D_Dev1" data-label="개발1부" data-shape="rectangle">
+  <rect x="419.99275000000034" y="257.80000000000007" width="89.374" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="464.67975000000035" y="276.25000000000006" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">개발1부</text>
+</g>
+<g class="node" data-id="D_Dev2" data-label="개발2부" data-shape="rectangle">
+  <rect x="537.3667500000006" y="257.80000000000007" width="93.82" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="584.2767500000006" y="276.25000000000006" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">개발2부</text>
+</g>
+<g class="node" data-id="D_Tech" data-label="기술지원부" data-shape="rectangle">
+  <rect x="659.1867500000003" y="324.70000000000005" width="116.05" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="717.2117500000003" y="343.15000000000003" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">기술지원부</text>
+</g>
+<g class="node" data-id="D_FPlan" data-label="시설기획부" data-shape="rectangle">
+  <rect x="728.2117500000006" y="257.80000000000007" width="116.05" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="786.2367500000006" y="276.25000000000006" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">시설기획부</text>
+</g>
+<g class="node" data-id="D_FOps" data-label="시설운영부" data-shape="rectangle">
+  <rect x="872.2617500000006" y="257.80000000000007" width="116.05" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="930.2867500000006" y="276.25000000000006" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">시설운영부</text>
+</g>
+<g class="node" data-id="D_Parking" data-label="주차관리부" data-shape="rectangle">
+  <rect x="1016.3117500000005" y="257.80000000000007" width="116.05" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="1074.3367500000006" y="276.25000000000006" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">주차관리부</text>
+</g>
+<g class="node" data-id="D_Leisure" data-label="여가체육부" data-shape="rectangle">
+  <rect x="1160.3617500000005" y="257.80000000000007" width="116.05" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="1218.3867500000006" y="276.25000000000006" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">여가체육부</text>
+</g>
+<g class="node" data-id="D_Swim" data-label="수영부" data-shape="rectangle">
+  <rect x="1304.4117500000007" y="257.80000000000007" width="86.41" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="1347.6167500000006" y="276.25000000000006" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">수영부</text>
+</g>
+<g class="node" data-id="D_Ice" data-label="빙상부" data-shape="rectangle">
+  <rect x="1418.8217500000005" y="257.80000000000007" width="86.41" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="1462.0267500000004" y="276.25000000000006" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">빙상부</text>
+</g>
+<g class="node" data-id="D_Bowling" data-label="볼링골프부" data-shape="rectangle">
+  <rect x="1533.2317500000006" y="257.80000000000007" width="116.05" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="1591.2567500000007" y="276.25000000000006" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">볼링골프부</text>
+</g>
+<g class="node" data-id="D_ParkOps" data-label="공원운영부" data-shape="rectangle">
+  <rect x="1677.2817500000006" y="257.80000000000007" width="116.05" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="1735.3067500000006" y="276.25000000000006" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">공원운영부</text>
+</g>
+<g class="node" data-id="D_FSupport" data-label="시설지원부" data-shape="rectangle">
+  <rect x="1821.3317500000005" y="257.80000000000007" width="116.05" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="1879.3567500000006" y="276.25000000000006" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">시설지원부</text>
+</g>
+<g class="node" data-id="D_Youth" data-label="수련관운영부" data-shape="rectangle">
+  <rect x="1965.3817500000005" y="257.80000000000007" width="130.87" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="2030.8167500000004" y="276.25000000000006" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">수련관운영부</text>
+</g>
+<g class="node" data-id="D_Admin" data-label="총무행정부" data-shape="rectangle">
+  <rect x="2048.2267500000003" y="324.70000000000005" width="116.05" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="2106.2517500000004" y="343.15000000000003" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">총무행정부</text>
+</g>
+<g class="node" data-id="D_Finance" data-label="재무부" data-shape="rectangle">
+  <rect x="2192.2767500000004" y="257.80000000000007" width="86.41" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="2235.4817500000004" y="276.25000000000006" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">재무부</text>
+</g>
+<g class="node" data-id="D_Account" data-label="회계부" data-shape="rectangle">
+  <rect x="2306.6867500000003" y="257.80000000000007" width="86.41" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="2349.8917500000002" y="276.25000000000006" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">회계부</text>
+</g>
+<g class="node" data-id="D_HR" data-label="인사부" data-shape="rectangle">
+  <rect x="2421.09675" y="257.80000000000007" width="86.41" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="2464.30175" y="276.25000000000006" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">인사부</text>
+</g>
+<g class="node" data-id="D_FutureInn" data-label="미래혁신부" data-shape="rectangle">
+  <rect x="2535.50675" y="257.80000000000007" width="116.05" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="2593.53175" y="276.25000000000006" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">미래혁신부</text>
+</g>
+<g class="node" data-id="D_Smart" data-label="스마트정보부" data-shape="rectangle">
+  <rect x="2679.55675" y="257.80000000000007" width="130.87" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="2744.99175" y="276.25000000000006" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">스마트정보부</text>
+</g>
+<g class="node" data-id="Audit" data-label="청렴감사단" data-shape="rectangle">
+  <rect x="56" y="150.90000000000003" width="116.05" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="114.025" y="169.35000000000002" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">청렴감사단</text>
+</g>
+<g class="node" data-id="Safety" data-label="안전총괄단" data-shape="rectangle">
+  <rect x="200.05" y="150.90000000000003" width="116.05" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="258.075" y="169.35000000000002" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">안전총괄단</text>
+</g>
+<g class="node" data-id="P_Plan" data-label="사업계획처" data-shape="rectangle">
+  <rect x="376.10000000000036" y="150.90000000000003" width="116.05" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="434.12500000000034" y="169.35000000000002" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">사업계획처</text>
+</g>
+<g class="node" data-id="P_Dev" data-label="사업개발처" data-shape="rectangle">
+  <rect x="520.1500000000003" y="150.90000000000003" width="116.05" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="578.1750000000003" y="169.35000000000002" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">사업개발처</text>
+</g>
+<g class="node" data-id="F_Manage" data-label="시설관리처" data-shape="rectangle">
+  <rect x="1173.1067500000004" y="150.90000000000003" width="116.05" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="1231.1317500000005" y="169.35000000000002" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">시설관리처</text>
+</g>
+<g class="node" data-id="S_Sports" data-label="시민회관체육운영처" data-shape="rectangle">
+  <rect x="1317.1567500000003" y="150.90000000000003" width="175.32999999999998" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="1404.8217500000003" y="169.35000000000002" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">시민회관체육운영처</text>
+</g>
+<g class="node" data-id="P_Park" data-label="공원수련관관리처" data-shape="rectangle">
+  <rect x="1520.4867500000005" y="150.90000000000003" width="160.51" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="1600.7417500000006" y="169.35000000000002" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">공원수련관관리처</text>
+</g>
+<g class="node" data-id="M_Support" data-label="경영지원실" data-shape="rectangle">
+  <rect x="2340.0309166666666" y="150.90000000000003" width="116.05" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="2398.0559166666667" y="169.35000000000002" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">경영지원실</text>
+</g>
+<g class="node" data-id="M_Future" data-label="미래전략실" data-shape="rectangle">
+  <rect x="2484.080916666667" y="150.90000000000003" width="116.05" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="2542.105916666667" y="169.35000000000002" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">미래전략실</text>
+</g>
+</svg>

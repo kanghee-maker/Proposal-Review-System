@@ -1,0 +1,140 @@
+[
+  {
+    "division": "사장 직속",
+    "office": "청렴감사단",
+    "department": "청렴감사단",
+    "code": "AUDIT"
+  },
+  {
+    "division": "사장 직속",
+    "office": "안전총괄단",
+    "department": "안전총괄단",
+    "code": "SAFETY"
+  },
+  {
+    "division": "개발사업본부",
+    "office": "사업계획처",
+    "department": "사업계획부",
+    "code": "DEV_PLAN"
+  },
+  {
+    "division": "개발사업본부",
+    "office": "사업계획처",
+    "department": "판매·보상부",
+    "code": "DEV_SALES"
+  },
+  {
+    "division": "개발사업본부",
+    "office": "사업개발처",
+    "department": "개발1부",
+    "code": "DEV_ENG1"
+  },
+  {
+    "division": "개발사업본부",
+    "office": "사업개발처",
+    "department": "개발2부",
+    "code": "DEV_ENG2"
+  },
+  {
+    "division": "개발사업본부",
+    "office": "사업개발처",
+    "department": "기술지원부",
+    "code": "DEV_TECH"
+  },
+  {
+    "division": "운영관리본부",
+    "office": "시설관리처",
+    "department": "시설기획부",
+    "code": "FAC_PLAN"
+  },
+  {
+    "division": "운영관리본부",
+    "office": "시설관리처",
+    "department": "시설운영부",
+    "code": "FAC_OPS"
+  },
+  {
+    "division": "운영관리본부",
+    "office": "시설관리처",
+    "department": "주차관리부",
+    "code": "FAC_PARK"
+  },
+  {
+    "division": "운영관리본부",
+    "office": "시민회관체육운영처",
+    "department": "여가체육부",
+    "code": "SPO_LEISURE"
+  },
+  {
+    "division": "운영관리본부",
+    "office": "시민회관체육운영처",
+    "department": "수영부",
+    "code": "SPO_SWIM"
+  },
+  {
+    "division": "운영관리본부",
+    "office": "시민회관체육운영처",
+    "department": "빙상부",
+    "code": "SPO_ICE"
+  },
+  {
+    "division": "운영관리본부",
+    "office": "시민회관체육운영처",
+    "department": "볼링골프부",
+    "code": "SPO_BOWL"
+  },
+  {
+    "division": "운영관리본부",
+    "office": "공원수련관관리처",
+    "department": "공원운영부",
+    "code": "PARK_OPS"
+  },
+  {
+    "division": "운영관리본부",
+    "office": "공원수련관관리처",
+    "department": "시설지원부",
+    "code": "PARK_FAC"
+  },
+  {
+    "division": "운영관리본부",
+    "office": "공원수련관관리처",
+    "department": "수련관운영부",
+    "code": "PARK_YOUTH"
+  },
+  {
+    "division": "경영부문",
+    "office": "경영지원실",
+    "department": "총무행정부",
+    "code": "MGMT_GEN"
+  },
+  {
+    "division": "경영부문",
+    "office": "경영지원실",
+    "department": "재무부",
+    "code": "MGMT_FIN"
+  },
+  {
+    "division": "경영부문",
+    "office": "경영지원실",
+    "department": "회계부",
+    "code": "MGMT_ACC"
+  },
+  {
+    "division": "경영부문",
+    "office": "경영지원실",
+    "department": "인사부",
+    "code": "MGMT_HR"
+  },
+  {
+    "division": "경영부문",
+    "office": "미래전략실",
+    "department": "미래혁신부",
+    "code": "STRAT_INN"
+  },
+  {
+    "division": "경영부문",
+    "office": "미래전략실",
+    "department": "스마트정보부",
+    "code": "STRAT_SMART"
+  }
+]

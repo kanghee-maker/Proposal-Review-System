@@ -1,0 +1,192 @@
+{
+  "name": "2026_조직도",
+  "version": "2026-v1.0",
+  "updated_at": "2026-10-18T13:20:00Z",
+  "description": "2026년 기준 과천도시공사 기본 조직도 (본부/부문 - 처/실/단 - 부 체계)",
+  "departments": [
+    {
+      "code": "AUDIT",
+      "division": "사장 직속",
+      "office": "청렴감사단",
+      "department": "청렴감사단",
+      "name": "청렴감사단",
+      "head_title": "단장"
+    },
+    {
+      "code": "SAFETY",
+      "division": "사장 직속",
+      "office": "안전총괄단",
+      "department": "안전총괄단",
+      "name": "안전총괄단",
+      "head_title": "단장"
+    },
+    {
+      "code": "DEV_PLAN",
+      "division": "개발사업본부",
+      "office": "사업계획처",
+      "department": "사업계획부",
+      "name": "사업계획처 사업계획부",
+      "head_title": "부장"
+    },
+    {
+      "code": "DEV_SALES",
+      "division": "개발사업본부",
+      "office": "사업계획처",
+      "department": "판매·보상부",
+      "name": "사업계획처 판매·보상부",
+      "head_title": "부장"
+    },
+    {
+      "code": "DEV_ENG1",
+      "division": "개발사업본부",
+      "office": "사업개발처",
+      "department": "개발1부",
+      "name": "사업개발처 개발1부",
+      "head_title": "부장"
+    },
+    {
+      "code": "DEV_ENG2",
+      "division": "개발사업본부",
+      "office": "사업개발처",
+      "department": "개발2부",
+      "name": "사업개발처 개발2부",
+      "head_title": "부장"
+    },
+    {
+      "code": "DEV_TECH",
+      "division": "개발사업본부",
+      "office": "사업개발처",
+      "department": "기술지원부",
+      "name": "사업개발처 기술지원부",
+      "head_title": "부장"
+    },
+    {
+      "code": "FAC_PLAN",
+      "division": "운영관리본부",
+      "office": "시설관리처",
+      "department": "시설기획부",
+      "name": "시설관리처 시설기획부",
+      "head_title": "부장"
+    },
+    {
+      "code": "FAC_OPS",
+      "division": "운영관리본부",
+      "office": "시설관리처",
+      "department": "시설운영부",
+      "name": "시설관리처 시설운영부",
+      "head_title": "부장"
+    },
+    {
+      "code": "FAC_PARK",
+      "division": "운영관리본부",
+      "office": "시설관리처",
+      "department": "주차관리부",
+      "name": "시설관리처 주차관리부",
+      "head_title": "부장"
+    },
+    {
+      "code": "SPO_LEISURE",
+      "division": "운영관리본부",
+      "office": "시민회관체육운영처",
+      "department": "여가체육부",
+      "name": "시민회관체육운영처 여가체육부",
+      "head_title": "부장"
+    },
+    {
+      "code": "SPO_SWIM",
+      "division": "운영관리본부",
+      "office": "시민회관체육운영처",
+      "department": "수영부",
+      "name": "시민회관체육운영처 수영부",
+      "head_title": "부장"
+    },
+    {
+      "code": "SPO_ICE",
+      "division": "운영관리본부",
+      "office": "시민회관체육운영처",
+      "department": "빙상부",
+      "name": "시민회관체육운영처 빙상부",
+      "head_title": "부장"
+    },
+    {
+      "code": "SPO_BOWL",
+      "division": "운영관리본부",
+      "office": "시민회관체육운영처",
+      "department": "볼링골프부",
+      "name": "시민회관체육운영처 볼링골프부",
+      "head_title": "부장"
+    },
+    {
+      "code": "PARK_OPS",
+      "division": "운영관리본부",
+      "office": "공원수련관관리처",
+      "department": "공원운영부",
+      "name": "공원수련관관리처 공원운영부",
+      "head_title": "부장"
+    },
+    {
+      "code": "PARK_FAC",
+      "division": "운영관리본부",
+      "office": "공원수련관관리처",
+      "department": "시설지원부",
+      "name": "공원수련관관리처 시설지원부",
+      "head_title": "부장"
+    },
+    {
+      "code": "PARK_YOUTH",
+      "division": "운영관리본부",
+      "office": "공원수련관관리처",
+      "department": "수련관운영부",
+      "name": "공원수련관관리처 수련관운영부",
+      "head_title": "부장"
+    },
+    {
+      "code": "MGMT_GEN",
+      "division": "경영부문",
+      "office": "경영지원실",
+      "department": "총무행정부",
+      "name": "경영지원실 총무행정부",
+      "head_title": "부장"
+    },
+    {
+      "code": "MGMT_FIN",
+      "division": "경영부문",
+      "office": "경영지원실",
+      "department": "재무부",
+      "name": "경영지원실 재무부",
+      "head_title": "부장"
+    },
+    {
+      "code": "MGMT_ACC",
+      "division": "경영부문",
+      "office": "경영지원실",
+      "department": "회계부",
+      "name": "경영지원실 회계부",
+      "head_title": "부장"
+    },
+    {
+      "code": "MGMT_HR",
+      "division": "경영부문",
+      "office": "경영지원실",
+      "department": "인사부",
+      "name": "경영지원실 인사부",
+      "head_title": "부장"
+    },
+    {
+      "code": "STRAT_INN",
+      "division": "경영부문",
+      "office": "미래전략실",
+      "department": "미래혁신부",
+      "name": "미래전략실 미래혁신부",
+      "head_title": "부장"
+    },
+    {
+      "code": "STRAT_SMART",
+      "division": "경영부문",
+      "office": "미래전략실",
+      "department": "스마트정보부",
+      "name": "미래전략실 스마트정보부",
+      "head_title": "부장"
+    }
+  ]
+}

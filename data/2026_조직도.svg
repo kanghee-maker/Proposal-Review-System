@@ -1,0 +1,224 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" width="1200" height="900" style="background:#f8fafc; font-family:'Pretendard', 'Malgun Gothic', sans-serif;">
+  <defs>
+    <style>
+      .title { font-size: 26px; font-weight: 800; fill: #0f172a; text-anchor: middle; }
+      .subtitle { font-size: 14px; font-weight: 500; fill: #64748b; text-anchor: middle; }
+      .box-ceo { fill: #1e3a8a; stroke: #1d4ed8; stroke-width: 2; rx: 8; }
+      .box-dir { fill: #0284c7; stroke: #0369a1; stroke-width: 1.5; rx: 6; }
+      .box-div { fill: #334155; stroke: #1e293b; stroke-width: 1.5; rx: 6; }
+      .box-office { fill: #e0f2fe; stroke: #38bdf8; stroke-width: 1.5; rx: 6; }
+      .box-dept { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.2; rx: 4; }
+      .text-white-bold { font-size: 15px; font-weight: 700; fill: #ffffff; text-anchor: middle; }
+      .text-white-sub { font-size: 12px; font-weight: 400; fill: #cbd5e1; text-anchor: middle; }
+      .text-office { font-size: 14px; font-weight: 700; fill: #0369a1; text-anchor: middle; }
+      .text-dept { font-size: 13px; font-weight: 600; fill: #1e293b; text-anchor: middle; }
+      .line { stroke: #94a3b8; stroke-width: 2; fill: none; }
+      .line-accent { stroke: #0284c7; stroke-width: 2; fill: none; stroke-dasharray: 4; }
+    </style>
+  </defs>
+
+  <!-- 배경 및 타이틀 -->
+  <rect x="0" y="0" width="1200" height="900" fill="#f8fafc"/>
+  <rect x="30" y="20" width="1140" height="860" rx="16" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" />
+  
+  <text x="600" y="65" class="title">과천도시공사 기구표 및 조직도 (2026)</text>
+  <text x="600" y="90" class="subtitle">본부/부문 (Division) • 처/실/단 (Office) • 부 (Department) 체계</text>
+
+  <!-- 연결선들 -->
+  <!-- CEO에서 아래로 -->
+  <path d="M 600 160 L 600 210" class="line" />
+  <!-- 직속 기관들 -->
+  <path d="M 600 175 L 400 175 L 400 200" class="line-accent" />
+  <path d="M 600 175 L 800 175 L 800 200" class="line-accent" />
+
+  <!-- 3대 본부/부문으로 뻗는 메인 버스선 -->
+  <path d="M 200 250 L 1000 250" class="line" />
+  <path d="M 200 250 L 200 290" class="line" />
+  <path d="M 600 210 L 600 290" class="line" />
+  <path d="M 1000 250 L 1000 290" class="line" />
+
+  <!-- 1. CEO -->
+  <g transform="translate(480, 110)">
+    <rect width="240" height="50" class="box-ceo" />
+    <text x="120" y="32" class="text-white-bold" font-size="17">사 장 (CEO)</text>
+  </g>
+
+  <!-- 2. 직속 기관 -->
+  <!-- 청렴감사단 -->
+  <g transform="translate(320, 195)">
+    <rect width="160" height="42" class="box-dir" />
+    <text x="80" y="26" class="text-white-bold">청렴감사단</text>
+  </g>
+  <!-- 안전총괄단 -->
+  <g transform="translate(720, 195)">
+    <rect width="160" height="42" class="box-dir" />
+    <text x="80" y="26" class="text-white-bold">안전총괄단</text>
+  </g>
+
+  <!-- ==================== [1] 개발사업본부 (좌측: x=70~330) ==================== -->
+  <g transform="translate(70, 290)">
+    <rect width="260" height="48" class="box-div" />
+    <text x="130" y="26" class="text-white-bold">개발사업본부</text>
+    <text x="130" y="42" class="text-white-sub">상임이사 총괄</text>
+  </g>
+  <path d="M 200 338 L 200 370" class="line" />
+  <path d="M 130 370 L 270 370" class="line" />
+  <path d="M 130 370 L 130 390" class="line" />
+  <path d="M 270 370 L 270 390" class="line" />
+
+  <!-- 사업계획처 -->
+  <g transform="translate(65, 390)">
+    <rect width="130" height="40" class="box-office" />
+    <text x="65" y="25" class="text-office">사업계획처</text>
+    <line x1="65" y1="40" x2="65" y2="450" class="line" />
+    <!-- 사업계획부 -->
+    <rect x="0" y="60" width="130" height="36" class="box-dept" />
+    <text x="65" y="83" class="text-dept">사업계획부</text>
+    <!-- 판매·보상부 -->
+    <rect x="0" y="105" width="130" height="36" class="box-dept" />
+    <text x="65" y="128" class="text-dept">판매·보상부</text>
+  </g>
+
+  <!-- 사업개발처 -->
+  <g transform="translate(205, 390)">
+    <rect width="130" height="40" class="box-office" />
+    <text x="65" y="25" class="text-office">사업개발처</text>
+    <line x1="65" y1="40" x2="65" y2="495" class="line" />
+    <!-- 개발1부 -->
+    <rect x="0" y="60" width="130" height="36" class="box-dept" />
+    <text x="65" y="83" class="text-dept">개발1부 (토목)</text>
+    <!-- 개발2부 -->
+    <rect x="0" y="105" width="130" height="36" class="box-dept" />
+    <text x="65" y="128" class="text-dept">개발2부 (건축)</text>
+    <!-- 기술지원부 -->
+    <rect x="0" y="150" width="130" height="36" class="box-dept" />
+    <text x="65" y="173" class="text-dept">기술지원부 (설비)</text>
+  </g>
+
+
+  <!-- ==================== [2] 운영관리본부 (중앙: x=390~810) ==================== -->
+  <g transform="translate(470, 290)">
+    <rect width="260" height="48" class="box-div" />
+    <text x="130" y="26" class="text-white-bold">운영관리본부</text>
+    <text x="130" y="42" class="text-white-sub">대행사업본부 총괄</text>
+  </g>
+  <path d="M 600 338 L 600 370" class="line" />
+  <path d="M 450 370 L 750 370" class="line" />
+  <path d="M 450 370 L 450 390" class="line" />
+  <path d="M 600 370 L 600 390" class="line" />
+  <path d="M 750 370 L 750 390" class="line" />
+
+  <!-- 시설관리처 -->
+  <g transform="translate(380, 390)">
+    <rect width="140" height="40" class="box-office" />
+    <text x="70" y="25" class="text-office">시설관리처</text>
+    <line x1="70" y1="40" x2="70" y2="495" class="line" />
+    <!-- 시설기획부 -->
+    <rect x="5" y="60" width="130" height="36" class="box-dept" />
+    <text x="70" y="83" class="text-dept">시설기획부</text>
+    <!-- 시설운영부 -->
+    <rect x="5" y="105" width="130" height="36" class="box-dept" />
+    <text x="70" y="128" class="text-dept">시설운영부</text>
+    <!-- 주차관리부 -->
+    <rect x="5" y="150" width="130" height="36" class="box-dept" />
+    <text x="70" y="173" class="text-dept">주차관리부</text>
+  </g>
+
+  <!-- 시민회관체육운영처 -->
+  <g transform="translate(530, 390)">
+    <rect width="140" height="40" class="box-office" />
+    <text x="70" y="25" class="text-office">시민회관체육운영처</text>
+    <line x1="70" y1="40" x2="70" y2="540" class="line" />
+    <!-- 여가체육부 -->
+    <rect x="5" y="60" width="130" height="36" class="box-dept" />
+    <text x="70" y="83" class="text-dept">여가체육부</text>
+    <!-- 수영부 -->
+    <rect x="5" y="105" width="130" height="36" class="box-dept" />
+    <text x="70" y="128" class="text-dept">수영부</text>
+    <!-- 빙상부 -->
+    <rect x="5" y="150" width="130" height="36" class="box-dept" />
+    <text x="70" y="173" class="text-dept">빙상부</text>
+    <!-- 볼링골프부 -->
+    <rect x="5" y="195" width="130" height="36" class="box-dept" />
+    <text x="70" y="218" class="text-dept">볼링골프부</text>
+  </g>
+
+  <!-- 공원수련관관리처 -->
+  <g transform="translate(680, 390)">
+    <rect width="140" height="40" class="box-office" />
+    <text x="70" y="25" class="text-office">공원수련관관리처</text>
+    <line x1="70" y1="40" x2="70" y2="495" class="line" />
+    <!-- 공원운영부 -->
+    <rect x="5" y="60" width="130" height="36" class="box-dept" />
+    <text x="70" y="83" class="text-dept">공원운영부</text>
+    <!-- 시설지원부 -->
+    <rect x="5" y="105" width="130" height="36" class="box-dept" />
+    <text x="70" y="128" class="text-dept">시설지원부</text>
+    <!-- 수련관운영부 -->
+    <rect x="5" y="150" width="130" height="36" class="box-dept" />
+    <text x="70" y="173" class="text-dept">수련관운영부</text>
+  </g>
+
+
+  <!-- ==================== [3] 경영부문 (우측: x=870~1130) ==================== -->
+  <g transform="translate(870, 290)">
+    <rect width="260" height="48" class="box-div" />
+    <text x="130" y="26" class="text-white-bold">경영부문</text>
+    <text x="130" y="42" class="text-white-sub">경영부문장 총괄</text>
+  </g>
+  <path d="M 1000 338 L 1000 370" class="line" />
+  <path d="M 935 370 L 1065 370" class="line" />
+  <path d="M 935 370 L 935 390" class="line" />
+  <path d="M 1065 370 L 1065 390" class="line" />
+
+  <!-- 경영지원실 -->
+  <g transform="translate(870, 390)">
+    <rect width="130" height="40" class="box-office" />
+    <text x="65" y="25" class="text-office">경영지원실</text>
+    <line x1="65" y1="40" x2="65" y2="540" class="line" />
+    <!-- 총무행정부 -->
+    <rect x="0" y="60" width="130" height="36" class="box-dept" />
+    <text x="65" y="83" class="text-dept">총무행정부</text>
+    <!-- 재무부 -->
+    <rect x="0" y="105" width="130" height="36" class="box-dept" />
+    <text x="65" y="128" class="text-dept">재무부</text>
+    <!-- 회계부 -->
+    <rect x="0" y="150" width="130" height="36" class="box-dept" />
+    <text x="65" y="173" class="text-dept">회계부</text>
+    <!-- 인사부 -->
+    <rect x="0" y="195" width="130" height="36" class="box-dept" />
+    <text x="65" y="218" class="text-dept">인사부</text>
+  </g>
+
+  <!-- 미래전략실 -->
+  <g transform="translate(1005, 390)">
+    <rect width="130" height="40" class="box-office" />
+    <text x="65" y="25" class="text-office">미래전략실</text>
+    <line x1="65" y1="40" x2="65" y2="450" class="line" />
+    <!-- 미래혁신부 -->
+    <rect x="0" y="60" width="130" height="36" class="box-dept" />
+    <text x="65" y="83" class="text-dept">미래혁신부</text>
+    <!-- 스마트정보부 -->
+    <rect x="0" y="105" width="130" height="36" class="box-dept" />
+    <text x="65" y="128" class="text-dept">스마트정보부</text>
+  </g>
+
+  <!-- 범례 및 안내 -->
+  <g transform="translate(100, 810)">
+    <rect x="0" y="0" width="1000" height="45" rx="8" fill="#f1f5f9" stroke="#e2e8f0" />
+    <rect x="25" y="15" width="16" height="16" rx="3" fill="#1e3a8a" />
+    <text x="48" y="28" font-size="12" fill="#334155" font-weight="600">사장</text>
+
+    <rect x="110" y="15" width="16" height="16" rx="3" fill="#0284c7" />
+    <text x="133" y="28" font-size="12" fill="#334155" font-weight="600">직속단</text>
+
+    <rect x="215" y="15" width="16" height="16" rx="3" fill="#334155" />
+    <text x="238" y="28" font-size="12" fill="#334155" font-weight="600">본부 / 부문 (Division)</text>
+
+    <rect x="420" y="15" width="16" height="16" rx="3" fill="#e0f2fe" stroke="#38bdf8" />
+    <text x="443" y="28" font-size="12" fill="#0369a1" font-weight="600">처 / 실 / 단 (Office)</text>
+
+    <rect x="625" y="15" width="16" height="16" rx="3" fill="#ffffff" stroke="#cbd5e1" />
+    <text x="648" y="28" font-size="12" fill="#334155" font-weight="600">부 (Department) - 0차 부서평가 단위</text>
+  </g>
+</svg>

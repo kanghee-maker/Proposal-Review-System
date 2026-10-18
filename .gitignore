@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Next.js build output
+.next/
+out/
+
+# Production
+build
+
+# Misc
+.DS_Store
+*.pem
+
+# Office temporary files
+~$*
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local env files
+.env*.local
