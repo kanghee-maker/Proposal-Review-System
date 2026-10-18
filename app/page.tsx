@@ -185,13 +185,13 @@ export default function Home() {
             2026년도 혁신 제안 부서 평가(0차 평가) 진행 중
           </div>
           <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-slate-900 mb-3">
-            과천도시공사 혁신 제안 평가 포털
+            과천도시공사 혁신 제안 평가 시스템
           </h2>
           <p className="text-slate-600 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed font-medium">
             공사 임직원이 제출한 혁신 제안에 대해 각 부서의 타당성 평가를 신속히 심사하고, 전체 평가 현황을 체계적으로 총괄 관리합니다.
           </p>
-          <p className="text-slate-500 text-xs sm:text-sm mt-2 font-medium">
-            제안평가 시스템 관련 문의 사항이 있으실 경우 관리자(총무행정부 우세림)에게 문의해 주시면 됩니다.
+          <p className="text-slate-600 text-xs sm:text-sm mt-2 font-medium">
+            제안평가 시스템 관련 문의 사항이 있으실 경우 관리자<strong className="text-orange-600 font-bold">(총무행정부 우세림) - 1192(내선번호)</strong>에게 문의해 주시면 됩니다.
           </p>
         </div>
 
@@ -324,7 +324,7 @@ export default function Home() {
             {/* 안내 문구 (GCUC 스타일 박스) */}
             <div className="mt-2 p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 leading-relaxed text-left">
               <p className="text-[11px]">
-                ※ 각 부서별 접속 비밀번호는 <strong>관리자(총무행정부 우세림)</strong>가 사전에 발급하여 관리합니다. 비밀번호 분실 또는 미발급 시 관리자에게 문의 바랍니다.
+                ※ 각 부서별 접속 비밀번호는 <strong className="text-orange-600 font-bold">관리자(총무행정부 우세림) - 1192(내선번호)</strong>가 사전에 발급하여 관리합니다. 비밀번호 분실 또는 미발급 시 관리자에게 문의 바랍니다.
               </p>
             </div>
           </div>
@@ -497,7 +497,7 @@ export default function Home() {
               </div>
 
               <div className="mt-3 p-3 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-600 leading-relaxed">
-                * 부서별 비밀번호는 관리자(총무행정부 우세림)가 사전에 발급한 4자리 숫자를 입력해주세요. (비밀번호 미발급 시 관리자 문의)
+                * 부서별 비밀번호는 <strong className="text-orange-600 font-bold">관리자(총무행정부 우세림) - 1192(내선번호)</strong>가 사전에 발급한 4자리 숫자를 입력해주세요. (비밀번호 미발급 시 관리자 문의)
               </div>
             </form>
           </div>

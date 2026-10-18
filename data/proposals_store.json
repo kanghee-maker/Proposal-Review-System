@@ -80,5 +80,12 @@
     "transfer_target_dept": "시설기획부",
     "transfer_reason": "소관 업무 분장 확인에 따른 이관 요청",
     "status": "평가완료"
+  },
+  {
+    "id": "session-1792320109723-prop-2",
+    "transfer_requested": true,
+    "transfer_target_dept": "시설기획부",
+    "transfer_reason": "소관 업무 분장 확인에 따른 이관 요청",
+    "status": "평가완료"
   }
 ]
