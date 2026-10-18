@@ -1,19 +1,36 @@
 import { NextResponse } from 'next/server';
 import { getProposalsAsync, updateProposalAsync } from '@/lib/store';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
-  const sessionId = searchParams.get('session_id') || undefined;
+  const hasSessionParam = searchParams.has('session_id');
+  const sessionId = searchParams.get('session_id');
+
+  if (hasSessionParam && (!sessionId || !sessionId.trim())) {
+    return NextResponse.json([], {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+      }
+    });
+  }
+
   const proposalId = searchParams.get('id');
   const department = searchParams.get('department');
   const status = searchParams.get('status');
   const search = searchParams.get('search');
 
-  let list = await getProposalsAsync(sessionId);
+  let list = await getProposalsAsync(sessionId || undefined);
 
   if (proposalId) {
     const single = list.find(p => p.id === proposalId);
-    return NextResponse.json(single || null);
+    return NextResponse.json(single || null, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+      }
+    });
   }
 
   if (department) {
@@ -38,7 +55,11 @@ export async function GET(req: Request) {
     );
   }
 
-  return NextResponse.json(list);
+  return NextResponse.json(list, {
+    headers: {
+      'Cache-Control': 'no-store, no-cache, must-revalidate',
+    }
+  });
 }
 
 export async function PUT(req: Request) {

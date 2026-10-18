@@ -19,5 +19,45 @@
     "transfer_target_dept": "시설기획부",
     "transfer_reason": "소관 업무 분장 확인에 따른 이관 요청",
     "status": "평가완료"
+  },
+  {
+    "id": "session-1792317876032-prop-2",
+    "transfer_requested": true,
+    "transfer_target_dept": "시설기획부",
+    "transfer_reason": "소관 업무 분장 확인에 따른 이관 요청",
+    "status": "평가완료"
+  },
+  {
+    "id": "session-1792318032207-prop-1",
+    "session_id": "session-1792318032207",
+    "seq_no": 1,
+    "board_no": "TEST-001",
+    "proposer_name": "홍길동",
+    "proposer_rank": "",
+    "proposer_division": "",
+    "proposer_office": "",
+    "proposer_department": "기획예산부",
+    "proposer_raw_dept": "기획예산부",
+    "proposal_type": "지정제안",
+    "category": "업무개선",
+    "assigned_division": "경영부문",
+    "assigned_office": "경영지원실",
+    "assigned_department": "총무행정부",
+    "assigned_raw_dept": "총무행정부",
+    "submitted_at": "2026-10-18",
+    "title": "스마트 전자결재 및 자동 회계 정산 시스템 도입",
+    "content": "업무 효율성 증진 및 페이퍼리스 추진",
+    "expected_effect": "",
+    "is_duplicate": "",
+    "duplicate_title": "",
+    "status": "평가완료",
+    "contribution_rate": 100
+  },
+  {
+    "id": "session-1792318032207-prop-2",
+    "transfer_requested": true,
+    "transfer_target_dept": "시설기획부",
+    "transfer_reason": "소관 업무 분장 확인에 따른 이관 요청",
+    "status": "평가완료"
   }
 ]

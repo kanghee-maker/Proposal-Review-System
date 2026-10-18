@@ -29,6 +29,14 @@ function AdminReportsContent() {
       .then((sessionList: EvaluationSession[]) => {
         setSessions(sessionList);
 
+        if (!sessionList || sessionList.length === 0) {
+          setSelectedSessionId('');
+          setProposals([]);
+          setEvaluations([]);
+          setLoading(false);
+          return;
+        }
+
         const urlSessionId = searchParams.get('session_id');
         let initialId = urlSessionId;
 
@@ -45,20 +53,26 @@ function AdminReportsContent() {
           localStorage.setItem('gcuc_active_session_id', initialId);
         }
       })
-      .catch(err => console.error(err));
+      .catch(err => {
+        console.error(err);
+        setLoading(false);
+      });
   }, [searchParams]);
 
   // 2. 선택된 회차의 데이터 로드
   const fetchReportData = (sessionId: string) => {
-    if (!sessionId) return;
+    if (!sessionId) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     Promise.all([
-      fetch(`/api/proposals?session_id=${encodeURIComponent(sessionId)}`).then(r => r.json()),
-      fetch(`/api/evaluations?session_id=${encodeURIComponent(sessionId)}`).then(r => r.json())
+      fetch(`/api/proposals?session_id=${encodeURIComponent(sessionId)}&_t=${Date.now()}`, { cache: 'no-store' }).then(r => r.json()),
+      fetch(`/api/evaluations?session_id=${encodeURIComponent(sessionId)}&_t=${Date.now()}`, { cache: 'no-store' }).then(r => r.json())
     ])
       .then(([pData, eData]) => {
-        setProposals(pData);
-        setEvaluations(eData);
+        setProposals(Array.isArray(pData) ? pData : []);
+        setEvaluations(Array.isArray(eData) ? eData : []);
         setLoading(false);
       })
       .catch(err => {
@@ -70,6 +84,8 @@ function AdminReportsContent() {
   useEffect(() => {
     if (selectedSessionId) {
       fetchReportData(selectedSessionId);
+    } else {
+      setLoading(false);
     }
   }, [selectedSessionId]);
 
@@ -278,6 +294,17 @@ function AdminReportsContent() {
           <div className="py-16 text-center text-xs text-slate-500">
             <div className="w-6 h-6 border-2 border-sky-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
             평가 결과를 집계 중입니다...
+          </div>
+        ) : sessions.length === 0 ? (
+          <div className="py-16 text-center text-slate-500 text-xs space-y-2">
+            <DownloadCloud className="w-8 h-8 text-slate-300 mx-auto" />
+            <p className="font-bold text-slate-700">등록된 제안평가 회차가 없습니다.</p>
+            <p className="text-[11px] text-slate-400">관리자 대시보드에서 신규 제안평가를 먼저 생성해주세요.</p>
+            <div className="pt-2">
+              <Link href="/admin" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-semibold text-xs shadow-sm transition">
+                <span>제안평가 회차 대시보드로 이동</span>
+              </Link>
+            </div>
           </div>
         ) : proposals.length === 0 ? (
           <div className="py-16 text-center text-xs text-slate-500">선택된 제안평가 건에 등록된 제안이 없습니다.</div>

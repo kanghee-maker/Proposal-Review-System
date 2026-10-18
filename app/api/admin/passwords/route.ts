@@ -6,6 +6,9 @@ import { getAllDepartmentPasswords, setupDepartmentPassword, saveAllDepartmentPa
 const DATA_DIR = path.join(process.cwd(), 'data');
 const ORG_FILE = path.join(DATA_DIR, 'organization_2026.json');
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET() {
   try {
     let orgData: any = { departments: [] };
@@ -29,6 +32,12 @@ export async function GET() {
       departments: deptsWithPasswords,
       totalCount: deptsWithPasswords.length,
       assignedCount: deptsWithPasswords.filter((d: any) => d.hasPassword).length
+    }, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      }
     });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
@@ -40,8 +49,9 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
 
     // 1. 일괄 저장 (Bulk)
-    if (body.passwords && typeof body.passwords === 'object') {
-      await saveAllDepartmentPasswords(body.passwords);
+    const bulkData = body.passwords || body.allPasswords;
+    if (bulkData && typeof bulkData === 'object') {
+      await saveAllDepartmentPasswords(bulkData);
       return NextResponse.json({ success: true, message: '부서 비밀번호가 일괄 저장되었습니다.' });
     }
 

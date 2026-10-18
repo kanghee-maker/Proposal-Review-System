@@ -36,6 +36,13 @@ function AdminProposalsContent() {
       .then((sessionList: EvaluationSession[]) => {
         setSessions(sessionList);
 
+        if (!sessionList || sessionList.length === 0) {
+          setSelectedSessionId('');
+          setProposals([]);
+          setLoading(false);
+          return;
+        }
+
         const urlSessionId = searchParams.get('session_id');
         let initialId = urlSessionId;
 
@@ -52,7 +59,10 @@ function AdminProposalsContent() {
           localStorage.setItem('gcuc_active_session_id', initialId);
         }
       })
-      .catch(err => console.error(err));
+      .catch(err => {
+        console.error(err);
+        setLoading(false);
+      });
 
     fetch('/api/organization')
       .then(res => res.json())
@@ -64,12 +74,15 @@ function AdminProposalsContent() {
 
   // 2. 선택된 회차의 제안 목록 로드
   const fetchProposalsForSession = (sessionId: string) => {
-    if (!sessionId) return;
+    if (!sessionId) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
-    fetch(`/api/proposals?session_id=${encodeURIComponent(sessionId)}`)
+    fetch(`/api/proposals?session_id=${encodeURIComponent(sessionId)}&_t=${Date.now()}`, { cache: 'no-store' })
       .then(res => res.json())
       .then(data => {
-        setProposals(data);
+        setProposals(Array.isArray(data) ? data : []);
         setLoading(false);
       })
       .catch(err => {
@@ -81,6 +94,8 @@ function AdminProposalsContent() {
   useEffect(() => {
     if (selectedSessionId) {
       fetchProposalsForSession(selectedSessionId);
+    } else {
+      setLoading(false);
     }
   }, [selectedSessionId]);
 
@@ -343,6 +358,17 @@ function AdminProposalsContent() {
           <div className="py-16 text-center text-slate-500 text-xs">
             <div className="w-6 h-6 border-2 border-sky-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
             제안 목록을 불러오는 중...
+          </div>
+        ) : sessions.length === 0 ? (
+          <div className="py-16 text-center text-slate-500 text-xs space-y-2">
+            <FileText className="w-8 h-8 text-slate-300 mx-auto" />
+            <p className="font-bold text-slate-700">등록된 제안평가 회차가 없습니다.</p>
+            <p className="text-[11px] text-slate-400">관리자 대시보드에서 신규 제안평가를 먼저 생성해주세요.</p>
+            <div className="pt-2">
+              <Link href="/admin" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-semibold text-xs shadow-sm transition">
+                <span>제안평가 회차 대시보드로 이동</span>
+              </Link>
+            </div>
           </div>
         ) : filtered.length === 0 ? (
           <div className="py-16 text-center text-slate-500 text-xs">선택된 제안평가 건에 등록된 제안이 없습니다.</div>

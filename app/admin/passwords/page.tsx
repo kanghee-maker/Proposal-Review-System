@@ -47,7 +47,7 @@ export default function AdminPasswordsPage() {
   const fetchPasswords = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/admin/passwords');
+      const res = await fetch(`/api/admin/passwords?_t=${Date.now()}`, { cache: 'no-store' });
       const data = await res.json();
       if (data.success && data.departments) {
         setDepartments(data.departments);
@@ -79,7 +79,7 @@ export default function AdminPasswordsPage() {
     const randomPass = generateRandom4Digits();
     setInputPasswords(prev => ({ ...prev, [deptName]: randomPass }));
     setShowPasswords(prev => ({ ...prev, [deptName]: true }));
-    showToast(`[${deptName}] 4자리 랜덤 비밀번호(${randomPass})가 입력되었습니다. [저장]을 눌러 적용하세요.`);
+    showToast(`[${deptName}] 4자리 번호(${randomPass}) 생성됨. [저장] 버튼을 누르면 적용됩니다.`);
   };
 
   // 미발급 부서 일괄 4자리 랜덤 생성
@@ -99,7 +99,7 @@ export default function AdminPasswordsPage() {
     }
 
     setInputPasswords(newInputs);
-    showToast(`미발급 ${count}개 부서에 4자리 랜덤 비밀번호가 채워졌습니다. 상단의 [일괄 저장]을 눌러 완료하세요.`);
+    showToast(`미발급 ${count}개 부서에 4자리 랜덤 번호가 채워졌습니다. 상단의 [전체 일괄 저장]을 눌러 저장하세요.`);
   };
 
   // 전체 부서 일괄 재발급 (랜덤)
@@ -112,7 +112,7 @@ export default function AdminPasswordsPage() {
       newInputs[d.department] = generateRandom4Digits();
     });
     setInputPasswords(newInputs);
-    showToast(`전체 ${departments.length}개 부서에 새 4자리 비밀번호가 생성되었습니다. [일괄 저장]을 눌러 적용하세요.`);
+    showToast(`전체 ${departments.length}개 부서에 새 4자리 번호가 생성되었습니다. [전체 일괄 저장]을 눌러 적용하세요.`);
   };
 
   // 단일 부서 저장
@@ -133,6 +133,12 @@ export default function AdminPasswordsPage() {
       });
       const data = await res.json();
       if (data.success) {
+        // 즉시 상태 반영 (낙관적 갱신)
+        setDepartments(prev => prev.map(d => d.department === deptName ? {
+          ...d,
+          password: pass,
+          hasPassword: Boolean(pass)
+        } : d));
         showToast(`[${deptName}] 비밀번호가 성공적으로 저장되었습니다.`);
         fetchPasswords();
       } else {
@@ -156,7 +162,16 @@ export default function AdminPasswordsPage() {
       });
       const data = await res.json();
       if (data.success) {
-        showToast('전체 부서 비밀번호가 일괄 저장되었습니다.');
+        // 즉시 전 부서 발급완료 반영 (낙관적 갱신)
+        setDepartments(prev => prev.map(d => {
+          const p = (inputPasswords[d.department] || '').trim();
+          return {
+            ...d,
+            password: p,
+            hasPassword: Boolean(p)
+          };
+        }));
+        showToast('전체 부서 비밀번호가 성공적으로 일괄 저장되었습니다.');
         fetchPasswords();
       } else {
         alert(data.error || '일괄 저장 실패');
@@ -226,8 +241,9 @@ export default function AdminPasswordsPage() {
   });
 
   const totalCount = departments.length;
-  const setReadyCount = departments.filter(d => Boolean(inputPasswords[d.department] || d.password)).length;
-  const unsetCount = totalCount - setReadyCount;
+  const savedCount = departments.filter(d => Boolean(d.password)).length;
+  const pendingSaveCount = departments.filter(d => Boolean(inputPasswords[d.department]) && inputPasswords[d.department] !== d.password).length;
+  const unsetCount = departments.filter(d => !d.password && !inputPasswords[d.department]).length;
 
   return (
     <div className="space-y-6">
@@ -266,10 +282,14 @@ export default function AdminPasswordsPage() {
           <button
             onClick={handleSaveAll}
             disabled={bulkSaving}
-            className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center gap-1.5 shadow-md shadow-emerald-600/25 transition disabled:opacity-50"
+            className={`px-4 py-2.5 rounded-xl text-white text-xs font-semibold flex items-center gap-1.5 shadow-md transition disabled:opacity-50 ${
+              pendingSaveCount > 0
+                ? 'bg-emerald-600 hover:bg-emerald-500 ring-2 ring-emerald-400 shadow-emerald-600/40 animate-pulse'
+                : 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-600/25'
+            }`}
           >
             <Save className="w-4 h-4" />
-            <span>{bulkSaving ? '저장 중...' : '전체 일괄 저장'}</span>
+            <span>{bulkSaving ? '저장 중...' : pendingSaveCount > 0 ? `전체 일괄 저장 (${pendingSaveCount}건 대기)` : '전체 일괄 저장'}</span>
           </button>
         </div>
       </div>
@@ -288,11 +308,20 @@ export default function AdminPasswordsPage() {
         <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
           <span className="text-xs text-emerald-600 font-medium block mb-1">비밀번호 발급 완료</span>
           <div className="flex items-baseline gap-2">
-            <strong className="text-3xl font-bold text-emerald-600">{setReadyCount}</strong>
+            <strong className="text-3xl font-bold text-emerald-600">{savedCount}</strong>
             <span className="text-xs text-slate-500">개 부서</span>
           </div>
-          <div className="mt-2 text-[11px] text-emerald-700 font-semibold">
-            발급률 {totalCount > 0 ? Math.round((setReadyCount / totalCount) * 100) : 0}%
+          <div className="mt-2 text-[11px] font-semibold">
+            {pendingSaveCount > 0 ? (
+              <span className="text-amber-600 font-bold flex items-center gap-1">
+                <Sparkles className="w-3 h-3" />
+                저장 대기: {pendingSaveCount}개
+              </span>
+            ) : (
+              <span className="text-emerald-700">
+                발급률 {totalCount > 0 ? Math.round((savedCount / totalCount) * 100) : 0}%
+              </span>
+            )}
           </div>
         </div>
 
@@ -390,14 +419,16 @@ export default function AdminPasswordsPage() {
                 </tr>
               ) : (
                 filtered.map((d, index) => {
-                  const pass = inputPasswords[d.department] || '';
+                  const savedPass = d.password || '';
+                  const currentInput = inputPasswords[d.department] || '';
                   const isVisible = showPasswords[d.department] || false;
                   const isSaving = savingDept === d.department;
                   const isCopied = copiedDept === d.department;
-                  const isAssigned = Boolean(pass);
+                  const isSaved = Boolean(savedPass);
+                  const isModified = currentInput !== savedPass;
 
                   return (
-                    <tr key={d.department} className="hover:bg-slate-50/80 transition">
+                    <tr key={d.department} className={`transition ${isModified ? 'bg-amber-50/40 hover:bg-amber-50/70' : 'hover:bg-slate-50/80'}`}>
                       <td className="py-3.5 px-4 text-center font-mono text-slate-400">
                         {index + 1}
                       </td>
@@ -419,15 +450,20 @@ export default function AdminPasswordsPage() {
                         <span className="text-[10px] text-slate-400">{d.name}</span>
                       </td>
 
-                      <td className="py-3.5 px-4 text-center">
-                        {isAssigned ? (
+                      <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                        {isModified && currentInput ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
+                            <Sparkles className="w-3 h-3 text-amber-600" />
+                            저장대기 (생성됨)
+                          </span>
+                        ) : isSaved ? (
                           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                             <Check className="w-3 h-3" />
                             발급완료
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
-                            <AlertCircle className="w-3 h-3" />
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-500 border border-slate-200">
+                            <AlertCircle className="w-3 h-3 text-slate-400" />
                             미발급
                           </span>
                         )}
@@ -440,7 +476,7 @@ export default function AdminPasswordsPage() {
                               type={isVisible ? 'text' : 'password'}
                               maxLength={10}
                               placeholder="4자리 숫자"
-                              value={pass}
+                              value={currentInput}
                               onChange={(e) => {
                                 const val = e.target.value;
                                 setInputPasswords(prev => ({ ...prev, [d.department]: val }));
@@ -459,7 +495,7 @@ export default function AdminPasswordsPage() {
 
                           <button
                             type="button"
-                            onClick={() => handleCopySingle(d.department, pass)}
+                            onClick={() => handleCopySingle(d.department, currentInput)}
                             className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition"
                             title="비밀번호 복사"
                           >
@@ -484,10 +520,14 @@ export default function AdminPasswordsPage() {
                             type="button"
                             onClick={() => handleSaveSingle(d.department)}
                             disabled={isSaving}
-                            className="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-[11px] font-semibold flex items-center gap-1 transition disabled:opacity-50"
+                            className={`px-3 py-1.5 rounded-lg text-[11px] font-semibold flex items-center gap-1 transition disabled:opacity-50 ${
+                              isModified
+                                ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm ring-2 ring-emerald-500/30'
+                                : 'bg-slate-900 hover:bg-slate-800 text-white'
+                            }`}
                           >
                             <Save className="w-3.5 h-3.5" />
-                            <span>{isSaving ? '저장...' : '저장'}</span>
+                            <span>{isSaving ? '저장...' : isModified ? '저장 필요' : '저장'}</span>
                           </button>
                         </div>
                       </td>

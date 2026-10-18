@@ -96,12 +96,13 @@ export async function setupDepartmentPassword(deptName: string, newPass: string)
   if (!store.departmentPasswords) {
     store.departmentPasswords = {};
   }
-  store.departmentPasswords[deptName] = newPass;
+  const trimmed = (newPass || '').trim();
+  if (trimmed) {
+    store.departmentPasswords[deptName] = trimmed;
+  } else {
+    delete store.departmentPasswords[deptName];
+  }
   saveAuthStore(store);
-
-  try {
-    await supabase.from('departments').update({ password: newPass } as any).eq('department', deptName);
-  } catch (err) {}
 }
 
 export function getAllDepartmentPasswords(): Record<string, string> {
@@ -114,7 +115,14 @@ export async function saveAllDepartmentPasswords(map: Record<string, string>): P
   if (!store.departmentPasswords) {
     store.departmentPasswords = {};
   }
-  Object.assign(store.departmentPasswords, map);
+  for (const [dept, pass] of Object.entries(map)) {
+    const trimmed = (pass || '').trim();
+    if (trimmed) {
+      store.departmentPasswords[dept] = trimmed;
+    } else {
+      delete store.departmentPasswords[dept];
+    }
+  }
   saveAuthStore(store);
 }
 

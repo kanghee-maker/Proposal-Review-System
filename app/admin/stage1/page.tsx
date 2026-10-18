@@ -63,6 +63,13 @@ function AdminStage1Content() {
       .then((sessionList: EvaluationSession[]) => {
         setSessions(sessionList);
 
+        if (!sessionList || sessionList.length === 0) {
+          setSelectedSessionId('');
+          setProposals([]);
+          setLoading(false);
+          return;
+        }
+
         const urlSessionId = searchParams.get('session_id');
         let initialId = urlSessionId;
 
@@ -81,17 +88,23 @@ function AdminStage1Content() {
           localStorage.setItem('gcuc_active_session_id', initialId);
         }
       })
-      .catch(err => console.error(err));
+      .catch(err => {
+        console.error(err);
+        setLoading(false);
+      });
   }, [searchParams]);
 
   // 2. 선택된 회차의 제안 로드
   const fetchProposals = (sessionId: string) => {
-    if (!sessionId) return;
+    if (!sessionId) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
-    fetch(`/api/proposals?session_id=${encodeURIComponent(sessionId)}`)
+    fetch(`/api/proposals?session_id=${encodeURIComponent(sessionId)}&_t=${Date.now()}`, { cache: 'no-store' })
       .then(res => res.json())
       .then((data: Proposal[]) => {
-        setProposals(data);
+        setProposals(Array.isArray(data) ? data : []);
         setLoading(false);
       })
       .catch(err => {
@@ -103,6 +116,8 @@ function AdminStage1Content() {
   useEffect(() => {
     if (selectedSessionId) {
       fetchProposals(selectedSessionId);
+    } else {
+      setLoading(false);
     }
   }, [selectedSessionId]);
 
@@ -459,9 +474,13 @@ function AdminStage1Content() {
         </div>
       </div>
 
-      {/* 4. 과천도시공사 제안심사(1차) 테이블 (이미지 1 하단 테이블 완벽 구현) */}
       <div className="bg-white rounded-b-xl border border-slate-200 shadow-sm overflow-hidden">
-        {loading ? (
+        {sessions.length === 0 ? (
+          <div className="p-12 text-center text-xs text-slate-500">
+            <p className="font-semibold text-slate-700 mb-1">등록된 제안평가 회차가 없습니다.</p>
+            <p className="text-slate-400">관리자 대시보드에서 새로운 제안평가를 생성해주세요.</p>
+          </div>
+        ) : loading ? (
           <div className="p-12 text-center text-xs text-slate-500">
             제안 심사 데이터를 불러오는 중...
           </div>

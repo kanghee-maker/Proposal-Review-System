@@ -23,6 +23,14 @@ function EvaluatorDashboardContent() {
       .then((sessionList: EvaluationSession[]) => {
         setSessions(sessionList);
 
+        if (!sessionList || sessionList.length === 0) {
+          setSelectedSessionId('');
+          setProposals([]);
+          setEvaluations([]);
+          setLoading(false);
+          return;
+        }
+
         const urlSessionId = searchParams.get('session_id');
         let initialId = urlSessionId;
 
@@ -39,7 +47,10 @@ function EvaluatorDashboardContent() {
           localStorage.setItem('gcuc_active_session_id', initialId);
         }
       })
-      .catch(err => console.error(err));
+      .catch(err => {
+        console.error(err);
+        setLoading(false);
+      });
   }, [searchParams]);
 
   // 2. 부서 및 선택 세션 데이터 로드
@@ -53,18 +64,20 @@ function EvaluatorDashboardContent() {
     if (d && selectedSessionId) {
       setLoading(true);
       Promise.all([
-        fetch(`/api/proposals?department=${encodeURIComponent(d)}&session_id=${encodeURIComponent(selectedSessionId)}`).then(r => r.json()),
-        fetch(`/api/evaluations?session_id=${encodeURIComponent(selectedSessionId)}`).then(r => r.json())
+        fetch(`/api/proposals?department=${encodeURIComponent(d)}&session_id=${encodeURIComponent(selectedSessionId)}&_t=${Date.now()}`, { cache: 'no-store' }).then(r => r.json()),
+        fetch(`/api/evaluations?session_id=${encodeURIComponent(selectedSessionId)}&_t=${Date.now()}`, { cache: 'no-store' }).then(r => r.json())
       ])
         .then(([pList, eList]) => {
-          setProposals(pList);
-          setEvaluations(eList);
+          setProposals(Array.isArray(pList) ? pList : []);
+          setEvaluations(Array.isArray(eList) ? eList : []);
           setLoading(false);
         })
         .catch(err => {
           console.error(err);
           setLoading(false);
         });
+    } else {
+      setLoading(false);
     }
   }, [searchParams, selectedSessionId]);
 
@@ -129,7 +142,12 @@ function EvaluatorDashboardContent() {
 
       {/* Proposals List */}
       <div className="space-y-3">
-        {loading ? (
+        {sessions.length === 0 ? (
+          <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center text-slate-500 text-xs">
+            <p className="font-semibold text-slate-700 mb-1">등록된 제안평가 회차가 없습니다.</p>
+            <p className="text-slate-400">관리자가 제안평가 회차를 등록하면 담당 제안이 표시됩니다.</p>
+          </div>
+        ) : loading ? (
           <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center text-slate-500 text-xs">
             담당 제안 목록을 불러오는 중...
           </div>
