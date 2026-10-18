@@ -219,7 +219,58 @@ export function saveSession(session: EvaluationSession): void {
 }
 
 // 4. 제안 목록 (Proposals)
-export async function getProposalsAsync(sessionId: string = DEFAULT_SESSION_ID): Promise<Proposal[]> {
+export async function seedDefaultProposalsForSessionAsync(sessionId: string): Promise<Proposal[]> {
+  const rawProposals = readJson<any[]>('proposals_2026_structured.json', []);
+  const proposals: Proposal[] = rawProposals.map((item, index) => {
+    const id = sessionId === DEFAULT_SESSION_ID ? `prop-${item.no || index + 1}` : `${sessionId}-prop-${item.no || index + 1}`;
+    return {
+      id,
+      session_id: sessionId,
+      seq_no: item.no,
+      board_no: item.board_no || '',
+      proposer_name: item.proposer || '',
+      proposer_rank: item.proposer_rank || '',
+      proposer_division: item.proposer_division || '',
+      proposer_office: item.proposer_office || '',
+      proposer_department: item.proposer_department || '',
+      proposer_raw_dept: item.proposer_raw_dept || '',
+      proposal_type: item.proposal_type || '지정제안',
+      category: item.category || '업무개선',
+      assigned_division: item.assigned_division || '',
+      assigned_office: item.assigned_office || '',
+      assigned_department: item.assigned_department || '',
+      assigned_raw_dept: item.assigned_raw_dept || '',
+      submitted_at: item.submitted_at || '',
+      title: item.title || '',
+      is_duplicate: item.is_duplicate || '',
+      duplicate_title: item.duplicate_title || '',
+      status: '미평가' as const
+    };
+  });
+
+  // Local store sync
+  let currentStore = readJson<Proposal[]>('proposals_store.json', []);
+  const existingIds = new Set(currentStore.map(p => p.id));
+  const toAdd = proposals.filter(p => !existingIds.has(p.id));
+  if (toAdd.length > 0) {
+    currentStore.push(...toAdd);
+    writeJson('proposals_store.json', currentStore);
+  }
+
+  // Supabase sync in chunks
+  try {
+    for (let i = 0; i < proposals.length; i += 50) {
+      const chunk = proposals.slice(i, i + 50);
+      await supabase.from('proposals').upsert(chunk);
+    }
+  } catch (err) {
+    console.error('Error seeding proposals to Supabase:', err);
+  }
+
+  return proposals;
+}
+
+export async function getProposalsAsync(sessionId?: string): Promise<Proposal[]> {
   try {
     let query = supabase.from('proposals').select('*').order('seq_no', { ascending: true });
     if (sessionId) {
@@ -251,16 +302,20 @@ export async function getProposalsAsync(sessionId: string = DEFAULT_SESSION_ID):
         duplicate_title: p.duplicate_title,
         status: p.status
       }));
+    } else if (sessionId) {
+      // If 0 proposals exist for this requested session, auto-seed default proposals
+      const seeded = await seedDefaultProposalsForSessionAsync(sessionId);
+      if (seeded && seeded.length > 0) return seeded;
     }
   } catch (err) {}
   return getProposals(sessionId);
 }
 
-export function getProposals(sessionId: string = DEFAULT_SESSION_ID): Proposal[] {
+export function getProposals(sessionId?: string): Proposal[] {
   let proposals = readJson<Proposal[]>('proposals_store.json', []);
   if (proposals.length === 0) {
     const rawProposals = readJson<any[]>('proposals_2026_structured.json', []);
-    const evaluations = getEvaluations(sessionId);
+    const evaluations = getEvaluations(DEFAULT_SESSION_ID);
     const evalMap = new Map(evaluations.map(e => [e.proposal_id, e]));
 
     proposals = rawProposals.map((item, index) => {
@@ -273,7 +328,7 @@ export function getProposals(sessionId: string = DEFAULT_SESSION_ID): Proposal[]
 
       return {
         id,
-        session_id: sessionId,
+        session_id: DEFAULT_SESSION_ID,
         seq_no: item.no,
         board_no: item.board_no || '',
         proposer_name: item.proposer || '',
@@ -297,7 +352,42 @@ export function getProposals(sessionId: string = DEFAULT_SESSION_ID): Proposal[]
     });
     writeJson('proposals_store.json', proposals);
   }
-  return proposals.filter(p => !sessionId || p.session_id === sessionId);
+
+  if (sessionId) {
+    const filtered = proposals.filter(p => p.session_id === sessionId);
+    if (filtered.length === 0) {
+      const rawProposals = readJson<any[]>('proposals_2026_structured.json', []);
+      const newProposals: Proposal[] = rawProposals.map((item, index) => ({
+        id: `${sessionId}-prop-${item.no || index + 1}`,
+        session_id: sessionId,
+        seq_no: item.no,
+        board_no: item.board_no || '',
+        proposer_name: item.proposer || '',
+        proposer_rank: item.proposer_rank || '',
+        proposer_division: item.proposer_division || '',
+        proposer_office: item.proposer_office || '',
+        proposer_department: item.proposer_department || '',
+        proposer_raw_dept: item.proposer_raw_dept || '',
+        proposal_type: item.proposal_type || '지정제안',
+        category: item.category || '업무개선',
+        assigned_division: item.assigned_division || '',
+        assigned_office: item.assigned_office || '',
+        assigned_department: item.assigned_department || '',
+        assigned_raw_dept: item.assigned_raw_dept || '',
+        submitted_at: item.submitted_at || '',
+        title: item.title || '',
+        is_duplicate: item.is_duplicate || '',
+        duplicate_title: item.duplicate_title || '',
+        status: '미평가' as const
+      }));
+      proposals.push(...newProposals);
+      writeJson('proposals_store.json', proposals);
+      return newProposals;
+    }
+    return filtered;
+  }
+
+  return proposals;
 }
 
 export async function updateProposalAsync(updated: Proposal): Promise<void> {
@@ -314,7 +404,7 @@ export async function updateProposalAsync(updated: Proposal): Promise<void> {
 }
 
 export function updateProposal(updated: Proposal): void {
-  const proposals = getProposals();
+  const proposals = readJson<Proposal[]>('proposals_store.json', []);
   const idx = proposals.findIndex(p => p.id === updated.id);
   if (idx >= 0) {
     proposals[idx] = updated;
@@ -375,7 +465,7 @@ export async function saveEvaluationAsync(evaluation: Evaluation): Promise<void>
 }
 
 export function saveEvaluation(evaluation: Evaluation): void {
-  const evals = getEvaluations();
+  const evals = readJson<Evaluation[]>('evaluations_store.json', []);
   const idx = evals.findIndex(e => e.proposal_id === evaluation.proposal_id && e.session_id === evaluation.session_id);
   if (idx >= 0) {
     evals[idx] = evaluation;
@@ -384,7 +474,7 @@ export function saveEvaluation(evaluation: Evaluation): void {
   }
   writeJson('evaluations_store.json', evals);
 
-  const proposals = getProposals(evaluation.session_id);
+  const proposals = readJson<Proposal[]>('proposals_store.json', []);
   const pIdx = proposals.findIndex(p => p.id === evaluation.proposal_id);
   if (pIdx >= 0) {
     proposals[pIdx].status = evaluation.is_submitted ? '평가완료' : '평가작성중';

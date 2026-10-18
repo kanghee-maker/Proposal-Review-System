@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getSessionsAsync, saveSessionAsync, updateSessionAsync, getDefaultCriteria } from '@/lib/store';
+import { getSessionsAsync, saveSessionAsync, updateSessionAsync, getDefaultCriteria, seedDefaultProposalsForSessionAsync } from '@/lib/store';
 
 export async function GET() {
   const sessions = await getSessionsAsync();
@@ -16,10 +16,16 @@ export async function POST(req: Request) {
       description: body.description || '',
       status: 'ACTIVE' as const,
       created_at: new Date().toISOString(),
-      proposals_count: body.proposals_count || 0,
+      proposals_count: body.proposals_count || 137,
       criteria: body.criteria && body.criteria.length > 0 ? body.criteria : getDefaultCriteria()
     };
     await saveSessionAsync(newSession);
+
+    // 기본 제안 탑재 또는 proposals_count > 0 인 경우 제안 데이터 자동 생성 및 Supabase 연동
+    if (body.proposals_count !== 0) {
+      await seedDefaultProposalsForSessionAsync(newSession.id);
+    }
+
     return NextResponse.json({ success: true, session: newSession });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });

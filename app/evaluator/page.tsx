@@ -4,15 +4,45 @@ import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Building2, CheckCircle2, Clock, AlertCircle, ChevronRight, FileText, Check } from 'lucide-react';
-import { Proposal, Evaluation } from '@/lib/types';
+import { Proposal, Evaluation, EvaluationSession } from '@/lib/types';
+import { Layers } from 'lucide-react';
 
 function EvaluatorDashboardContent() {
   const searchParams = useSearchParams();
   const [dept, setDept] = useState<string>('');
+  const [sessions, setSessions] = useState<EvaluationSession[]>([]);
+  const [selectedSessionId, setSelectedSessionId] = useState<string>('');
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
+  // 1. 세션 목록 로드
+  useEffect(() => {
+    fetch('/api/sessions')
+      .then(res => res.json())
+      .then((sessionList: EvaluationSession[]) => {
+        setSessions(sessionList);
+
+        const urlSessionId = searchParams.get('session_id');
+        let initialId = urlSessionId;
+
+        if (!initialId && typeof window !== 'undefined') {
+          initialId = localStorage.getItem('gcuc_active_session_id') || '';
+        }
+
+        if (!initialId || !sessionList.some(s => s.id === initialId)) {
+          initialId = sessionList[0]?.id || '';
+        }
+
+        setSelectedSessionId(initialId);
+        if (initialId && typeof window !== 'undefined') {
+          localStorage.setItem('gcuc_active_session_id', initialId);
+        }
+      })
+      .catch(err => console.error(err));
+  }, [searchParams]);
+
+  // 2. 부서 및 선택 세션 데이터 로드
   useEffect(() => {
     let d = searchParams.get('dept');
     if (!d && typeof window !== 'undefined') {
@@ -20,10 +50,11 @@ function EvaluatorDashboardContent() {
     }
     setDept(d || '');
 
-    if (d) {
+    if (d && selectedSessionId) {
+      setLoading(true);
       Promise.all([
-        fetch(`/api/proposals?department=${encodeURIComponent(d)}`).then(r => r.json()),
-        fetch('/api/evaluations').then(r => r.json())
+        fetch(`/api/proposals?department=${encodeURIComponent(d)}&session_id=${encodeURIComponent(selectedSessionId)}`).then(r => r.json()),
+        fetch(`/api/evaluations?session_id=${encodeURIComponent(selectedSessionId)}`).then(r => r.json())
       ])
         .then(([pList, eList]) => {
           setProposals(pList);
@@ -35,7 +66,7 @@ function EvaluatorDashboardContent() {
           setLoading(false);
         });
     }
-  }, [searchParams]);
+  }, [searchParams, selectedSessionId]);
 
   const evalMap = new Map(evaluations.map(e => [e.proposal_id, e]));
 
@@ -59,15 +90,39 @@ function EvaluatorDashboardContent() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3 text-xs">
-          <div className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5">
-            배정 제안: <strong className="text-slate-900 font-bold">{proposals.length}건</strong>
-          </div>
-          <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl px-4 py-2.5">
-            제출 완료: <strong className="font-bold">{completedCount}건</strong>
-          </div>
-          <div className="bg-amber-50 border border-amber-200 text-amber-700 rounded-xl px-4 py-2.5">
-            미작성: <strong className="font-bold">{pendingCount}건</strong>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 text-xs">
+          {sessions.length > 1 && (
+            <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5">
+              <Layers className="w-3.5 h-3.5 text-slate-500" />
+              <select
+                value={selectedSessionId}
+                onChange={(e) => {
+                  const sId = e.target.value;
+                  setSelectedSessionId(sId);
+                  if (typeof window !== 'undefined') {
+                    localStorage.setItem('gcuc_active_session_id', sId);
+                  }
+                }}
+                className="bg-transparent font-bold text-slate-800 text-xs focus:outline-none cursor-pointer"
+              >
+                {sessions.map(s => (
+                  <option key={s.id} value={s.id}>
+                    [{s.year}년] {s.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+          <div className="flex items-center gap-2">
+            <div className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
+              배정: <strong className="text-slate-900 font-bold">{proposals.length}건</strong>
+            </div>
+            <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl px-3 py-2">
+              완료: <strong className="font-bold">{completedCount}건</strong>
+            </div>
+            <div className="bg-amber-50 border border-amber-200 text-amber-700 rounded-xl px-3 py-2">
+              미작성: <strong className="font-bold">{pendingCount}건</strong>
+            </div>
           </div>
         </div>
       </div>

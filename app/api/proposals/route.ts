@@ -4,11 +4,17 @@ import { getProposalsAsync, updateProposalAsync } from '@/lib/store';
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const sessionId = searchParams.get('session_id') || undefined;
+  const proposalId = searchParams.get('id');
   const department = searchParams.get('department');
   const status = searchParams.get('status');
   const search = searchParams.get('search');
 
   let list = await getProposalsAsync(sessionId);
+
+  if (proposalId) {
+    const single = list.find(p => p.id === proposalId);
+    return NextResponse.json(single || null);
+  }
 
   if (department) {
     list = list.filter(p => 

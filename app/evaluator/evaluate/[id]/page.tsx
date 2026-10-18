@@ -23,12 +23,11 @@ export default function EvaluateProposalPage() {
 
   useEffect(() => {
     Promise.all([
-      fetch('/api/proposals').then(r => r.json()),
-      fetch(`/api/evaluations?proposal_id=${proposalId}`).then(r => r.json())
+      fetch(`/api/proposals?id=${encodeURIComponent(proposalId)}`).then(r => r.json()),
+      fetch(`/api/evaluations?proposal_id=${encodeURIComponent(proposalId)}`).then(r => r.json())
     ])
-      .then(([proposals, ev]) => {
-        const found = proposals.find((p: Proposal) => p.id === proposalId);
-        setProposal(found || null);
+      .then(([prop, ev]) => {
+        setProposal(prop || null);
         if (ev) {
           setEvaluation(ev);
           setResult(ev.answers?.result || '');
