@@ -460,6 +460,24 @@ function lookupDepartmentOrg(deptName: any): { division: string; office: string;
   return { division: '', office: '', department: dStr };
 }
 
+function getExcelCol(item: Record<string, any>, exactKeys: string[], prefixPatterns: string[] = []): string {
+  if (!item || typeof item !== 'object') return '';
+  for (const k of exactKeys) {
+    if (item[k] !== undefined && item[k] !== null && String(item[k]).trim() !== '') {
+      return String(item[k]).trim();
+    }
+  }
+  const keys = Object.keys(item);
+  for (const pat of prefixPatterns) {
+    const normPat = pat.replace(/\s+/g, '');
+    const foundKey = keys.find(k => k.replace(/\s+/g, '').startsWith(normPat));
+    if (foundKey && item[foundKey] !== undefined && item[foundKey] !== null && String(item[foundKey]).trim() !== '') {
+      return String(item[foundKey]).trim();
+    }
+  }
+  return '';
+}
+
 export async function saveCustomProposalsForSessionAsync(
   sessionId: string,
   rawList: any[]
@@ -468,69 +486,44 @@ export async function saveCustomProposalsForSessionAsync(
     const seq = Number(item.seq_no ?? item['연번'] ?? item['순번'] ?? (index + 1));
     const id = `${sessionId}-prop-${seq || (index + 1)}`;
 
-    // Resolve proposer org if missing
-    let pDivision = String(
-      item.proposer_division ||
-      item['제안자_본부/부문'] ||
-      item['제안자_본부/부문 (Division)'] ||
-      item['제안자_본부'] ||
-      item['제안자본부'] ||
-      ''
-    ).trim();
-    let pOffice = String(
-      item.proposer_office ||
-      item['제안자_처/실/단'] ||
-      item['제안자_처/실/단 (Office)'] ||
-      item['제안자_처실단'] ||
-      item['제안자처'] ||
-      ''
-    ).trim();
-    let pDept = String(
-      item.proposer_department ||
-      item['제안자_부'] ||
-      item['제안자_부 (Department)'] ||
-      item['제안자_부서'] ||
-      item['제안자부'] ||
-      item['소속부서'] ||
-      item['소속'] ||
-      ''
-    ).trim();
+    // Resolve proposer org
+    let pDivision = getExcelCol(
+      item,
+      ['proposer_division', '제안자_본부/부문', '제안자_본부/부문 (Division)', '제안자_본부', '제안자본부'],
+      ['제안자_본부']
+    );
+    let pOffice = getExcelCol(
+      item,
+      ['proposer_office', '제안자_처/실/단', '제안자_처/실/단 (Office)', '제안자_처실단', '제안자처'],
+      ['제안자_처']
+    );
+    let pDept = getExcelCol(
+      item,
+      ['proposer_department', '제안자_부', '제안자_부 (Department)', '제안자_부서', '제안자부', '소속부서', '소속'],
+      ['제안자_부(', '제안자_부 ']
+    );
     if ((!pDivision || !pOffice) && pDept) {
       const resolved = lookupDepartmentOrg(pDept);
       if (!pDivision) pDivision = resolved.division;
       if (!pOffice) pOffice = resolved.office;
     }
 
-    // Resolve assigned (execution) org if missing
-    let aDivision = String(
-      item.assigned_division ||
-      item['실행(평가)_본부/부문'] ||
-      item['실행(평가)_본부/부문 (Division)'] ||
-      item['실행_본부/부문'] ||
-      item['실행본부'] ||
-      item['평가본부'] ||
-      ''
-    ).trim();
-    let aOffice = String(
-      item.assigned_office ||
-      item['실행(평가)_처/실/단'] ||
-      item['실행(평가)_처/실/단 (Office)'] ||
-      item['실행_처/실/단'] ||
-      item['실행처'] ||
-      item['평가처'] ||
-      ''
-    ).trim();
-    let aDept = String(
-      item.assigned_department ||
-      item['실행(평가)_부'] ||
-      item['실행(평가)_부 (Department)'] ||
-      item['실행_부'] ||
-      item['실행부서'] ||
-      item['담당부서'] ||
-      item['평가부서'] ||
-      item['부서'] ||
-      ''
-    ).trim();
+    // Resolve assigned (execution) org
+    let aDivision = getExcelCol(
+      item,
+      ['assigned_division', '실행(평가)_본부/부문', '실행(평가)_본부/부문 (Division)', '실행_본부/부문', '실행본부', '평가본부'],
+      ['실행(평가)_본부', '실행_본부']
+    );
+    let aOffice = getExcelCol(
+      item,
+      ['assigned_office', '실행(평가)_처/실/단', '실행(평가)_처/실/단 (Office)', '실행_처/실/단', '실행처', '평가처'],
+      ['실행(평가)_처', '실행_처']
+    );
+    let aDept = getExcelCol(
+      item,
+      ['assigned_department', '실행(평가)_부', '실행(평가)_부 (Department)', '실행_부', '실행부서', '담당부서', '평가부서', '부서'],
+      ['실행(평가)_부(', '실행(평가)_부 ', '실행_부']
+    );
     if ((!aDivision || !aOffice) && aDept) {
       const resolved = lookupDepartmentOrg(aDept);
       if (!aDivision) aDivision = resolved.division;
@@ -542,24 +535,24 @@ export async function saveCustomProposalsForSessionAsync(
       session_id: sessionId,
       seq_no: seq,
       board_no: String(item.board_no ?? item['게시판번호'] ?? item['글번호'] ?? ''),
-      proposer_name: String(item.proposer_name || item['제안자'] || item['제안자명'] || item['성명'] || item['이름'] || '').trim(),
-      proposer_rank: String(item.proposer_rank || item['직급'] || item['직책'] || '').trim(),
+      proposer_name: getExcelCol(item, ['proposer_name', '제안자', '제안자명', '성명', '이름']),
+      proposer_rank: getExcelCol(item, ['proposer_rank', '직급', '직책']),
       proposer_division: pDivision,
       proposer_office: pOffice,
       proposer_department: pDept,
-      proposer_raw_dept: String(item.proposer_raw_dept || item['제안자_원소속부서'] || item['제안자_기존소속표기'] || pDept).trim(),
-      proposal_type: String(item.proposal_type || item['제안구분'] || item['구분'] || '지정제안').trim(),
-      category: String(item.category || item['분야'] || item['제안분야'] || '업무개선').trim(),
+      proposer_raw_dept: getExcelCol(item, ['proposer_raw_dept', '제안자_원소속부서', '제안자_기존소속표기'], ['제안자_기존', '제안자_원소속']) || pDept,
+      proposal_type: getExcelCol(item, ['proposal_type', '제안구분', '구분']) || '지정제안',
+      category: getExcelCol(item, ['category', '분야', '제안분야']) || '업무개선',
       assigned_division: aDivision,
       assigned_office: aOffice,
       assigned_department: aDept,
-      assigned_raw_dept: String(item.assigned_raw_dept || item['실행_원부서명'] || item['실행(평가)_기존부서표기'] || aDept).trim(),
-      submitted_at: String(item.submitted_at || item['접수일자'] || item['등록일자'] || new Date().toISOString().split('T')[0]).trim(),
-      title: String(item.title || item['제안제목'] || item['제목'] || `제안 ${seq}`).trim(),
-      content: String(item.content || item['제안내용'] || item['내용'] || '').trim(),
-      expected_effect: String(item.expected_effect || item['기대효과'] || '').trim(),
-      is_duplicate: String(item.is_duplicate || item['중복제안여부'] || item['중복제안 여부'] || item['중복여부'] || '').trim(),
-      duplicate_title: String(item.duplicate_title || item['중복제안제목'] || item['중복제안 제목'] || item['중복제목'] || '').trim(),
+      assigned_raw_dept: getExcelCol(item, ['assigned_raw_dept', '실행_원부서명', '실행(평가)_기존부서표기'], ['실행(평가)_기존', '실행_원부서']) || aDept,
+      submitted_at: getExcelCol(item, ['submitted_at', '접수일자', '등록일자']) || new Date().toISOString().split('T')[0],
+      title: getExcelCol(item, ['title', '제안제목', '제목']) || `제안 ${seq}`,
+      content: getExcelCol(item, ['content', '제안내용', '내용']),
+      expected_effect: getExcelCol(item, ['expected_effect', '기대효과']),
+      is_duplicate: getExcelCol(item, ['is_duplicate', '중복제안여부', '중복제안 여부', '중복여부'], ['중복제안여부', '중복여부']),
+      duplicate_title: getExcelCol(item, ['duplicate_title', '중복제안제목', '중복제안 제목', '중복제목'], ['중복제안제목', '중복제목']),
       status: '미평가' as const,
       contribution_rate: 100
     };

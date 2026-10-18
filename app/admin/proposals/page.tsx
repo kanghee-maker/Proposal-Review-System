@@ -400,7 +400,9 @@ function AdminProposalsContent() {
                       </td>
                       <td className="py-3 px-3 text-slate-600">
                         <span className="text-[11px] text-slate-400 block">{p.proposer_division}</span>
-                        {p.proposer_office} {p.proposer_department}
+                        {p.proposer_office === p.proposer_department
+                          ? (p.proposer_department || p.proposer_raw_dept || '-')
+                          : (`${p.proposer_office || ''} ${p.proposer_department || ''}`.trim() || p.proposer_raw_dept || '-')}
                       </td>
                       <td className="py-3 px-3">
                         <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[11px] font-medium">
@@ -409,7 +411,11 @@ function AdminProposalsContent() {
                       </td>
                       <td className="py-3 px-3">
                         <span className="text-[11px] text-sky-700 font-bold block">{p.assigned_division}</span>
-                        <strong className="text-slate-900">{p.assigned_office} {p.assigned_department}</strong>
+                        <strong className="text-slate-900">
+                          {p.assigned_office === p.assigned_department
+                            ? (p.assigned_department || p.assigned_raw_dept || '-')
+                            : (`${p.assigned_office || ''} ${p.assigned_department || ''}`.trim() || p.assigned_raw_dept || '-')}
+                        </strong>
                         {p.transfer_requested && (
                           <span className="inline-block mt-1 text-[10px] bg-amber-100 text-amber-800 border border-amber-300 px-1.5 py-0.5 rounded font-bold">
                             🔄 이관요청: {p.transfer_target_dept}

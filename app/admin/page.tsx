@@ -1074,7 +1074,13 @@ export default function AdminDashboardPage() {
                                     const seq = row['연번'] || row['순번'] || row.seq_no || (idx + 1);
                                     const proposer = row['제안자'] || row['제안자명'] || row.proposer_name || '-';
                                     const title = row['제안제목'] || row['제목'] || row.title || '-';
-                                    const dept = row['실행(평가)_부'] || row['실행부서'] || row['담당부서'] || row.assigned_department || '-';
+                                    const dept =
+                                      row['실행(평가)_부'] ||
+                                      row['실행(평가)_부 (Department)'] ||
+                                      row['실행부서'] ||
+                                      row['담당부서'] ||
+                                      row.assigned_department ||
+                                      '-';
                                     return (
                                       <div key={idx} className="p-2 flex items-center gap-2 hover:bg-slate-50">
                                         <span className="w-8 font-mono text-slate-400 font-bold text-center">#{seq}</span>
