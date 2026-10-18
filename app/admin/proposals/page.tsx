@@ -1,10 +1,17 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { FileText, Search, Building2, User, ChevronRight, Edit, Check } from 'lucide-react';
-import { Proposal, Department } from '@/lib/types';
+import React, { useState, useEffect, Suspense } from 'react';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { FileText, Search, Building2, User, ChevronRight, Edit, Check, Layers, Clock } from 'lucide-react';
+import { Proposal, Department, EvaluationSession } from '@/lib/types';
 
-export default function AdminProposalsPage() {
+function AdminProposalsContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const [sessions, setSessions] = useState<EvaluationSession[]>([]);
+  const [selectedSessionId, setSelectedSessionId] = useState<string>('');
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -22,9 +29,44 @@ export default function AdminProposalsPage() {
   const [editStatus, setEditStatus] = useState<string>('미평가');
   const [saving, setSaving] = useState<boolean>(false);
 
-  const fetchProposals = () => {
+  // 1. 회차 목록 로드 및 현재 회차 결정
+  useEffect(() => {
+    fetch('/api/sessions')
+      .then(res => res.json())
+      .then((sessionList: EvaluationSession[]) => {
+        setSessions(sessionList);
+
+        const urlSessionId = searchParams.get('session_id');
+        let initialId = urlSessionId;
+
+        if (!initialId && typeof window !== 'undefined') {
+          initialId = localStorage.getItem('gcuc_active_session_id') || '';
+        }
+
+        if (!initialId || !sessionList.some(s => s.id === initialId)) {
+          initialId = sessionList[0]?.id || '';
+        }
+
+        setSelectedSessionId(initialId);
+        if (initialId && typeof window !== 'undefined') {
+          localStorage.setItem('gcuc_active_session_id', initialId);
+        }
+      })
+      .catch(err => console.error(err));
+
+    fetch('/api/organization')
+      .then(res => res.json())
+      .then(data => {
+        if (data.departments) setDepartments(data.departments);
+      })
+      .catch(err => console.error(err));
+  }, [searchParams]);
+
+  // 2. 선택된 회차의 제안 목록 로드
+  const fetchProposalsForSession = (sessionId: string) => {
+    if (!sessionId) return;
     setLoading(true);
-    fetch('/api/proposals')
+    fetch(`/api/proposals?session_id=${encodeURIComponent(sessionId)}`)
       .then(res => res.json())
       .then(data => {
         setProposals(data);
@@ -37,14 +79,18 @@ export default function AdminProposalsPage() {
   };
 
   useEffect(() => {
-    fetchProposals();
-    fetch('/api/organization')
-      .then(res => res.json())
-      .then(data => {
-        if (data.departments) setDepartments(data.departments);
-      })
-      .catch(err => console.error(err));
-  }, []);
+    if (selectedSessionId) {
+      fetchProposalsForSession(selectedSessionId);
+    }
+  }, [selectedSessionId]);
+
+  const handleSessionChange = (newSessionId: string) => {
+    setSelectedSessionId(newSessionId);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('gcuc_active_session_id', newSessionId);
+    }
+    router.replace(`/admin/proposals?session_id=${encodeURIComponent(newSessionId)}`);
+  };
 
   const openEditModal = (p: Proposal) => {
     setSelectedProposal(p);
@@ -85,7 +131,7 @@ export default function AdminProposalsPage() {
       const data = await res.json();
       if (data.success) {
         setSelectedProposal(null);
-        fetchProposals();
+        fetchProposalsForSession(selectedSessionId);
       }
     } catch (err) {
       console.error(err);
@@ -94,6 +140,8 @@ export default function AdminProposalsPage() {
       setSaving(false);
     }
   };
+
+  const currentSession = sessions.find(s => s.id === selectedSessionId);
 
   const filtered = proposals.filter(p => {
     if (statusFilter !== '전체' && p.status !== statusFilter) return false;
@@ -112,15 +160,64 @@ export default function AdminProposalsPage() {
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      {/* Header */}
+      {/* 1. 제안평가 회차 선행 선택 바 */}
+      <div className="bg-white rounded-2xl border border-sky-200 p-4 sm:p-5 shadow-sm bg-gradient-to-r from-sky-50/70 via-white to-blue-50/40 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-2xl bg-sky-600 text-white flex items-center justify-center shadow-md shadow-sky-600/25 flex-shrink-0">
+            <Layers className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-[11px] font-bold text-sky-800 uppercase tracking-wider">
+                현재 선택된 제안평가 회차
+              </span>
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 flex items-center gap-1">
+                <Clock className="w-2.5 h-2.5" />
+                {currentSession?.status === 'ACTIVE' ? '진행중' : currentSession?.status}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <select
+                value={selectedSessionId}
+                onChange={(e) => handleSessionChange(e.target.value)}
+                className="bg-white border-2 border-sky-400 font-bold text-slate-900 text-sm sm:text-base rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-sky-500 shadow-sm cursor-pointer"
+              >
+                {sessions.map(s => (
+                  <option key={s.id} value={s.id}>
+                    [{s.year}년] {s.title} ({s.proposals_count}건)
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 text-xs flex-wrap">
+          <Link
+            href={`/admin/reports?session_id=${encodeURIComponent(selectedSessionId)}`}
+            className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold transition flex items-center gap-1.5 shadow-sm"
+          >
+            <span>이 회차 평가 취합 보기</span>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </Link>
+          <Link
+            href="/admin"
+            className="px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 font-semibold transition"
+          >
+            회차 관리
+          </Link>
+        </div>
+      </div>
+
+      {/* 2. 제안 목록 & 통계 카드 */}
       <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-lg sm:text-xl font-bold text-slate-900 flex items-center gap-2">
             <FileText className="w-5 h-5 text-sky-600 flex-shrink-0" />
-            제안 목록 및 평가 담당부서 관리
+            <span>[{currentSession?.title || '제안평가'}] 제안 목록 및 담당부서 배정</span>
           </h2>
           <p className="text-[11px] sm:text-xs text-slate-500 mt-1">
-            업로드된 전체 137건의 제안에 대해 담당부서(본부/처/부) 오배정 수정 및 0차 평가 상태를 관리합니다.
+            선택된 제안평가 건의 제안에 대해 담당부서(본부/처/부) 오배정 수정 및 0차 평가 상태를 관리합니다.
           </p>
         </div>
 
@@ -189,9 +286,12 @@ export default function AdminProposalsPage() {
       {/* Proposals Container */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         {loading ? (
-          <div className="py-16 text-center text-slate-500 text-xs">제안 목록을 불러오는 중...</div>
+          <div className="py-16 text-center text-slate-500 text-xs">
+            <div className="w-6 h-6 border-2 border-sky-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+            제안 목록을 불러오는 중...
+          </div>
         ) : filtered.length === 0 ? (
-          <div className="py-16 text-center text-slate-500 text-xs">조건에 해당하는 제안이 없습니다.</div>
+          <div className="py-16 text-center text-slate-500 text-xs">선택된 제안평가 건에 등록된 제안이 없습니다.</div>
         ) : (
           <>
             {/* 1. Desktop Table View (md 이상) */}
@@ -328,7 +428,7 @@ export default function AdminProposalsPage() {
         )}
       </div>
 
-      {/* 제안 세부 및 담당부서 재배정 모달 (모바일 반응형) */}
+      {/* 제안 세부 및 담당부서 재배정 모달 */}
       {selectedProposal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4">
           <div className="bg-white rounded-2xl max-w-xl w-full p-5 sm:p-6 shadow-2xl border border-slate-200 max-h-[92vh] overflow-y-auto">
@@ -444,5 +544,13 @@ export default function AdminProposalsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function AdminProposalsPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-xs text-slate-500">페이지 로딩 중...</div>}>
+      <AdminProposalsContent />
+    </Suspense>
   );
 }

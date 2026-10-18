@@ -388,9 +388,6 @@ export default function Home() {
                   onChange={(e) => setAdminPassword(e.target.value)}
                   className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
                 />
-                <p className="text-[11px] text-sky-400/80 mt-1.5">
-                  * 초기 기본 비밀번호: <strong className="text-sky-300">0423</strong>
-                </p>
               </div>
 
               {adminError && (

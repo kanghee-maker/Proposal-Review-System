@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getSessionsAsync, saveSessionAsync, getDefaultCriteria } from '@/lib/store';
+import { getSessionsAsync, saveSessionAsync, updateSessionAsync, getDefaultCriteria } from '@/lib/store';
 
 export async function GET() {
   const sessions = await getSessionsAsync();
@@ -21,6 +21,24 @@ export async function POST(req: Request) {
     };
     await saveSessionAsync(newSession);
     return NextResponse.json({ success: true, session: newSession });
+  } catch (err: any) {
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+  }
+}
+
+export async function PUT(req: Request) {
+  try {
+    const body = await req.json();
+    if (!body.id) {
+      return NextResponse.json({ success: false, error: '세션 ID가 필요합니다.' }, { status: 400 });
+    }
+
+    const updated = await updateSessionAsync(body);
+    if (!updated) {
+      return NextResponse.json({ success: false, error: '해당 세션을 찾을 수 없습니다.' }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true, session: updated });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }

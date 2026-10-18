@@ -55,9 +55,9 @@ export default function EvaluatorLayout({ children }: { children: React.ReactNod
       {/* Header */}
       <header className="bg-emerald-950 text-white shadow-md sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between">
-          <Link href="/evaluator" className="flex items-center gap-2 sm:gap-3">
+          <Link href="/" className="flex items-center gap-2 sm:gap-3 hover:opacity-90 transition" title="메인 포털(초기 화면)로 이동">
             <div className="bg-white p-1 rounded-lg shadow-sm flex items-center justify-center">
-              <img src="/images/logo.png" alt="과천도시공사 로고" className="h-5 sm:h-6 w-auto object-contain" />
+              <img src="/images/logo.png" alt="과천도시공사 로고" className="h-5 sm:h-6 w-auto object-contain cursor-pointer" />
             </div>
             <div>
               <h1 className="font-bold text-sm sm:text-base leading-tight tracking-tight text-white line-clamp-1">

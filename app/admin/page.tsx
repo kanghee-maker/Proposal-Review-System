@@ -2,15 +2,18 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Layers, Plus, Calendar, FileText, CheckCircle2, Clock, ArrowRight, Settings, Upload, Check } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Layers, Plus, Calendar, FileText, CheckCircle2, Clock, ArrowRight, Settings, Upload, Check, Edit, X, Sparkles, CheckCircle } from 'lucide-react';
 import { EvaluationSession, EvaluationCriteria } from '@/lib/types';
 
 export default function AdminDashboardPage() {
+  const router = useRouter();
   const [sessions, setSessions] = useState<EvaluationSession[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [isCreateOpen, setIsCreateOpen] = useState<boolean>(false);
+  const [activeSessionId, setActiveSessionId] = useState<string>('');
 
-  // 신규 세션 폼
+  // 1. 신규 세션 생성 모달 상태
+  const [isCreateOpen, setIsCreateOpen] = useState<boolean>(false);
   const [step, setStep] = useState<number>(1);
   const [title, setTitle] = useState<string>('2026년 하반기 혁신 제안 심사');
   const [year, setYear] = useState<string>('2026');
@@ -38,9 +41,17 @@ export default function AdminDashboardPage() {
       description: '부서장 서술형 타당성 검토 의견'
     }
   ]);
-
   const [newCritLabel, setNewCritLabel] = useState<string>('');
   const [newCritType, setNewCritType] = useState<'RADIO' | 'TEXT' | 'TEXTAREA'>('TEXT');
+
+  // 2. 세션 이름 및 정보 수정 모달 상태
+  const [isEditOpen, setIsEditOpen] = useState<boolean>(false);
+  const [editSessionId, setEditSessionId] = useState<string>('');
+  const [editTitle, setEditTitle] = useState<string>('');
+  const [editYear, setEditYear] = useState<string>('');
+  const [editDescription, setEditDescription] = useState<string>('');
+  const [editStatus, setEditStatus] = useState<'ACTIVE' | 'ARCHIVED' | 'UPCOMING'>('ACTIVE');
+  const [editSaving, setEditSaving] = useState<boolean>(false);
 
   const fetchSessions = () => {
     setLoading(true);
@@ -48,6 +59,15 @@ export default function AdminDashboardPage() {
       .then(res => res.json())
       .then(data => {
         setSessions(data);
+        if (typeof window !== 'undefined') {
+          const savedActive = localStorage.getItem('gcuc_active_session_id');
+          if (savedActive && data.some((s: EvaluationSession) => s.id === savedActive)) {
+            setActiveSessionId(savedActive);
+          } else if (data.length > 0) {
+            setActiveSessionId(data[0].id);
+            localStorage.setItem('gcuc_active_session_id', data[0].id);
+          }
+        }
         setLoading(false);
       })
       .catch(err => {
@@ -60,6 +80,62 @@ export default function AdminDashboardPage() {
     fetchSessions();
   }, []);
 
+  // 활성 세션 선택
+  const handleSelectActiveSession = (id: string) => {
+    setActiveSessionId(id);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('gcuc_active_session_id', id);
+    }
+  };
+
+  // 수정 모달 열기
+  const openEditModal = (s: EvaluationSession, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditSessionId(s.id);
+    setEditTitle(s.title);
+    setEditYear(s.year || '2026');
+    setEditDescription(s.description || '');
+    setEditStatus((s.status as any) || 'ACTIVE');
+    setIsEditOpen(true);
+  };
+
+  // 수정 제출
+  const handleUpdateSession = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editTitle.trim()) {
+      alert('제안평가 명칭을 입력해주세요.');
+      return;
+    }
+
+    setEditSaving(true);
+    try {
+      const res = await fetch('/api/sessions', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: editSessionId,
+          title: editTitle.trim(),
+          year: editYear.trim(),
+          description: editDescription.trim(),
+          status: editStatus
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setIsEditOpen(false);
+        fetchSessions();
+        alert('제안평가 정보가 성공적으로 수정되었습니다.');
+      } else {
+        alert(data.error || '수정 중 오류가 발생했습니다.');
+      }
+    } catch (err) {
+      alert('서버 통신 오류가 발생했습니다.');
+    } finally {
+      setEditSaving(false);
+    }
+  };
+
+  // 세션 생성
   const handleAddCriteria = () => {
     if (!newCritLabel.trim()) return;
     const newCrit: EvaluationCriteria = {
@@ -101,6 +177,10 @@ export default function AdminDashboardPage() {
         setIsCreateOpen(false);
         setStep(1);
         fetchSessions();
+        if (data.session?.id && typeof window !== 'undefined') {
+          localStorage.setItem('gcuc_active_session_id', data.session.id);
+          setActiveSessionId(data.session.id);
+        }
       }
     } catch (err) {
       console.error(err);
@@ -119,8 +199,7 @@ export default function AdminDashboardPage() {
           </div>
           <h2 className="text-2xl font-bold tracking-tight mb-2">제안평가 건 (Evaluation Rounds) 관리</h2>
           <p className="text-sm text-slate-300 max-w-xl">
-            관리자는 새로운 제안평가 건을 생성하여 대상 엑셀을 업로드하고, 부서별 0차 평가 기준을 설정하거나
-            이전에 진행된 제안평가 건을 선택하여 관리할 수 있습니다.
+            관리할 제안평가 건을 선택하여 제안 목록 및 부서 배정을 관리하거나, 0차 평가 취합 결과를 확인하고 명칭을 수정할 수 있습니다.
           </p>
         </div>
 
@@ -135,10 +214,15 @@ export default function AdminDashboardPage() {
 
       {/* Session Cards Grid */}
       <div>
-        <h3 className="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
-          <Calendar className="w-4 h-4 text-sky-600" />
-          현재 등록된 제안평가 건 ({sessions.length})
-        </h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-base font-bold text-slate-800 flex items-center gap-2">
+            <Calendar className="w-4 h-4 text-sky-600" />
+            <span>등록된 제안평가 회차 ({sessions.length})</span>
+          </h3>
+          <span className="text-xs text-slate-500">
+            * 각 제안평가 카드의 <strong className="text-sky-600">[제안 목록·배정]</strong> 또는 <strong className="text-slate-800">[평가 취합]</strong> 버튼을 누르면 해당 회차의 데이터가 선택됩니다.
+          </span>
+        </div>
 
         {loading ? (
           <div className="text-center py-16 text-slate-500 bg-white rounded-2xl border border-slate-200">
@@ -150,65 +234,189 @@ export default function AdminDashboardPage() {
           </div>
         ) : (
           <div className="grid md:grid-cols-2 gap-6">
-            {sessions.map((s) => (
-              <div
-                key={s.id}
-                className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md hover:border-sky-300 transition flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      {s.status === 'ACTIVE' ? '0차 부서평가 진행중' : s.status}
-                    </span>
-                    <span className="text-xs text-slate-400 font-mono">
-                      연도: {s.year}년
-                    </span>
+            {sessions.map((s) => {
+              const isCurrentActive = s.id === activeSessionId;
+              return (
+                <div
+                  key={s.id}
+                  onClick={() => handleSelectActiveSession(s.id)}
+                  className={`bg-white rounded-2xl border p-6 shadow-sm transition flex flex-col justify-between cursor-pointer ${
+                    isCurrentActive
+                      ? 'border-sky-500 ring-2 ring-sky-500/20 shadow-md'
+                      : 'border-slate-200 hover:border-slate-300 hover:shadow-md'
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        {isCurrentActive && (
+                          <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-sky-600 text-white flex items-center gap-1">
+                            <CheckCircle className="w-3 h-3" />
+                            현재 선택된 평가 건
+                          </span>
+                        )}
+                        <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {s.status === 'ACTIVE' ? '0차 부서평가 진행중' : s.status}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-slate-400 font-mono">
+                          {s.year}년
+                        </span>
+                        {/* 이름 수정 버튼 */}
+                        <button
+                          type="button"
+                          onClick={(e) => openEditModal(s, e)}
+                          className="px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-600 hover:text-sky-600 bg-slate-100 hover:bg-sky-50 border border-slate-200 transition flex items-center gap-1"
+                          title="제안평가 이름 및 정보 수정"
+                        >
+                          <Edit className="w-3.5 h-3.5" />
+                          <span>이름 수정</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <h4 className="text-lg font-bold text-slate-900 mb-2 leading-snug">
+                      {s.title}
+                    </h4>
+                    <p className="text-xs text-slate-500 mb-5 line-clamp-2">
+                      {s.description || '설명 없음'}
+                    </p>
+
+                    <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 grid grid-cols-2 gap-4 text-xs mb-6">
+                      <div>
+                        <span className="text-slate-400 block mb-0.5">평가 대상 제안</span>
+                        <strong className="text-base font-bold text-slate-800">{s.proposals_count}건</strong>
+                      </div>
+                      <div>
+                        <span className="text-slate-400 block mb-0.5">0차 평가항목</span>
+                        <strong className="text-base font-bold text-sky-700">{s.criteria ? s.criteria.length : 2}개 항목</strong>
+                      </div>
+                    </div>
                   </div>
 
-                  <h4 className="text-lg font-bold text-slate-900 mb-2 leading-snug">
-                    {s.title}
-                  </h4>
-                  <p className="text-xs text-slate-500 mb-5 line-clamp-2">
-                    {s.description || '설명 없음'}
-                  </p>
+                  <div className="flex items-center gap-3 pt-4 border-t border-slate-100">
+                    <Link
+                      href={`/admin/proposals?session_id=${s.id}`}
+                      onClick={() => handleSelectActiveSession(s.id)}
+                      className="flex-1 py-2.5 px-3 text-center rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-700 font-semibold text-xs transition flex items-center justify-center gap-1.5"
+                    >
+                      <FileText className="w-4 h-4" />
+                      <span>제안 목록·배정 ({s.proposals_count}건)</span>
+                    </Link>
 
-                  <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 grid grid-cols-2 gap-4 text-xs mb-6">
-                    <div>
-                      <span className="text-slate-400 block mb-0.5">평가 대상 제안</span>
-                      <strong className="text-base font-bold text-slate-800">{s.proposals_count}건</strong>
-                    </div>
-                    <div>
-                      <span className="text-slate-400 block mb-0.5">0차 평가항목</span>
-                      <strong className="text-base font-bold text-sky-700">{s.criteria ? s.criteria.length : 2}개 항목</strong>
-                    </div>
+                    <Link
+                      href={`/admin/reports?session_id=${s.id}`}
+                      onClick={() => handleSelectActiveSession(s.id)}
+                      className="flex-1 py-2.5 px-3 text-center rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs transition flex items-center justify-center gap-1.5"
+                    >
+                      <span>0차 평가 취합</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
                   </div>
                 </div>
-
-                <div className="flex items-center gap-3 pt-4 border-t border-slate-100">
-                  <Link
-                    href="/admin/proposals"
-                    className="flex-1 py-2.5 px-4 text-center rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-700 font-semibold text-xs transition flex items-center justify-center gap-1.5"
-                  >
-                    <FileText className="w-4 h-4" />
-                    <span>제안 목록 관리 (137건)</span>
-                  </Link>
-
-                  <Link
-                    href="/admin/reports"
-                    className="flex-1 py-2.5 px-4 text-center rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs transition flex items-center justify-center gap-1.5"
-                  >
-                    <span>평가 취합 &amp; 엑셀</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </Link>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
 
-      {/* 신규 제안평가 생성 위저드 모달 */}
+      {/* --- 모달: 제안평가 이름 및 정보 수정 --- */}
+      {isEditOpen && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 relative text-slate-800">
+            <button
+              onClick={() => setIsEditOpen(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-1 rounded-lg"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-10 h-10 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center">
+                <Edit className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">제안평가 정보 수정</h3>
+                <p className="text-xs text-slate-500">등록된 제안평가의 명칭 및 진행 정보를 수정합니다.</p>
+              </div>
+            </div>
+
+            <form onSubmit={handleUpdateSession} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  제안평가 명칭 (이름) <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  placeholder="예: 2026년 상반기 과천도시공사 제안 심사"
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">진행 연도</label>
+                  <input
+                    type="text"
+                    value={editYear}
+                    onChange={(e) => setEditYear(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">진행 상태</label>
+                  <select
+                    value={editStatus}
+                    onChange={(e: any) => setEditStatus(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  >
+                    <option value="ACTIVE">진행중 (ACTIVE)</option>
+                    <option value="UPCOMING">준비중 (UPCOMING)</option>
+                    <option value="ARCHIVED">마감/보관 (ARCHIVED)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">설명 및 세부 목적</label>
+                <textarea
+                  rows={3}
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  placeholder="제안평가 세부 내용을 입력하세요"
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                />
+              </div>
+
+              <div className="flex gap-2 pt-3">
+                <button
+                  type="button"
+                  onClick={() => setIsEditOpen(false)}
+                  className="w-1/3 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-slate-600 transition"
+                >
+                  취소
+                </button>
+                <button
+                  type="submit"
+                  disabled={editSaving}
+                  className="w-2/3 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-xs font-semibold text-white shadow-lg shadow-sky-600/25 transition disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>{editSaving ? '저장 중...' : '수정사항 저장'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* --- 모달: 신규 제안평가 생성 위저드 --- */}
       {isCreateOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200">
@@ -249,15 +457,15 @@ export default function AdminDashboardPage() {
                     />
                   </div>
                   <div>
-                    <label className="block font-semibold text-slate-700 mb-1">적용 조직도</label>
-                    <div className="bg-slate-100 border border-slate-200 rounded-xl px-3.5 py-2.5 text-slate-600 font-medium">
-                      2026_조직도 (과천도시공사 3단 계층)
-                    </div>
+                    <label className="block font-semibold text-slate-700 mb-1">상태</label>
+                    <span className="inline-block py-2.5 px-3 bg-slate-100 rounded-xl text-slate-600 font-semibold">
+                      ACTIVE (생성 즉시 평가 진행)
+                    </span>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">설명 및 안내사항</label>
+                  <label className="block font-semibold text-slate-700 mb-1">평가 목적 및 설명</label>
                   <textarea
                     rows={3}
                     value={description}
@@ -265,80 +473,126 @@ export default function AdminDashboardPage() {
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500"
                   />
                 </div>
+
+                <div className="flex justify-end gap-2 pt-4 border-t border-slate-100">
+                  <button
+                    onClick={() => setIsCreateOpen(false)}
+                    className="px-4 py-2 text-slate-600 font-semibold hover:bg-slate-100 rounded-xl"
+                  >
+                    취소
+                  </button>
+                  <button
+                    onClick={() => setStep(2)}
+                    className="px-5 py-2 bg-sky-600 hover:bg-sky-500 text-white font-semibold rounded-xl flex items-center gap-1 shadow-md shadow-sky-600/20"
+                  >
+                    <span>다음: 제안 엑셀 등록</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
             )}
 
-            {/* Step 2: 엑셀 파일 지정 */}
+            {/* Step 2: 엑셀 파일 선택 */}
             {step === 2 && (
               <div className="space-y-4 text-xs">
-                <div className="bg-sky-50 border border-sky-200 rounded-xl p-4 text-sky-900">
-                  <div className="font-bold mb-1 flex items-center gap-1.5">
-                    <CheckCircle2 className="w-4 h-4 text-sky-600" />
-                    기본 탑재 데이터 확인
-                  </div>
-                  <p className="text-[11px] leading-relaxed text-sky-800">
-                    과천도시공사 2026년도 제안 엑셀 원본(137건)이 조직도("본부-처/실-부")로 구조화되어 준비되어 있습니다.
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                  <h4 className="font-bold text-slate-900 mb-2 flex items-center gap-1.5">
+                    <Upload className="w-4 h-4 text-sky-600" />
+                    제안 엑셀 데이터 탑재 방식 선택
+                  </h4>
+                  <p className="text-slate-500 mb-4">
+                    과천도시공사 제안 데이터(본부/처/부 3단 분류 체계)를 기반으로 일괄 등록합니다.
                   </p>
+
+                  <div className="space-y-3">
+                    <label className="flex items-start gap-3 p-3 rounded-xl border border-sky-300 bg-sky-50/50 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="excel_source"
+                        checked={selectedExcel === 'DEFAULT'}
+                        onChange={() => setSelectedExcel('DEFAULT')}
+                        className="mt-0.5 text-sky-600"
+                      />
+                      <div>
+                        <strong className="text-slate-900 block font-semibold">
+                          기본 2026 정제 데이터 (137건) 자동 탑재
+                        </strong>
+                        <span className="text-slate-500 text-[11px]">
+                          기존 업로드된 137건의 제안 데이터를 해당 평가 건의 심사 대상 제안으로 연결합니다.
+                        </span>
+                      </div>
+                    </label>
+
+                    <label className="flex items-start gap-3 p-3 rounded-xl border border-slate-200 hover:border-slate-300 cursor-pointer opacity-70">
+                      <input
+                        type="radio"
+                        name="excel_source"
+                        checked={selectedExcel === 'NEW'}
+                        onChange={() => setSelectedExcel('NEW')}
+                        className="mt-0.5 text-sky-600"
+                      />
+                      <div>
+                        <strong className="text-slate-900 block font-semibold">
+                          신규 엑셀 파일 첨부 업로드
+                        </strong>
+                        <span className="text-slate-500 text-[11px]">
+                          새로운 엑셀(.xlsx) 파일을 직접 업로드하여 일괄 등록합니다.
+                        </span>
+                      </div>
+                    </label>
+                  </div>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="block font-semibold text-slate-700">제안 데이터 소스 선택</label>
-                  <div
-                    onClick={() => setSelectedExcel('DEFAULT')}
-                    className={`cursor-pointer p-4 rounded-xl border transition flex items-center justify-between ${
-                      selectedExcel === 'DEFAULT'
-                        ? 'border-sky-500 bg-sky-50/50'
-                        : 'border-slate-200 hover:bg-slate-50'
-                    }`}
+                <div className="flex justify-between pt-4 border-t border-slate-100">
+                  <button
+                    onClick={() => setStep(1)}
+                    className="px-4 py-2 text-slate-600 font-semibold hover:bg-slate-100 rounded-xl"
                   >
-                    <div>
-                      <strong className="block text-slate-900">2026_과천도시공사_제안목록_구조화.xlsx (137건)</strong>
-                      <span className="text-slate-500 text-[11px]">
-                        소속부서 및 실행부서가 본부/처/부 프로퍼티로 분리된 표준 데이터셋
-                      </span>
-                    </div>
-                    {selectedExcel === 'DEFAULT' && <Check className="w-5 h-5 text-sky-600" />}
-                  </div>
-
-                  <div className="border border-dashed border-slate-300 rounded-xl p-6 text-center text-slate-400">
-                    <Upload className="w-6 h-6 mx-auto mb-2 text-slate-400" />
-                    <p className="font-medium text-slate-600">추가 엑셀 파일 업로드</p>
-                    <p className="text-[11px] text-slate-400 mt-1">
-                      또는 파일 드래그 앤 드롭 (추후 추가 제안 엑셀 업로드 지원)
-                    </p>
-                  </div>
+                    이전
+                  </button>
+                  <button
+                    onClick={() => setStep(3)}
+                    className="px-5 py-2 bg-sky-600 hover:bg-sky-500 text-white font-semibold rounded-xl flex items-center gap-1 shadow-md shadow-sky-600/20"
+                  >
+                    <span>다음: 부서 평가항목 설정</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               </div>
             )}
 
-            {/* Step 3: 부서평가 항목 설정 */}
+            {/* Step 3: 부서 평가항목 구성 */}
             {step === 3 && (
               <div className="space-y-4 text-xs">
-                <div>
-                  <h4 className="font-bold text-slate-800 mb-1">부서 평가 항목 (Evaluation Criteria) 구성</h4>
-                  <p className="text-[11px] text-slate-500 mb-3">
-                    평가자(부서장)가 제안을 검토할 때 입력할 평가표 항목입니다.
-                  </p>
+                <div className="flex items-center justify-between">
+                  <h4 className="font-bold text-slate-900 flex items-center gap-1.5">
+                    <Settings className="w-4 h-4 text-sky-600" />
+                    부서 0차 평가 심사 항목 설정
+                  </h4>
+                  <span className="text-slate-400">총 {customCriteria.length}개 항목</span>
                 </div>
 
-                <div className="space-y-2">
-                  {customCriteria.map((c, i) => (
-                    <div key={c.id} className="bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="w-5 h-5 rounded-full bg-slate-200 text-slate-700 font-bold flex items-center justify-center text-[10px]">
-                          {i + 1}
-                        </span>
-                        <div>
-                          <strong className="text-slate-900">{c.label}</strong>
-                          <span className="ml-2 text-slate-400 text-[11px]">
-                            [타입: {c.type === 'RADIO' ? '선택형 (Yes/No)' : '서술형 텍스트'}]
+                <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                  {customCriteria.map((c, idx) => (
+                    <div
+                      key={c.id}
+                      className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200"
+                    >
+                      <div>
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <span className="font-mono text-[10px] text-sky-600 font-bold bg-sky-100 px-1.5 py-0.5 rounded">
+                            항목 {idx + 1}
                           </span>
+                          <strong className="text-slate-800">{c.label}</strong>
+                          <span className="text-[10px] text-slate-400">({c.type})</span>
                         </div>
+                        <p className="text-[11px] text-slate-500">{c.description || '옵션: ' + (c.options?.join(', ') || '텍스트 입력')}</p>
                       </div>
-                      {c.key !== 'result' && (
+
+                      {c.key !== 'result' && c.key !== 'opinion' && (
                         <button
                           onClick={() => handleRemoveCriteria(c.id)}
-                          className="text-red-500 hover:text-red-700 text-xs px-2 py-1"
+                          className="text-xs text-rose-500 hover:text-rose-700 px-2 py-1 rounded"
                         >
                           삭제
                         </button>
@@ -347,64 +601,52 @@ export default function AdminDashboardPage() {
                   ))}
                 </div>
 
-                {/* 항목 추가 컨트롤 */}
-                <div className="pt-2 border-t border-slate-100 flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="새 평가항목 명칭 (예: 예산 소요 규모)"
-                    value={newCritLabel}
-                    onChange={(e) => setNewCritLabel(e.target.value)}
-                    className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none"
-                  />
-                  <select
-                    value={newCritType}
-                    onChange={(e: any) => setNewCritType(e.target.value)}
-                    className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:outline-none"
-                  >
-                    <option value="TEXT">단답형 텍스트</option>
-                    <option value="TEXTAREA">서술형 텍스트</option>
-                    <option value="RADIO">3단계 라디오 (상/중/하)</option>
-                  </select>
+                {/* 항목 추가 */}
+                <div className="p-3 bg-sky-50/50 rounded-xl border border-sky-200 space-y-2">
+                  <span className="font-semibold text-slate-700 block">새 심사 항목 추가</span>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="항목명 (예: 적용 예상시기)"
+                      value={newCritLabel}
+                      onChange={(e) => setNewCritLabel(e.target.value)}
+                      className="flex-1 bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-800"
+                    />
+                    <select
+                      value={newCritType}
+                      onChange={(e: any) => setNewCritType(e.target.value)}
+                      className="bg-white border border-slate-200 rounded-lg px-2 text-slate-800"
+                    >
+                      <option value="TEXT">단답형</option>
+                      <option value="TEXTAREA">서술형</option>
+                      <option value="RADIO">선택형(상/중/하)</option>
+                    </select>
+                    <button
+                      onClick={handleAddCriteria}
+                      className="px-3 py-1.5 bg-slate-800 text-white rounded-lg font-semibold hover:bg-slate-700 whitespace-nowrap"
+                    >
+                      추가
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex justify-between pt-4 border-t border-slate-100">
                   <button
-                    onClick={handleAddCriteria}
-                    className="bg-slate-800 hover:bg-slate-700 text-white px-3 py-2 rounded-xl font-semibold"
+                    onClick={() => setStep(2)}
+                    className="px-4 py-2 text-slate-600 font-semibold hover:bg-slate-100 rounded-xl"
                   >
-                    추가
+                    이전
+                  </button>
+                  <button
+                    onClick={handleCreateSession}
+                    className="px-5 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold rounded-xl flex items-center gap-1 shadow-md shadow-emerald-600/20"
+                  >
+                    <Check className="w-4 h-4" />
+                    <span>제안평가 회차 생성 완료</span>
                   </button>
                 </div>
               </div>
             )}
-
-            {/* Modal Footer Controls */}
-            <div className="mt-8 pt-4 border-t border-slate-100 flex justify-between gap-3 text-xs">
-              <button
-                onClick={() => {
-                  if (step > 1) setStep(step - 1);
-                  else setIsCreateOpen(false);
-                }}
-                className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 font-semibold"
-              >
-                {step === 1 ? '취소' : '이전 단계'}
-              </button>
-
-              <div className="flex gap-2">
-                {step < 3 ? (
-                  <button
-                    onClick={() => setStep(step + 1)}
-                    className="px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-semibold shadow-sm"
-                  >
-                    다음 단계
-                  </button>
-                ) : (
-                  <button
-                    onClick={handleCreateSession}
-                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold shadow-md shadow-emerald-600/25"
-                  >
-                    제안평가 건 생성 완료
-                  </button>
-                )}
-              </div>
-            </div>
           </div>
         </div>
       )}

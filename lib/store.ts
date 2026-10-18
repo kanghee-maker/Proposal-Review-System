@@ -183,6 +183,33 @@ export async function saveSessionAsync(session: EvaluationSession): Promise<void
   saveSession(session);
 }
 
+export async function updateSessionAsync(sessionData: Partial<EvaluationSession> & { id: string }): Promise<EvaluationSession | null> {
+  const sessions = await getSessionsAsync();
+  const existing = sessions.find(s => s.id === sessionData.id);
+  if (!existing) return null;
+
+  const updated: EvaluationSession = {
+    ...existing,
+    ...sessionData
+  };
+
+  try {
+    await supabase.from('evaluation_sessions').update({
+      title: updated.title,
+      year: updated.year,
+      description: updated.description,
+      status: updated.status,
+      proposals_count: updated.proposals_count,
+      criteria: updated.criteria
+    }).eq('id', updated.id);
+  } catch (err) {
+    console.error('Error updating session in Supabase:', err);
+  }
+
+  saveSession(updated);
+  return updated;
+}
+
 export function saveSession(session: EvaluationSession): void {
   const sessions = getSessions();
   const idx = sessions.findIndex(s => s.id === session.id);
@@ -194,7 +221,11 @@ export function saveSession(session: EvaluationSession): void {
 // 4. 제안 목록 (Proposals)
 export async function getProposalsAsync(sessionId: string = DEFAULT_SESSION_ID): Promise<Proposal[]> {
   try {
-    const { data } = await supabase.from('proposals').select('*').order('seq_no', { ascending: true });
+    let query = supabase.from('proposals').select('*').order('seq_no', { ascending: true });
+    if (sessionId) {
+      query = query.eq('session_id', sessionId);
+    }
+    const { data } = await query;
     if (data && data.length > 0) {
       return data.map(p => ({
         id: p.id,
