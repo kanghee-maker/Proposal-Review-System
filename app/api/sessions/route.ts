@@ -22,6 +22,14 @@ export async function POST(req: Request) {
     const stage = body.stage || 'STAGE_0';
     const isStage1 = stage === 'STAGE_1';
 
+    // 1차 제안심사는 직접 신규 생성 불가 (0차 부서평가 완결 후 연계 생성만 허용)
+    if (isStage1 && !body.source_session_id) {
+      return NextResponse.json({
+        success: false,
+        error: '1차 제안심사는 직접 신규 등록할 수 없습니다. 0차 부서평가 완결 후 [1차 심사 연계 생성]을 이용해주세요.'
+      }, { status: 400 });
+    }
+
     const hasCustomProposals = Array.isArray(body.proposals) && body.proposals.length > 0;
     const proposalsCount = hasCustomProposals
       ? body.proposals.length
