@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Layers, FileText, Network, DownloadCloud, LogOut, Shield, Menu, X } from 'lucide-react';
@@ -9,6 +9,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [authorized, setAuthorized] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const isAuth = localStorage.getItem('gcuc_admin_auth');
+      if (isAuth !== 'true') {
+        router.push('/');
+      } else {
+        setAuthorized(true);
+      }
+    }
+  }, [router]);
 
   const navItems = [
     { href: '/admin', label: '제안평가 관리', icon: Layers },
@@ -21,9 +33,21 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     if (typeof window !== 'undefined') {
       localStorage.removeItem('gcuc_user_role');
       localStorage.removeItem('gcuc_user_name');
+      localStorage.removeItem('gcuc_admin_auth');
     }
     router.push('/');
   };
+
+  if (!authorized) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center text-white">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-sky-400 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-xs text-slate-400">관리자 인증 확인 중...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col text-slate-800 pb-16 md:pb-0">

@@ -9,24 +9,46 @@ export default function EvaluatorLayout({ children }: { children: React.ReactNod
   const router = useRouter();
   const [deptName, setDeptName] = useState<string>('');
   const [userName, setUserName] = useState<string>('');
+  const [authorized, setAuthorized] = useState<boolean>(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const d = localStorage.getItem('gcuc_dept_name') || '회계부';
+      const d = localStorage.getItem('gcuc_dept_name') || '';
       const u = localStorage.getItem('gcuc_user_name') || '부서 평가자';
-      setDeptName(d);
-      setUserName(u);
+      const isAuth = d ? localStorage.getItem(`gcuc_dept_auth_${d}`) : null;
+
+      if (!d || isAuth !== 'true') {
+        router.push('/');
+      } else {
+        setDeptName(d);
+        setUserName(u);
+        setAuthorized(true);
+      }
     }
-  }, []);
+  }, [router]);
 
   const handleLogout = () => {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('gcuc_user_role');
       localStorage.removeItem('gcuc_dept_name');
       localStorage.removeItem('gcuc_user_name');
+      if (deptName) {
+        localStorage.removeItem(`gcuc_dept_auth_${deptName}`);
+      }
     }
     router.push('/');
   };
+
+  if (!authorized) {
+    return (
+      <div className="min-h-screen bg-emerald-950 flex items-center justify-center text-white">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-xs text-emerald-300">부서 인증 확인 중...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col text-slate-800">
