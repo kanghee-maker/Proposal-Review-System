@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
     if (!status.hasPassword) {
       return NextResponse.json({ 
         success: false, 
-        message: '해당 부서의 비밀번호가 아직 발급되지 않았습니다. 관리자(우세림)에게 비밀번호 설정을 요청해주세요.' 
+        message: '해당 부서의 비밀번호가 아직 발급되지 않았습니다. 관리자(총무행정부 우세림)에게 비밀번호 설정을 요청해주세요.' 
       }, { status: 401 });
     }
 
