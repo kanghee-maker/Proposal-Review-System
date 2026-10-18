@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Shield, Users, CheckCircle, Award, ChevronRight, KeyRound, Lock, AlertCircle, X, Check, Building2, Network, ZoomIn, Download, ExternalLink, ArrowRight } from 'lucide-react';
+import { Shield, Users, CheckCircle, Award, ChevronRight, KeyRound, Lock, AlertCircle, X, Check, Building2, ExternalLink, ArrowRight } from 'lucide-react';
 import { Department } from '@/lib/types';
 
 export default function Home() {
@@ -28,9 +28,6 @@ export default function Home() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [setupError, setSetupError] = useState('');
   const [setupLoading, setSetupLoading] = useState(false);
-
-  // 2026 조직도 고해상도 모달
-  const [orgImageModalOpen, setOrgImageModalOpen] = useState(false);
 
   useEffect(() => {
     fetch('/api/organization')
@@ -462,105 +459,6 @@ export default function Home() {
             </div>
           </div>
         </div>
-
-        {/* 2026 과천도시공사 조직도 (메인 화면 직접 노출 섹션) */}
-        <div className="mt-12 bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-sm">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#1768d5] flex items-center justify-center font-bold">
-                <Network className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
-                  <span>과천도시공사 2026 조직도</span>
-                  <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-[#1768d5] border border-blue-200">
-                    2026 직제 기준
-                  </span>
-                </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  본부/부문 (4) · 처/실/단 (7) · 부 (23) 3단계 조직 구조 안내
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setOrgImageModalOpen(true)}
-                className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs flex items-center gap-1.5 shadow-sm transition"
-              >
-                <ZoomIn className="w-3.5 h-3.5" />
-                <span>조직도 원본(JPEG) 크게보기</span>
-              </button>
-            </div>
-          </div>
-
-          {/* 조직도 썸네일 & 4대 본부/부문 직제 요약 */}
-          <div className="mt-5 grid md:grid-cols-12 gap-6 items-center">
-            {/* 왼쪽: 조직도 이미지 프리뷰 (클릭 시 확대) */}
-            <div 
-              onClick={() => setOrgImageModalOpen(true)}
-              className="md:col-span-5 bg-slate-50 rounded-xl border border-slate-200 p-2.5 cursor-pointer hover:border-[#1768d5] hover:shadow-md transition group relative overflow-hidden"
-            >
-              <div className="aspect-[4/3] bg-white rounded-lg overflow-hidden flex items-center justify-center border border-slate-100 relative">
-                <img 
-                  src="/images/2026_조직도.jpeg" 
-                  alt="2026 과천도시공사 조직도" 
-                  className="w-full h-full object-contain group-hover:scale-105 transition duration-300"
-                />
-                <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs font-bold gap-1.5 backdrop-blur-[1px]">
-                  <ZoomIn className="w-4 h-4" />
-                  <span>클릭하여 고해상도 확대</span>
-                </div>
-              </div>
-              <p className="text-[11px] text-center text-slate-500 mt-2 font-medium">
-                ※ 이미지를 클릭하시면 2400x1800 고해상도 원본을 바로 확인하실 수 있습니다.
-              </p>
-            </div>
-
-            {/* 오른쪽: 4대 본부/부문 직제 구조 요약 */}
-            <div className="md:col-span-7 space-y-2.5 text-xs">
-              <div className="p-3.5 rounded-xl bg-blue-50/70 border border-blue-100">
-                <div className="font-bold text-[#1768d5] mb-1 flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-[#1768d5]" />
-                  <span>경영본부 (경영지원실)</span>
-                </div>
-                <p className="text-slate-600 text-[11px] leading-relaxed">
-                  기획예산부, 총무인사부, 회계부, 정보전산부, ESG홍보부 (5개 부)
-                </p>
-              </div>
-
-              <div className="p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-100">
-                <div className="font-bold text-[#169268] mb-1 flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-[#169268]" />
-                  <span>도시개발본부 (도시개발처, 미래혁신처)</span>
-                </div>
-                <p className="text-slate-600 text-[11px] leading-relaxed">
-                  개발기획부, 사업관리부, 보상부, 주택도시부, 스마트도시부 (5개 부)
-                </p>
-              </div>
-
-              <div className="p-3.5 rounded-xl bg-amber-50/70 border border-amber-100">
-                <div className="font-bold text-amber-700 mb-1 flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-amber-600" />
-                  <span>운영관리본부 (시설운영처, 문화체육처, 교통환경처)</span>
-                </div>
-                <p className="text-slate-600 text-[11px] leading-relaxed">
-                  청사관리부, 공공체육부, 문화예술부, 주차사업부, 환경사업부 등 (11개 부)
-                </p>
-              </div>
-
-              <div className="p-3.5 rounded-xl bg-purple-50/70 border border-purple-100">
-                <div className="font-bold text-purple-700 mb-1 flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-purple-600" />
-                  <span>감사안전부문 (안전감사실, CS고객만족단)</span>
-                </div>
-                <p className="text-slate-600 text-[11px] leading-relaxed">
-                  감사팀, 안전재난팀, 고객만족팀 (2개 부/단)
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
       </main>
 
       {/* 4. GCUC Official Style Footer */}
@@ -603,51 +501,6 @@ export default function Home() {
           </div>
         </div>
       </footer>
-
-      {/* --- 모달: 2026 조직도 고해상도 확대 팝업 --- */}
-      {orgImageModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/85 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-6">
-          <div className="bg-white rounded-2xl max-w-5xl w-full p-4 sm:p-6 shadow-2xl border border-slate-200 flex flex-col max-h-[94vh]">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-200 mb-3">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-blue-50 text-[#1768d5] flex items-center justify-center">
-                  <Network className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-slate-900 text-sm sm:text-base">
-                    과천도시공사 2026 조직도 (고해상도 2400x1800)
-                  </h3>
-                  <p className="text-xs text-slate-500">본부/부문 (4) · 처/실/단 (7) · 부 (23) 직제 체계</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <a
-                  href="/images/2026_조직도.jpeg"
-                  download="과천도시공사_2026_조직도.jpeg"
-                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg flex items-center gap-1 transition"
-                >
-                  <Download className="w-3.5 h-3.5" />
-                  <span>다운로드</span>
-                </a>
-                <button
-                  onClick={() => setOrgImageModalOpen(false)}
-                  className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100 transition"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-
-            <div className="flex-1 overflow-auto bg-slate-100 rounded-xl p-2 flex items-center justify-center border border-slate-200">
-              <img
-                src="/images/2026_조직도.jpeg"
-                alt="과천도시공사 2026 조직도 확대"
-                className="max-w-full max-h-full object-contain rounded-lg shadow-sm"
-              />
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* --- 모달 1: 관리자 비밀번호 입력 (Clean White Modal) --- */}
       {adminModalOpen && (
