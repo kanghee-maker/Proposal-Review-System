@@ -300,7 +300,12 @@ export async function getProposalsAsync(sessionId?: string): Promise<Proposal[]>
         content: p.content,
         is_duplicate: p.is_duplicate,
         duplicate_title: p.duplicate_title,
-        status: p.status
+        status: p.status,
+        transfer_requested: p.transfer_requested,
+        transfer_target_dept: p.transfer_target_dept,
+        transfer_reason: p.transfer_reason,
+        transfer_requested_at: p.transfer_requested_at,
+        transfer_status: p.transfer_status
       }));
     } else if (sessionId) {
       // If 0 proposals exist for this requested session, auto-seed default proposals
@@ -397,7 +402,12 @@ export async function updateProposalAsync(updated: Proposal): Promise<void> {
       assigned_office: updated.assigned_office,
       assigned_department: updated.assigned_department,
       assigned_raw_dept: updated.assigned_raw_dept,
-      status: updated.status
+      status: updated.status,
+      transfer_requested: updated.transfer_requested,
+      transfer_target_dept: updated.transfer_target_dept,
+      transfer_reason: updated.transfer_reason,
+      transfer_requested_at: updated.transfer_requested_at,
+      transfer_status: updated.transfer_status
     }).eq('id', updated.id);
   } catch (err) {}
   updateProposal(updated);

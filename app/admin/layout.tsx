@@ -26,7 +26,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { href: '/admin', label: '제안평가 관리', icon: Layers },
     { href: '/admin/proposals', label: '제안 목록·배정', icon: FileText },
     { href: '/admin/organization', label: '2026 조직도', icon: Network },
-    { href: '/admin/reports', label: '0차 평가 취합', icon: DownloadCloud },
+    { href: '/admin/reports', label: '부서 평가(0차 평가) 취합', icon: DownloadCloud },
   ];
 
   const handleLogout = () => {

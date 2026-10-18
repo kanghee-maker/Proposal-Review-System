@@ -64,6 +64,11 @@ export interface Proposal {
   is_duplicate: string;
   duplicate_title: string;
   status: '미평가' | '평가작성중' | '평가완료';
+  transfer_requested?: boolean;
+  transfer_target_dept?: string;
+  transfer_reason?: string;
+  transfer_requested_at?: string;
+  transfer_status?: 'PENDING' | 'APPROVED' | 'REJECTED';
 }
 
 export interface Evaluation {

@@ -153,10 +153,10 @@ function AdminReportsContent() {
         <div>
           <h2 className="text-lg sm:text-xl font-bold text-slate-900 flex items-center gap-2">
             <DownloadCloud className="w-5 h-5 text-sky-600 flex-shrink-0" />
-            <span>[{currentSession?.title || '제안평가'}] 0차 평가 취합 및 엑셀 다운로드</span>
+            <span>[{currentSession?.title || '제안평가'}] 부서 평가(0차 평가) 취합 및 엑셀 다운로드</span>
           </h2>
           <p className="text-[11px] sm:text-xs text-slate-500 mt-1">
-            선택된 평가 회차의 각 부서 심사 결과(Yes/No 및 검토의견)를 실시간 집계하고 보고용 엑셀로 내보냅니다.
+            선택된 평가 회차의 각 부서 심사 결과(Yes/No 및 검토의견)를 실시간 집계하고 보고용 엑셀로 내보냅니다. (향후 제안 심사(1차 평가) 위원회 기초자료로 활용)
           </p>
         </div>
 
@@ -181,7 +181,7 @@ function AdminReportsContent() {
         </div>
 
         <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-sm">
-          <span className="text-xs text-emerald-600 font-medium block mb-1">0차 심사 완료율</span>
+          <span className="text-xs text-emerald-600 font-medium block mb-1">부서 평가(0차 평가) 완료율</span>
           <div className="flex items-baseline gap-2">
             <strong className="text-2xl sm:text-3xl font-bold text-emerald-600">{rate}%</strong>
             <span className="text-xs text-slate-500">({completedCount}/{totalCount})</span>
@@ -215,7 +215,7 @@ function AdminReportsContent() {
         <div className="p-4 border-b border-slate-100 flex items-center justify-between">
           <h3 className="font-bold text-sm text-slate-800 flex items-center gap-2">
             <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
-            제안별 0차 심사 결과 상세 (Result &amp; Opinion)
+            제안별 부서 평가(0차 평가) 결과 상세 (Result &amp; Opinion)
           </h3>
           <span className="text-xs text-slate-400">총 {proposals.length}건</span>
         </div>

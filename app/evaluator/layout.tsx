@@ -57,7 +57,7 @@ export default function EvaluatorLayout({ children }: { children: React.ReactNod
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2 text-[11px]">
             <span className="bg-[#25262b] text-white px-2 py-0.5 rounded font-bold">GCUC</span>
-            <span>과천도시공사 제안 평가 시스템 • 부서 0차 타당성 심사</span>
+            <span>과천도시공사 제안 평가 시스템 • 부서 평가(0차 평가)</span>
           </div>
           <div className="flex items-center gap-3 text-[11px] text-slate-400">
             <span>2026년 혁신 제안 심사</span>
@@ -82,7 +82,7 @@ export default function EvaluatorLayout({ children }: { children: React.ReactNod
                 제안 평가 시스템 <span className="text-[#169268]">부서 심사</span>
               </h1>
               <p className="text-[10px] sm:text-[11px] text-[#169268] font-semibold tracking-wide">
-                0차 부서 타당성 심사 전용
+                부서 평가(0차 평가) 전용
               </p>
             </div>
           </Link>

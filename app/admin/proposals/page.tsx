@@ -3,7 +3,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { FileText, Search, Building2, User, ChevronRight, Edit, Check, Layers, Clock } from 'lucide-react';
+import { FileText, Search, Building2, User, ChevronRight, Edit, Check, Layers, Clock, AlertCircle } from 'lucide-react';
 import { Proposal, Department, EvaluationSession } from '@/lib/types';
 
 function AdminProposalsContent() {
@@ -141,10 +141,57 @@ function AdminProposalsContent() {
     }
   };
 
+  const handleApproveTransfer = async () => {
+    if (!selectedProposal || !selectedProposal.transfer_target_dept) return;
+    const targetDept = selectedProposal.transfer_target_dept;
+    const found = departments.find(d => d.department === targetDept);
+
+    const updatedDiv = found?.division || editDivision;
+    const updatedOff = found?.office || editOffice;
+    const updatedDept = found?.department || targetDept;
+
+    setSaving(true);
+    try {
+      const updated: Proposal = {
+        ...selectedProposal,
+        assigned_division: updatedDiv,
+        assigned_office: updatedOff,
+        assigned_department: updatedDept,
+        assigned_raw_dept: `${updatedOff} ${updatedDept}`,
+        transfer_requested: false,
+        transfer_status: 'APPROVED',
+        status: editStatus as any
+      };
+
+      const res = await fetch('/api/proposals', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updated)
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert(`[${updatedDept}](으)로 부서 변경 및 이관 승인이 완료되었습니다.`);
+        setSelectedProposal(null);
+        fetchProposalsForSession(selectedSessionId);
+      }
+    } catch (err) {
+      alert('승인 처리 실패');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const currentSession = sessions.find(s => s.id === selectedSessionId);
 
+  const transferCount = proposals.filter(p => p.transfer_requested).length;
+
   const filtered = proposals.filter(p => {
-    if (statusFilter !== '전체' && p.status !== statusFilter) return false;
+    if (statusFilter === '이관요청') {
+      if (!p.transfer_requested) return false;
+    } else if (statusFilter !== '전체' && p.status !== statusFilter) {
+      return false;
+    }
+
     if (deptFilter !== '전체' && p.assigned_department !== deptFilter && p.assigned_office !== deptFilter) return false;
     if (search) {
       const q = search.toLowerCase();
@@ -217,11 +264,11 @@ function AdminProposalsContent() {
             <span>[{currentSession?.title || '제안평가'}] 제안 목록 및 담당부서 배정</span>
           </h2>
           <p className="text-[11px] sm:text-xs text-slate-500 mt-1">
-            선택된 제안평가 건의 제안에 대해 담당부서(본부/처/부) 오배정 수정 및 0차 평가 상태를 관리합니다.
+            선택된 제안평가 건의 제안에 대해 담당부서(본부/처/부) 오배정 수정 및 부서 평가(0차 평가) 상태를 관리합니다.
           </p>
         </div>
 
-        <div className="grid grid-cols-3 gap-2 text-center text-xs">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs">
           <div className="bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-2">
             <span className="text-[10px] text-slate-400 block">전체</span>
             <strong className="text-slate-900 font-bold">{proposals.length}건</strong>
@@ -233,6 +280,10 @@ function AdminProposalsContent() {
           <div className="bg-amber-50 border border-amber-200 text-amber-700 rounded-xl px-2.5 py-2">
             <span className="text-[10px] text-amber-600 block">미평가</span>
             <strong className="font-bold">{proposals.filter(p => p.status === '미평가').length}건</strong>
+          </div>
+          <div className={`border rounded-xl px-2.5 py-2 ${transferCount > 0 ? 'bg-rose-50 border-rose-300 text-rose-700' : 'bg-slate-50 border-slate-200 text-slate-500'}`}>
+            <span className="text-[10px] block">이관요청</span>
+            <strong className="font-bold">{transferCount}건</strong>
           </div>
         </div>
       </div>
@@ -251,6 +302,9 @@ function AdminProposalsContent() {
               <option value="미평가">미평가</option>
               <option value="평가작성중">평가작성중</option>
               <option value="평가완료">평가완료</option>
+              {transferCount > 0 && (
+                <option value="이관요청">🔄 부서이관 요청건 ({transferCount}건)</option>
+              )}
             </select>
           </div>
 
@@ -306,7 +360,7 @@ function AdminProposalsContent() {
                     <th className="py-3 px-3">분야</th>
                     <th className="py-3 px-3 font-bold text-sky-900">담당부서 (실행부서)</th>
                     <th className="py-3 px-4 min-w-[260px]">제안 제목</th>
-                    <th className="py-3 px-3 text-center">0차 상태</th>
+                    <th className="py-3 px-3 text-center">부서 평가(0차)</th>
                     <th className="py-3 px-3 text-center w-20">수정</th>
                   </tr>
                 </thead>
@@ -330,6 +384,11 @@ function AdminProposalsContent() {
                       <td className="py-3 px-3">
                         <span className="text-[11px] text-sky-700 font-bold block">{p.assigned_division}</span>
                         <strong className="text-slate-900">{p.assigned_office} {p.assigned_department}</strong>
+                        {p.transfer_requested && (
+                          <span className="inline-block mt-1 text-[10px] bg-amber-100 text-amber-800 border border-amber-300 px-1.5 py-0.5 rounded font-bold">
+                            🔄 이관요청: {p.transfer_target_dept}
+                          </span>
+                        )}
                       </td>
                       <td className="py-3 px-4">
                         <div className="font-medium text-slate-900 leading-snug line-clamp-2">
@@ -460,6 +519,43 @@ function AdminProposalsContent() {
                 </div>
               </div>
 
+              {/* 실행부서 변경 요청 알림 박스 (존재 시) */}
+              {selectedProposal.transfer_requested && (
+                <div className="bg-amber-50 border border-amber-300 rounded-xl p-3.5 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-amber-900 flex items-center gap-1.5 text-xs">
+                      <AlertCircle className="w-4 h-4 text-amber-600" />
+                      담당부서의 실행 부서 변경 요청 접수됨
+                    </span>
+                    <span className="px-2 py-0.5 rounded bg-amber-200 text-amber-900 font-bold text-[10px]">
+                      이관 심사 대기
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-amber-900 space-y-1 bg-white/80 p-2.5 rounded-lg border border-amber-200">
+                    <div>
+                      <span className="text-slate-500">현재 배정: </span>
+                      <strong className="text-slate-800">{selectedProposal.assigned_department}</strong>
+                      <span className="text-slate-400 mx-1.5">➔</span>
+                      <span className="text-slate-500">희망 이관 부서: </span>
+                      <strong className="text-emerald-700 font-extrabold">{selectedProposal.transfer_target_dept}</strong>
+                    </div>
+                    <div>
+                      <span className="text-slate-500">요청 사유: </span>
+                      <span className="font-medium text-slate-800">"{selectedProposal.transfer_reason}"</span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleApproveTransfer}
+                    disabled={saving}
+                    className="w-full py-2 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-lg text-xs shadow-xs transition flex items-center justify-center gap-1.5"
+                  >
+                    <Check className="w-4 h-4" />
+                    <span>[{selectedProposal.transfer_target_dept}](으)로 이관 승인 및 즉시 반영</span>
+                  </button>
+                </div>
+              )}
+
               {/* 담당 부서 빠른 변경 */}
               <div>
                 <label className="block font-semibold text-slate-700 mb-1">
@@ -510,7 +606,7 @@ function AdminProposalsContent() {
 
               <div>
                 <label className="block font-semibold text-slate-700 mb-1">
-                  0차 부서평가 진행 상태
+                  부서 평가(0차 평가) 진행 상태
                 </label>
                 <select
                   value={editStatus}

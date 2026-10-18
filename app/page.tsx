@@ -288,17 +288,17 @@ export default function Home() {
           </div>
           <div className="text-xs font-semibold text-[#1768d5] bg-blue-50 px-3.5 py-1.5 rounded-full border border-blue-200/60 hidden sm:flex items-center gap-1.5">
             <Award className="w-3.5 h-3.5" />
-            <span>2026 혁신 제안 0차 부서평가</span>
+            <span>2026 혁신 제안 부서 평가(0차 평가)</span>
           </div>
         </div>
       </header>
 
       {/* 3. Main Content (Clean White Background) */}
       <main className="max-w-5xl mx-auto w-full px-4 sm:px-6 py-8 sm:py-12 flex-1 flex flex-col justify-center">
-        <div className="text-center mb-10">
+        <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-[#1768d5] text-xs font-bold mb-3 shadow-sm">
             <Award className="w-4 h-4 text-[#1768d5]" />
-            2026년도 혁신 제안 0차 부서 타당성 심사 진행 중
+            2026년도 혁신 제안 부서 평가(0차 평가) 진행 중
           </div>
           <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-slate-900 mb-3">
             과천도시공사 혁신 제안 평가 포털
@@ -306,6 +306,48 @@ export default function Home() {
           <p className="text-slate-600 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed font-medium">
             공사 임직원이 제출한 혁신 제안에 대해 각 부서의 타당성 평가를 신속히 심사하고, 전체 평가 현황을 체계적으로 총괄 관리합니다.
           </p>
+        </div>
+
+        {/* 제안 심사 프로세스 2단계 로드맵 안내 */}
+        <div className="max-w-4xl mx-auto w-full mb-8 bg-gradient-to-r from-blue-50/70 via-white to-emerald-50/70 rounded-2xl border border-blue-200/70 p-4 sm:p-5 shadow-sm">
+          <div className="flex items-center justify-between gap-2 mb-3">
+            <div className="flex items-center gap-2">
+              <span className="px-2.5 py-0.5 rounded-full bg-[#1768d5] text-white text-[10px] font-bold">심사 로드맵</span>
+              <span className="text-xs sm:text-sm font-bold text-slate-900">2026 과천도시공사 혁신 제안 심사 절차</span>
+            </div>
+            <span className="text-[11px] text-slate-500 hidden sm:inline">
+              * 부서 평가(0차 평가) 완료 후 제안 심사(1차 평가)가 진행됩니다.
+            </span>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-3 text-xs">
+            {/* Step 1 */}
+            <div className="bg-white p-4 rounded-xl border-2 border-[#1768d5]/40 shadow-sm relative overflow-hidden">
+              <div className="absolute top-0 right-0 bg-[#1768d5] text-white text-[10px] font-bold px-2 py-0.5 rounded-bl-lg">
+                현재 진행 단계
+              </div>
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="w-5 h-5 rounded-full bg-blue-100 text-[#1768d5] font-bold text-xs flex items-center justify-center">1</span>
+                <strong className="text-slate-900 font-bold text-sm">부서 평가(0차 평가)</strong>
+              </div>
+              <p className="text-slate-600 text-[11px] leading-relaxed">
+                각 담당 부서에서 소관 제안의 실무 타당성(예산, 실현가능성, 파급효과)을 사전 검토하고, 채택(Yes) 또는 불채택(No) 여부 및 검토의견을 작성합니다.
+              </p>
+            </div>
+
+            {/* Step 2 */}
+            <div className="bg-white/90 p-4 rounded-xl border border-slate-200 text-slate-500 relative">
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-600 font-bold text-xs flex items-center justify-center">2</span>
+                <strong className="text-slate-800 font-bold text-sm">제안 심사(1차 평가)</strong>
+                <span className="text-[10px] px-2 py-0.5 rounded bg-amber-50 text-amber-700 font-semibold border border-amber-200">
+                  향후 예정
+                </span>
+              </div>
+              <p className="text-slate-500 text-[11px] leading-relaxed">
+                <strong>부서 평가(0차 평가)</strong> 취합 결과를 토대로 제안심사위원회를 구성하여 등급 심사 및 우수 제안 포상 심층 심의를 진행합니다.
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* 2 Roles Card Grid */}
@@ -336,7 +378,7 @@ export default function Home() {
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="w-4 h-4 text-[#1768d5] flex-shrink-0" />
-                  <span>0차 부서평가 취합 결과 엑셀 Export</span>
+                  <span>부서 평가(0차 평가) 취합 결과 엑셀 Export</span>
                 </div>
               </div>
             </div>
@@ -359,7 +401,7 @@ export default function Home() {
               </div>
               <h3 className="text-xl font-bold text-slate-900 mb-2">부서 평가자 로그인</h3>
               <p className="text-xs sm:text-sm text-slate-600 mb-6 leading-relaxed">
-                담당 부서(실행부서)를 선택하여 본인 부서에 배정된 제안 목록을 열람하고, 0차 부서평가(수용 여부 및 의견)를 진행합니다.
+                담당 부서(실행부서)를 선택하여 본인 부서에 배정된 제안 목록을 열람하고, 부서 평가(0차 평가)(수용 여부 및 의견)를 진행합니다.
               </p>
 
               <form onSubmit={handleEvaluatorCheck} className="space-y-4 mb-4">

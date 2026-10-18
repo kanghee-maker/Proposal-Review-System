@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: '과천도시공사 제안 평가 시스템',
-  description: '과천도시공사 혁신 제안 0차 부서평가 및 회차별 심사 관리 시스템',
+  description: '과천도시공사 혁신 제안 부서 평가(0차 평가) 및 제안 심사(1차 평가) 총괄 관리 포털',
 };
 
 export const viewport = {

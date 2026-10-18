@@ -80,13 +80,13 @@ function EvaluatorDashboardContent() {
         <div>
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 text-xs font-semibold mb-2 border border-emerald-200">
             <Building2 className="w-3.5 h-3.5 text-emerald-600" />
-            <span>{dept} 0차 부서 심사함</span>
+            <span>{dept} 부서 평가(0차 평가) 심사함</span>
           </div>
           <h2 className="text-xl font-bold text-slate-900">
             {dept} 평가 담당 제안 목록
           </h2>
           <p className="text-xs text-slate-500 mt-1">
-            소관 업무와 관련된 제안의 타당성을 검토하고 채택(Yes) 또는 불채택(No) 여부 및 부서 검토의견을 작성해 주십시오.
+            소관 업무와 관련된 제안의 타당성을 검토하고 채택(Yes) 또는 불채택(No) 여부 및 부서 검토의견을 작성해 주십시오. (타 부서 소관 제안인 경우 상세화면에서 실행 부서 변경을 요청할 수 있습니다.)
           </p>
         </div>
 
@@ -163,6 +163,12 @@ function EvaluatorDashboardContent() {
                     <span className="text-slate-500">
                       제안자: <strong className="text-slate-700">{p.proposer_name}</strong> ({p.proposer_rank}, {p.proposer_office} {p.proposer_department})
                     </span>
+
+                    {p.transfer_requested && (
+                      <span className="px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 font-bold border border-amber-300 flex items-center gap-1">
+                        🔄 실행부서 변경 요청중 ({p.transfer_target_dept})
+                      </span>
+                    )}
                   </div>
 
                   <h3 className="text-base font-bold text-slate-900 leading-snug">
@@ -201,7 +207,7 @@ function EvaluatorDashboardContent() {
                         : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20'
                     }`}
                   >
-                    <span>{isCompleted ? '평가내용 수정' : '0차 평가 작성'}</span>
+                    <span>{isCompleted ? '평가내용 수정' : '부서 평가(0차 평가) 작성'}</span>
                     <ChevronRight className="w-4 h-4" />
                   </Link>
                 </div>

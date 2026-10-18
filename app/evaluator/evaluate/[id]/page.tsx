@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import { ArrowLeft, CheckCircle2, XCircle, Save, Send, AlertCircle, Building2, User, FileText, Check } from 'lucide-react';
-import { Proposal, Evaluation } from '@/lib/types';
+import { Proposal, Evaluation, Department } from '@/lib/types';
 
 export default function EvaluateProposalPage() {
   const router = useRouter();
@@ -13,6 +13,7 @@ export default function EvaluateProposalPage() {
 
   const [proposal, setProposal] = useState<Proposal | null>(null);
   const [evaluation, setEvaluation] = useState<Evaluation | null>(null);
+  const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   // 평가 입력 폼 상태
@@ -21,17 +22,30 @@ export default function EvaluateProposalPage() {
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [saveToast, setSaveToast] = useState<string>('');
 
+  // 실행 부서 변경 요청 상태
+  const [isTransferOpen, setIsTransferOpen] = useState<boolean>(false);
+  const [targetDept, setTargetDept] = useState<string>('');
+  const [transferReason, setTransferReason] = useState<string>('');
+  const [transferSaving, setTransferSaving] = useState<boolean>(false);
+
   useEffect(() => {
     Promise.all([
       fetch(`/api/proposals?id=${encodeURIComponent(proposalId)}`).then(r => r.json()),
-      fetch(`/api/evaluations?proposal_id=${encodeURIComponent(proposalId)}`).then(r => r.json())
+      fetch(`/api/evaluations?proposal_id=${encodeURIComponent(proposalId)}`).then(r => r.json()),
+      fetch('/api/organization').then(r => r.json())
     ])
-      .then(([prop, ev]) => {
+      .then(([prop, ev, orgData]) => {
         setProposal(prop || null);
         if (ev) {
           setEvaluation(ev);
           setResult(ev.answers?.result || '');
           setOpinion(ev.answers?.opinion || '');
+        }
+        if (orgData?.departments) {
+          setDepartments(orgData.departments);
+          if (orgData.departments.length > 0) {
+            setTargetDept(orgData.departments[0].department);
+          }
         }
         setLoading(false);
       })
@@ -43,7 +57,7 @@ export default function EvaluateProposalPage() {
 
   const handleSave = async (isSubmit: boolean) => {
     if (isSubmit && !result) {
-      alert('0차 부서 평가 결과(Yes 또는 No)를 선택해 주세요.');
+      alert('부서 평가(0차 평가) 결과(Yes 또는 No)를 선택해 주세요.');
       return;
     }
     if (isSubmit && !opinion.trim()) {
@@ -77,7 +91,7 @@ export default function EvaluateProposalPage() {
 
       if (data.success) {
         if (isSubmit) {
-          alert('0차 부서 평가가 성공적으로 최종 제출되었습니다!');
+          alert('부서 평가(0차 평가)가 성공적으로 최종 제출되었습니다!\n(향후 제안 심사(1차 평가) 위원회 자료로 상정됩니다.)');
           router.push('/evaluator');
         } else {
           setSaveToast('임시저장 완료되었습니다.');
@@ -89,6 +103,78 @@ export default function EvaluateProposalPage() {
       alert('저장 중 오류가 발생했습니다.');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  // 실행 부서 변경 요청 제출
+  const handleRequestTransfer = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!proposal) return;
+    if (!transferReason.trim()) {
+      alert('실행 부서 변경 요청 사유를 작성해 주세요.');
+      return;
+    }
+
+    setTransferSaving(true);
+    try {
+      const updated: Proposal = {
+        ...proposal,
+        transfer_requested: true,
+        transfer_target_dept: targetDept,
+        transfer_reason: transferReason.trim(),
+        transfer_requested_at: new Date().toISOString(),
+        transfer_status: 'PENDING'
+      };
+
+      const res = await fetch('/api/proposals', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updated)
+      });
+      const data = await res.json();
+      if (data.success) {
+        setProposal(updated);
+        setIsTransferOpen(false);
+        alert(`[${targetDept}](으)로의 실행 부서 변경 요청이 접수되었습니다.\n총괄 관리자가 확인 후 승인 시 해당 부서로 이관됩니다.`);
+      } else {
+        alert('요청 중 오류가 발생했습니다.');
+      }
+    } catch (err) {
+      alert('서버 통신 실패');
+    } finally {
+      setTransferSaving(false);
+    }
+  };
+
+  // 실행 부서 변경 요청 취소
+  const handleCancelTransfer = async () => {
+    if (!proposal) return;
+    if (!confirm('실행 부서 변경 요청을 취소하시겠습니까?')) return;
+
+    setTransferSaving(true);
+    try {
+      const updated: Proposal = {
+        ...proposal,
+        transfer_requested: false,
+        transfer_status: undefined,
+        transfer_reason: '',
+        transfer_target_dept: ''
+      };
+
+      const res = await fetch('/api/proposals', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updated)
+      });
+      const data = await res.json();
+      if (data.success) {
+        setProposal(updated);
+        alert('실행 부서 변경 요청이 취소되었습니다.');
+      }
+    } catch (err) {
+      alert('요청 취소 실패');
+    } finally {
+      setTransferSaving(false);
     }
   };
 
@@ -177,6 +263,106 @@ export default function EvaluateProposalPage() {
             </div>
           </div>
 
+          {/* 실행 부서 변경 요청 (타 부서 이관 신청) 섹션 */}
+          <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-4 text-xs space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5 font-bold text-amber-900">
+                <AlertCircle className="w-4 h-4 text-amber-600" />
+                <span>실행(평가) 부서 변경 요청 (타 부서 이관)</span>
+              </div>
+              {proposal.transfer_requested ? (
+                <span className="px-2 py-0.5 rounded-md bg-amber-200 text-amber-900 font-bold text-[10px]">
+                  변경 요청 심사 대기중
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setIsTransferOpen(!isTransferOpen)}
+                  className="px-2.5 py-1 rounded-lg bg-white border border-amber-300 hover:bg-amber-100 text-amber-800 font-semibold text-[11px] transition shadow-xs"
+                >
+                  {isTransferOpen ? '닫기' : '부서 변경 요청하기'}
+                </button>
+              )}
+            </div>
+
+            {proposal.transfer_requested ? (
+              <div className="bg-white p-3 rounded-lg border border-amber-200 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] text-slate-500">희망 이관 부서:</span>
+                  <strong className="text-amber-800 font-bold">{proposal.transfer_target_dept}</strong>
+                </div>
+                <div className="text-[11px] text-slate-600">
+                  <span className="text-slate-400 block mb-0.5">요청 사유:</span>
+                  "{proposal.transfer_reason}"
+                </div>
+                <div className="pt-2 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={handleCancelTransfer}
+                    disabled={transferSaving}
+                    className="text-[10px] text-red-600 hover:text-red-700 underline font-medium"
+                  >
+                    {transferSaving ? '취소 처리 중...' : '변경 요청 취소'}
+                  </button>
+                </div>
+              </div>
+            ) : isTransferOpen ? (
+              <form onSubmit={handleRequestTransfer} className="bg-white p-3.5 rounded-lg border border-amber-200 space-y-3">
+                <p className="text-[11px] text-slate-600">
+                  해당 제안이 귀 부서 소관 업무가 아닌 경우, 실제 담당해야 할 타 부서를 지정하여 변경을 요청할 수 있습니다. (총괄 관리자 승인 후 배정 변경)
+                </p>
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                    희망 이관 부서 선택 <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={targetDept}
+                    onChange={(e) => setTargetDept(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                  >
+                    {departments.map(d => (
+                      <option key={d.code} value={d.department}>
+                        [{d.division} &gt; {d.office}] {d.department}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                    부서 변경 요청 사유 <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={transferReason}
+                    onChange={(e) => setTransferReason(e.target.value)}
+                    placeholder="소관 업무 불일치 사유 및 이관 필요성을 기재해 주세요..."
+                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                  />
+                </div>
+                <div className="flex justify-end gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setIsTransferOpen(false)}
+                    className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium text-[11px]"
+                  >
+                    취소
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={transferSaving}
+                    className="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-bold text-[11px] shadow-sm transition disabled:opacity-50"
+                  >
+                    {transferSaving ? '요청 제출 중...' : '변경 요청 제출'}
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <p className="text-[11px] text-amber-800/80">
+                본 제안의 소관 부서가 아닐 경우 우측 [부서 변경 요청하기] 버튼을 통해 타 부서로의 이관을 신청할 수 있습니다.
+              </p>
+            )}
+          </div>
+
           {/* 중복 제안 여부 알림 */}
           {proposal.is_duplicate === '중복' && (
             <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 space-y-1">
@@ -210,7 +396,7 @@ export default function EvaluateProposalPage() {
           </div>
         </div>
 
-        {/* Right Column: 0차 부서 평가표 (5 cols) */}
+        {/* Right Column: 부서 평가(0차 평가)표 (5 cols) */}
         <div className="lg:col-span-5 bg-white rounded-2xl border-2 border-emerald-500/30 p-4 sm:p-6 shadow-md flex flex-col justify-between space-y-4 sm:space-y-6">
           <div>
             <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
@@ -219,7 +405,7 @@ export default function EvaluateProposalPage() {
                   STAGE 0
                 </span>
                 <h3 className="text-base font-extrabold text-slate-900 mt-1">
-                  0차 부서 타당성 평가표
+                  부서 평가(0차 평가)표
                 </h3>
               </div>
               <span className="text-xs text-slate-400">

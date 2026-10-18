@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Layers, Plus, Calendar, FileText, CheckCircle2, Clock, ArrowRight, Settings, Upload, Check, Edit, X, Sparkles, CheckCircle } from 'lucide-react';
+import { Layers, Plus, Calendar, FileText, CheckCircle2, Clock, ArrowRight, Settings, Upload, Check, Edit, X, Sparkles, CheckCircle, FileSpreadsheet, DownloadCloud } from 'lucide-react';
 import { EvaluationSession, EvaluationCriteria } from '@/lib/types';
 
 export default function AdminDashboardPage() {
@@ -17,7 +17,7 @@ export default function AdminDashboardPage() {
   const [step, setStep] = useState<number>(1);
   const [title, setTitle] = useState<string>('2026년 하반기 혁신 제안 심사');
   const [year, setYear] = useState<string>('2026');
-  const [description, setDescription] = useState<string>('공사 경영개선 및 시민 편익 증진을 위한 0차 부서 타당성 평가');
+  const [description, setDescription] = useState<string>('공사 경영개선 및 시민 편익 증진을 위한 부서 평가(0차 평가)');
   const [selectedExcel, setSelectedExcel] = useState<string>('DEFAULT'); // DEFAULT: 137건 샘플
   const [customCriteria, setCustomCriteria] = useState<EvaluationCriteria[]>([
     {
@@ -199,7 +199,7 @@ export default function AdminDashboardPage() {
           </div>
           <h2 className="text-2xl font-bold tracking-tight mb-2">제안평가 건 (Evaluation Rounds) 관리</h2>
           <p className="text-sm text-slate-300 max-w-xl">
-            관리할 제안평가 건을 선택하여 제안 목록 및 부서 배정을 관리하거나, 0차 평가 취합 결과를 확인하고 명칭을 수정할 수 있습니다.
+            관리할 제안평가 건을 선택하여 제안 목록 및 부서 배정을 관리하거나, 부서 평가(0차 평가) 취합 결과를 확인하고 명칭을 수정할 수 있습니다. (취합 완료 후 제안 심사(1차 평가) 위원회 연계)
           </p>
         </div>
 
@@ -220,7 +220,7 @@ export default function AdminDashboardPage() {
             <span>등록된 제안평가 회차 ({sessions.length})</span>
           </h3>
           <span className="text-xs text-slate-500">
-            * 각 제안평가 카드의 <strong className="text-sky-600">[제안 목록·배정]</strong> 또는 <strong className="text-slate-800">[평가 취합]</strong> 버튼을 누르면 해당 회차의 데이터가 선택됩니다.
+            * 각 제안평가 카드의 <strong className="text-sky-600">[제안 목록·배정]</strong> 또는 <strong className="text-slate-800">[부서 평가 취합]</strong> 버튼을 누르면 해당 회차의 데이터가 선택됩니다.
           </span>
         </div>
 
@@ -257,7 +257,7 @@ export default function AdminDashboardPage() {
                         )}
                         <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
                           <Clock className="w-3 h-3" />
-                          {s.status === 'ACTIVE' ? '0차 부서평가 진행중' : s.status}
+                          {s.status === 'ACTIVE' ? '부서 평가(0차 평가) 진행중' : s.status}
                         </span>
                       </div>
 
@@ -291,7 +291,7 @@ export default function AdminDashboardPage() {
                         <strong className="text-base font-bold text-slate-800">{s.proposals_count}건</strong>
                       </div>
                       <div>
-                        <span className="text-slate-400 block mb-0.5">0차 평가항목</span>
+                        <span className="text-slate-400 block mb-0.5">부서 평가(0차 평가) 항목</span>
                         <strong className="text-base font-bold text-sky-700">{s.criteria ? s.criteria.length : 2}개 항목</strong>
                       </div>
                     </div>
@@ -312,7 +312,7 @@ export default function AdminDashboardPage() {
                       onClick={() => handleSelectActiveSession(s.id)}
                       className="flex-1 py-2.5 px-3 text-center rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs transition flex items-center justify-center gap-1.5"
                     >
-                      <span>0차 평가 취합</span>
+                      <span>부서 평가(0차 평가) 취합</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </Link>
                   </div>
@@ -492,9 +492,62 @@ export default function AdminDashboardPage() {
               </div>
             )}
 
-            {/* Step 2: 엑셀 파일 선택 */}
+            {/* Step 2: 엑셀 파일 선택 & 양식 가이드 */}
             {step === 2 && (
               <div className="space-y-4 text-xs">
+                {/* 엑셀 양식 다운로드 및 필수 컬럼 가이드 배너 */}
+                <div className="p-4 rounded-xl bg-gradient-to-r from-sky-50 to-blue-50 border border-sky-200 space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                      <h5 className="font-bold text-sky-950 flex items-center gap-1.5 text-xs sm:text-sm">
+                        <FileSpreadsheet className="w-4 h-4 text-sky-600" />
+                        <span>표준 제안 엑셀 서식 및 컬럼(Property) 가이드</span>
+                      </h5>
+                      <p className="text-[11px] text-sky-800/80 mt-0.5">
+                        시스템이 제안을 올바르게 인식하고 담당 부서 평가함으로 자동 배정하기 위해 엑셀 컬럼명이 일치해야 합니다.
+                      </p>
+                    </div>
+
+                    <a
+                      href="/api/sample-excel"
+                      download="GCUC_Proposal_Upload_Template.xlsx"
+                      className="px-3.5 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition whitespace-nowrap self-start sm:self-auto"
+                    >
+                      <DownloadCloud className="w-4 h-4" />
+                      <span>샘플 엑셀 양식 다운로드 (.xlsx)</span>
+                    </a>
+                  </div>
+
+                  {/* 컬럼 가이드 미니 표 */}
+                  <div className="bg-white/90 rounded-lg p-3 border border-sky-200/80 text-[11px] space-y-2">
+                    <div className="font-semibold text-slate-800 flex items-center justify-between">
+                      <span>★ 핵심 필수 컬럼 (헤더명)</span>
+                      <span className="text-[10px] text-slate-500">* 오탈자 없이 정확히 일치 권장</span>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 text-[10px]">
+                      <div className="bg-sky-50/70 p-1.5 rounded border border-sky-100">
+                        <span className="text-sky-700 font-bold block">실행(평가)_부</span>
+                        <span className="text-slate-500">부서평가함 배정 기준</span>
+                      </div>
+                      <div className="bg-sky-50/70 p-1.5 rounded border border-sky-100">
+                        <span className="text-sky-700 font-bold block">실행(평가)_본부/부문</span>
+                        <span className="text-slate-500">본부 조직 분류</span>
+                      </div>
+                      <div className="bg-sky-50/70 p-1.5 rounded border border-sky-100">
+                        <span className="text-sky-700 font-bold block">제안제목</span>
+                        <span className="text-slate-500">제안의 주요 제목</span>
+                      </div>
+                      <div className="bg-sky-50/70 p-1.5 rounded border border-sky-100">
+                        <span className="text-sky-700 font-bold block">제안자 / 연번</span>
+                        <span className="text-slate-500">제안자명 및 고유순번</span>
+                      </div>
+                    </div>
+                    <p className="text-[10px] text-slate-500 leading-relaxed">
+                      ※ 기타 지원 컬럼: <code className="text-sky-800 bg-sky-50 px-1 py-0.5 rounded">게시판번호</code>, <code className="text-sky-800 bg-sky-50 px-1 py-0.5 rounded">접수일자</code>, <code className="text-sky-800 bg-sky-50 px-1 py-0.5 rounded">직급</code>, <code className="text-sky-800 bg-sky-50 px-1 py-0.5 rounded">제안자_본부/부문</code>, <code className="text-sky-800 bg-sky-50 px-1 py-0.5 rounded">제안자_처/실/단</code>, <code className="text-sky-800 bg-sky-50 px-1 py-0.5 rounded">제안자_부</code>, <code className="text-sky-800 bg-sky-50 px-1 py-0.5 rounded">제안구분</code>, <code className="text-sky-800 bg-sky-50 px-1 py-0.5 rounded">분야</code>, <code className="text-sky-800 bg-sky-50 px-1 py-0.5 rounded">제안내용</code>, <code className="text-sky-800 bg-sky-50 px-1 py-0.5 rounded">중복제안여부</code>
+                    </p>
+                  </div>
+                </div>
+
                 <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
                   <h4 className="font-bold text-slate-900 mb-2 flex items-center gap-1.5">
                     <Upload className="w-4 h-4 text-sky-600" />
@@ -518,7 +571,7 @@ export default function AdminDashboardPage() {
                           기본 2026 정제 데이터 (137건) 자동 탑재
                         </strong>
                         <span className="text-slate-500 text-[11px]">
-                          기존 업로드된 137건의 제안 데이터를 해당 평가 건의 심사 대상 제안으로 연결합니다.
+                          기존 2026 혁신제안 137건 데이터를 신규 회차의 심사 대상 제안으로 즉시 자동 복제 및 Supabase DB에 연동합니다.
                         </span>
                       </div>
                     </label>
@@ -533,10 +586,10 @@ export default function AdminDashboardPage() {
                       />
                       <div>
                         <strong className="text-slate-900 block font-semibold">
-                          신규 엑셀 파일 첨부 업로드
+                          신규 엑셀 파일 직접 업로드 (준비중)
                         </strong>
                         <span className="text-slate-500 text-[11px]">
-                          새로운 엑셀(.xlsx) 파일을 직접 업로드하여 일괄 등록합니다.
+                          상단에서 다운로드한 <strong>[표준 제안 엑셀 양식]</strong>에 맞춰 데이터를 작성한 후 업로드합니다.
                         </span>
                       </div>
                     </label>
@@ -567,7 +620,7 @@ export default function AdminDashboardPage() {
                 <div className="flex items-center justify-between">
                   <h4 className="font-bold text-slate-900 flex items-center gap-1.5">
                     <Settings className="w-4 h-4 text-sky-600" />
-                    부서 0차 평가 심사 항목 설정
+                    부서 평가(0차 평가) 심사 항목 설정
                   </h4>
                   <span className="text-slate-400">총 {customCriteria.length}개 항목</span>
                 </div>

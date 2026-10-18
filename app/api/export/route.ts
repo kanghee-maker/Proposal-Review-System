@@ -32,10 +32,13 @@ export async function GET(req: Request) {
         '실행(평가)_부': p.assigned_department,
         '접수일자': p.submitted_at,
         '제안제목': p.title,
-        '0차_부서평가상태': p.status,
-        '0차_부서검토결과(Result)': result,
-        '0차_부서검토의견(Opinion)': opinion,
-        '0차_평가제출일시': submittedAt
+        '부서평가(0차)_상태': p.status,
+        '부서평가(0차)_검토결과(Result)': result,
+        '부서평가(0차)_검토의견(Opinion)': opinion,
+        '부서평가(0차)_제출일시': submittedAt,
+        '실행부서_변경요청여부': p.transfer_requested ? '요청중' : (p.transfer_status || ''),
+        '희망_이관부서': p.transfer_target_dept || '',
+        '부서변경_요청사유': p.transfer_reason || ''
       };
     });
 
@@ -46,11 +49,12 @@ export async function GET(req: Request) {
       { wch: 6 },  { wch: 10 }, { wch: 10 }, { wch: 10 },
       { wch: 15 }, { wch: 18 }, { wch: 16 }, { wch: 10 },
       { wch: 14 }, { wch: 15 }, { wch: 18 }, { wch: 16 },
-      { wch: 20 }, { wch: 45 }, { wch: 14 }, { wch: 20 },
-      { wch: 45 }, { wch: 20 }
+      { wch: 20 }, { wch: 45 }, { wch: 18 }, { wch: 24 },
+      { wch: 45 }, { wch: 20 }, { wch: 18 }, { wch: 18 },
+      { wch: 35 }
     ];
 
-    XLSX.utils.book_append_sheet(wb, ws, '0차_부서평가_최종결과');
+    XLSX.utils.book_append_sheet(wb, ws, '부서평가(0차)_최종결과');
     const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
 
     return new Response(buffer, {
