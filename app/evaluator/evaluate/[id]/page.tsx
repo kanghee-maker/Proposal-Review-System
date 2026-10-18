@@ -128,27 +128,27 @@ export default function EvaluateProposalPage() {
         )}
       </div>
 
-      {/* Main 2-Column Grid */}
-      <div className="grid lg:grid-cols-12 gap-6">
+      {/* Main 2-Column Grid (모바일 1열 스택, PC 2열) */}
+      <div className="grid lg:grid-cols-12 gap-4 sm:gap-6">
         {/* Left Column: 제안 원문 상세 (7 cols) */}
-        <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-5">
-          <div className="border-b border-slate-100 pb-4">
-            <div className="flex flex-wrap items-center gap-2 text-xs mb-2.5">
+        <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-sm space-y-4 sm:space-y-5">
+          <div className="border-b border-slate-100 pb-3 sm:pb-4">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs mb-2">
               <span className="bg-slate-100 text-slate-600 font-mono font-bold px-2 py-0.5 rounded">
                 연번 #{proposal.seq_no}
               </span>
               <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono">
                 게시판 #{proposal.board_no}
               </span>
-              <span className="bg-sky-50 text-sky-700 px-2.5 py-0.5 rounded-full font-semibold">
+              <span className="bg-sky-50 text-sky-700 px-2 py-0.5 rounded-full font-semibold">
                 {proposal.proposal_type}
               </span>
-              <span className="bg-emerald-50 text-emerald-700 px-2.5 py-0.5 rounded-full font-semibold">
+              <span className="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-semibold">
                 분야: {proposal.category}
               </span>
             </div>
 
-            <h2 className="text-xl font-extrabold text-slate-900 leading-snug">
+            <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 leading-snug">
               {proposal.title}
             </h2>
           </div>
@@ -212,9 +212,9 @@ export default function EvaluateProposalPage() {
         </div>
 
         {/* Right Column: 0차 부서 평가표 (5 cols) */}
-        <div className="lg:col-span-5 bg-white rounded-2xl border-2 border-emerald-500/30 p-6 shadow-md flex flex-col justify-between space-y-6">
+        <div className="lg:col-span-5 bg-white rounded-2xl border-2 border-emerald-500/30 p-4 sm:p-6 shadow-md flex flex-col justify-between space-y-4 sm:space-y-6">
           <div>
-            <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-5">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
               <div>
                 <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
                   STAGE 0

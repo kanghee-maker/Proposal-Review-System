@@ -31,40 +31,44 @@ export default function EvaluatorLayout({ children }: { children: React.ReactNod
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col text-slate-800">
       {/* Header */}
-      <header className="bg-emerald-950 text-white shadow-md">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link href="/evaluator" className="flex items-center gap-3">
-            <div className="bg-white px-2 py-1 rounded-lg shadow-sm flex items-center justify-center">
-              <img src="/images/logo.png" alt="과천도시공사 로고" className="h-6 w-auto object-contain" />
+      <header className="bg-emerald-950 text-white shadow-md sticky top-0 z-40">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between">
+          <Link href="/evaluator" className="flex items-center gap-2 sm:gap-3">
+            <div className="bg-white p-1 rounded-lg shadow-sm flex items-center justify-center">
+              <img src="/images/logo.png" alt="과천도시공사 로고" className="h-5 sm:h-6 w-auto object-contain" />
             </div>
             <div>
-              <h1 className="font-bold text-base leading-tight tracking-tight text-white">과천도시공사 제안 평가 시스템</h1>
-              <p className="text-[11px] text-emerald-300 font-medium tracking-wide">0차 부서평가 전용 포털</p>
+              <h1 className="font-bold text-sm sm:text-base leading-tight tracking-tight text-white line-clamp-1">
+                제안 평가 시스템
+              </h1>
+              <p className="text-[10px] sm:text-[11px] text-emerald-300 font-medium tracking-wide">
+                0차 부서평가 전용
+              </p>
             </div>
           </Link>
 
-          <div className="flex items-center gap-4 text-xs">
-            <div className="bg-emerald-900/80 px-3.5 py-1.5 rounded-xl border border-emerald-800/80 flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-emerald-400" />
-              <span>평가부서: <strong className="text-white font-bold">{deptName}</strong></span>
-              <span className="text-emerald-500">|</span>
-              <User className="w-3.5 h-3.5 text-emerald-400" />
-              <span>{userName}</span>
+          <div className="flex items-center gap-2 sm:gap-4 text-xs">
+            <div className="bg-emerald-900/80 px-2.5 sm:px-3.5 py-1.5 rounded-xl border border-emerald-800/80 flex items-center gap-1.5 sm:gap-2">
+              <Building2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+              <strong className="text-white text-xs truncate max-w-[100px] sm:max-w-none">{deptName}</strong>
+              <span className="text-emerald-500 hidden sm:inline">|</span>
+              <span className="text-slate-300 hidden sm:inline">{userName}</span>
             </div>
 
             <button
               onClick={handleLogout}
-              className="flex items-center gap-1.5 text-slate-300 hover:text-white bg-emerald-900/60 hover:bg-emerald-900 px-3 py-1.5 rounded-lg border border-emerald-800 transition"
+              className="flex items-center gap-1 text-slate-300 hover:text-white bg-emerald-900/60 hover:bg-emerald-900 px-2.5 py-1.5 rounded-lg border border-emerald-800 transition"
+              title="로그아웃"
             >
               <LogOut className="w-3.5 h-3.5" />
-              <span>로그아웃</span>
+              <span className="hidden sm:inline">로그아웃</span>
             </button>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 max-w-6xl w-full mx-auto px-6 py-8">
+      <main className="flex-1 max-w-6xl w-full mx-auto px-3 sm:px-6 py-4 sm:py-8">
         {children}
       </main>
 

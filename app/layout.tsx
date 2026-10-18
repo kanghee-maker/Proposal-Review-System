@@ -6,6 +6,12 @@ export const metadata: Metadata = {
   description: '과천도시공사 혁신 제안 0차 부서평가 및 회차별 심사 관리 시스템',
 };
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+};
+
 export default function RootLayout({
   children,
 }: {
