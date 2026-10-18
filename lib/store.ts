@@ -191,33 +191,33 @@ function markSystemInitialized(): void {
 }
 
 export async function getSessionsAsync(): Promise<EvaluationSession[]> {
+  const localSessions = getSessions();
   try {
     const { data, error } = await supabase.from('evaluation_sessions').select('*');
-    if (!error && Array.isArray(data)) {
-      if (data.length > 0) {
-        markSystemInitialized();
-        return data.map(s => ({
+    if (!error && Array.isArray(data) && data.length > 0) {
+      markSystemInitialized();
+      const localMap = new Map(localSessions.map(s => [s.id, s]));
+      return data.map(s => {
+        const local = localMap.get(s.id);
+        return {
           id: s.id,
           title: s.title,
           year: s.year,
           description: s.description,
-          stage: s.stage || 'STAGE_0',
-          source_session_id: s.source_session_id,
-          judges: s.judges || (s.stage === 'STAGE_1' ? DEFAULT_STAGE1_JUDGES : undefined),
+          stage: local?.stage || s.stage || 'STAGE_0',
+          source_session_id: local?.source_session_id || s.source_session_id,
+          judges: local?.judges || s.judges || (s.stage === 'STAGE_1' ? DEFAULT_STAGE1_JUDGES : undefined),
           status: s.status,
           created_at: s.created_at,
-          proposals_count: s.proposals_count || 0,
-          criteria: s.criteria || (s.stage === 'STAGE_1' ? getDefaultStage1Criteria() : getDefaultCriteria())
-        }));
-      } else if (isSystemInitialized()) {
-        // 이미 초기화된 상태에서 사용자가 모든 회차를 삭제한 경우 빈 배열 유지
-        return [];
-      }
+          proposals_count: s.proposals_count || local?.proposals_count || 0,
+          criteria: s.criteria || local?.criteria || (s.stage === 'STAGE_1' ? getDefaultStage1Criteria() : getDefaultCriteria())
+        };
+      });
     }
   } catch (err) {
     // fallback
   }
-  return getSessions();
+  return localSessions;
 }
 
 export function getSessions(): EvaluationSession[] {
@@ -248,22 +248,19 @@ export async function saveSessionAsync(session: EvaluationSession): Promise<void
   if (session.stage === 'STAGE_1' && (!session.judges || session.judges.length === 0)) {
     session.judges = DEFAULT_STAGE1_JUDGES;
   }
+  saveSession(session);
   try {
     await supabase.from('evaluation_sessions').upsert({
       id: session.id,
       title: session.title,
       year: session.year,
       description: session.description,
-      stage: session.stage,
-      source_session_id: session.source_session_id,
-      judges: session.judges,
       status: session.status,
       proposals_count: session.proposals_count,
       criteria: session.criteria,
       created_at: session.created_at
     });
   } catch (err) {}
-  saveSession(session);
 }
 
 export async function updateSessionAsync(sessionData: Partial<EvaluationSession> & { id: string }): Promise<EvaluationSession | null> {
@@ -276,14 +273,13 @@ export async function updateSessionAsync(sessionData: Partial<EvaluationSession>
     ...sessionData
   };
 
+  saveSession(updated);
+
   try {
     await supabase.from('evaluation_sessions').update({
       title: updated.title,
       year: updated.year,
       description: updated.description,
-      stage: updated.stage,
-      source_session_id: updated.source_session_id,
-      judges: updated.judges,
       status: updated.status,
       proposals_count: updated.proposals_count,
       criteria: updated.criteria
@@ -292,7 +288,6 @@ export async function updateSessionAsync(sessionData: Partial<EvaluationSession>
     console.error('Error updating session in Supabase:', err);
   }
 
-  saveSession(updated);
   return updated;
 }
 
