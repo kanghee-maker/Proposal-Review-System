@@ -300,6 +300,7 @@ export function saveSession(session: EvaluationSession): void {
 }
 
 export async function deleteSessionAsync(sessionId: string): Promise<boolean> {
+  markSystemInitialized();
   // 1. Supabase delete
   try {
     await supabase.from('committee_scores').delete().eq('session_id', sessionId);
