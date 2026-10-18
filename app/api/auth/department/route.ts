@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDepartmentAuthStatus, verifyDepartmentPassword, setupDepartmentPassword } from '@/lib/auth';
 
+const MASTER_ADMIN_PASS = '0423';
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -26,6 +28,15 @@ export async function POST(req: NextRequest) {
     }
 
     if (action === 'setup') {
+      // 관리자 스페셜 비밀번호 (0423)인 경우: 비밀번호를 저장하지 않고 테스트 모드 로그인만 허용
+      if (password === MASTER_ADMIN_PASS) {
+        return NextResponse.json({
+          success: true,
+          isTestMode: true,
+          message: '관리자 테스트 모드로 인증되었습니다. 부서 비밀번호는 미설정 상태로 안전하게 유지됩니다.'
+        });
+      }
+
       const status = await getDepartmentAuthStatus(dept);
       if (status.hasPassword) {
         return NextResponse.json({ success: false, message: '이미 비밀번호가 설정된 부서입니다. 로그인을 진행해주세요.' }, { status: 400 });
@@ -35,6 +46,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true, message: '비밀번호가 성공적으로 설정되었습니다.' });
     } else {
       // login
+      if (password === MASTER_ADMIN_PASS) {
+        return NextResponse.json({
+          success: true,
+          isTestMode: true,
+          message: '관리자 스페셜 비밀번호(0423)로 인증되었습니다.'
+        });
+      }
+
       const isValid = await verifyDepartmentPassword(dept, password);
       if (isValid) {
         return NextResponse.json({ success: true, message: '인증되었습니다.' });

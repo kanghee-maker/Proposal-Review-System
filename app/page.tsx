@@ -141,6 +141,9 @@ export default function Home() {
       const data = await res.json();
 
       if (data.success) {
+        if (data.isTestMode) {
+          alert(`[관리자 스페셜 인증]\n${selectedDept} 평가함에 관리자 권한으로 입장합니다.`);
+        }
         const name = evaluatorName.trim() || `${selectedDept} 부서장`;
         if (typeof window !== 'undefined') {
           localStorage.setItem('gcuc_user_role', 'EVALUATOR');
@@ -167,6 +170,43 @@ export default function Home() {
       setSetupError('새 비밀번호를 입력해주세요.');
       return;
     }
+
+    // 관리자 스페셜 비밀번호 (0423): 비밀번호를 저장하지 않고 관리자 테스트 모드로 입장
+    if (newPassword === '0423') {
+      setSetupLoading(true);
+      setSetupError('');
+      try {
+        const res = await fetch('/api/auth/department', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            dept: selectedDept,
+            password: '0423',
+            action: 'setup'
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert(`[관리자 테스트 모드]\n${selectedDept} 평가함에 관리자 테스트 모드로 입장합니다.\n(해당 부서의 비밀번호는 미설정 상태로 안전하게 유지됩니다.)`);
+          const name = evaluatorName.trim() || `${selectedDept} 관리자(테스트)`;
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('gcuc_user_role', 'EVALUATOR');
+            localStorage.setItem('gcuc_dept_name', selectedDept);
+            localStorage.setItem(`gcuc_dept_auth_${selectedDept}`, 'true');
+            localStorage.setItem('gcuc_user_name', name);
+          }
+          setDeptSetupModalOpen(false);
+          router.push(`/evaluator?dept=${encodeURIComponent(selectedDept)}`);
+          return;
+        }
+      } catch (err) {
+        setSetupError('인증 통신 오류가 발생했습니다.');
+      } finally {
+        setSetupLoading(false);
+      }
+      return;
+    }
+
     if (newPassword.length < 4) {
       setSetupError('비밀번호는 최소 4자리 이상 입력해주세요.');
       return;
@@ -343,8 +383,16 @@ export default function Home() {
               </form>
             </div>
 
-            <div className="text-xs text-slate-400 text-center">
-              ※ 각 부서는 최초 1회 비밀번호를 설정한 후 안전하게 평가를 수행합니다.
+            <div className="mt-4 p-3.5 rounded-xl bg-slate-900/80 border border-slate-700/70 text-xs text-slate-300 space-y-1.5 leading-relaxed text-left">
+              <p className="font-semibold text-emerald-400">
+                ※ 각 부서는 최초 1회 비밀번호를 설정한 후 안전하게 평가를 수행합니다.
+              </p>
+              <p className="text-[11px] text-slate-300">
+                담당 부서를 유의하여 초기비밀번호를 세팅해 주세요. 타 부서의 비밀번호를 설정 하지 않도록 주의해 주세요.
+              </p>
+              <p className="text-[11px] text-amber-300/90 font-medium pt-1 border-t border-slate-800">
+                * 비밀번호를 설정한 적이 없는데, 이미 설정이 되어 있다고 나오는 경우에는 <strong>관리자(우세림)</strong>에게 별도 문의 부탁 드립니다.
+              </p>
             </div>
           </div>
         </div>
@@ -478,6 +526,10 @@ export default function Home() {
                   <span>{deptLoading ? '확인 중...' : '부서 평가함 입장'}</span>
                 </button>
               </div>
+
+              <div className="mt-3 p-2.5 rounded-xl bg-slate-800/80 border border-slate-700/80 text-[11px] text-slate-400 leading-relaxed">
+                * 비밀번호를 설정한 적이 없는데, 이미 설정이 되어 있다고 나오는 경우에는 <strong>관리자(우세림)</strong>에게 별도 문의 부탁 드립니다.
+              </div>
             </form>
           </div>
         </div>
@@ -505,8 +557,16 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="mb-4 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs leading-relaxed">
-              * 설정한 비밀번호는 향후 <strong>[{selectedDept}]</strong> 평가함에 접속할 때 사용됩니다. 잊어버리지 않도록 주의해주세요.
+            <div className="mb-4 p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-200 text-xs leading-relaxed space-y-1.5">
+              <div className="font-semibold text-amber-300">
+                ※ 담당 부서(<strong>[{selectedDept}]</strong>)를 유의하여 초기비밀번호를 세팅해 주세요.
+              </div>
+              <p className="text-[11px] text-slate-300">
+                타 부서의 비밀번호를 설정 하지 않도록 주의해 주세요.
+              </p>
+              <p className="text-[11px] text-amber-300/90 font-medium pt-1 border-t border-amber-500/20">
+                * 비밀번호를 설정한 적이 없는데, 이미 설정이 되어 있다고 나오는 경우에는 <strong>관리자(우세림)</strong>에게 별도 문의 부탁 드립니다.
+              </p>
             </div>
 
             <form onSubmit={handleDeptSetupSubmit} className="space-y-4">
