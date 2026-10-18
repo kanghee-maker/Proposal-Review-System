@@ -34,11 +34,11 @@ export default function EvaluatorLayout({ children }: { children: React.ReactNod
       <header className="bg-emerald-950 text-white shadow-md">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/evaluator" className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-emerald-600 flex items-center justify-center font-bold text-white shadow">
-              GC
+            <div className="bg-white px-2 py-1 rounded-lg shadow-sm flex items-center justify-center">
+              <img src="/images/logo.png" alt="과천도시공사 로고" className="h-6 w-auto object-contain" />
             </div>
             <div>
-              <h1 className="font-bold text-base leading-tight tracking-tight">과천도시공사 제안 평가 시스템</h1>
+              <h1 className="font-bold text-base leading-tight tracking-tight text-white">과천도시공사 제안 평가 시스템</h1>
               <p className="text-[11px] text-emerald-300 font-medium tracking-wide">0차 부서평가 전용 포털</p>
             </div>
           </Link>

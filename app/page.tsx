@@ -54,13 +54,13 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-sky-950 text-white flex flex-col justify-between">
       {/* Header */}
       <header className="border-b border-slate-700/60 bg-slate-900/60 backdrop-blur px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-600 to-cyan-400 flex items-center justify-center font-bold text-lg shadow-lg shadow-sky-500/20">
-            GC
+        <div className="flex items-center gap-3.5">
+          <div className="bg-white px-2.5 py-1.5 rounded-xl shadow-sm flex items-center justify-center">
+            <img src="/images/logo.png" alt="과천도시공사 로고" className="h-7 w-auto object-contain" />
           </div>
           <div>
             <h1 className="font-bold text-lg leading-tight tracking-tight">과천도시공사 제안 평가 시스템</h1>
-            <p className="text-xs text-sky-300 font-medium">GWAMCHEON CITY URBAN CORPORATION</p>
+            <p className="text-xs text-sky-300 font-medium tracking-wide">GWACHEON CITY URBAN CORPORATION</p>
           </div>
         </div>
         <div className="text-xs text-slate-400 bg-slate-800/80 px-3 py-1.5 rounded-full border border-slate-700">

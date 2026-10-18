@@ -30,12 +30,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <header className="bg-slate-900 text-white shadow-md">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link href="/admin" className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-lg bg-sky-600 flex items-center justify-center font-bold text-white shadow">
-                GC
+            <Link href="/admin" className="flex items-center gap-3">
+              <div className="bg-white px-2 py-1 rounded-lg shadow-sm flex items-center justify-center">
+                <img src="/images/logo.png" alt="과천도시공사 로고" className="h-6 w-auto object-contain" />
               </div>
               <div>
-                <h1 className="font-bold text-base leading-tight tracking-tight">과천도시공사 제안 평가 시스템</h1>
+                <h1 className="font-bold text-base leading-tight tracking-tight text-white">과천도시공사 제안 평가 시스템</h1>
                 <p className="text-[11px] text-sky-300 font-medium tracking-wide">ADMINISTRATION PORTAL</p>
               </div>
             </Link>
