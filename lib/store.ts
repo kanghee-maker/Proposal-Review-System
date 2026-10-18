@@ -355,10 +355,13 @@ export async function deleteSessionAsync(sessionId: string): Promise<boolean> {
 }
 
 function toSupabaseProposal(p: Proposal) {
-  let contentText = p.content || '';
-  if (p.expected_effect) {
-    contentText = contentText ? `${contentText}\n\n[기대효과]\n${p.expected_effect}` : `[기대효과]\n${p.expected_effect}`;
-  }
+  const parts: string[] = [];
+  if (p.background) parts.push(`[배경]\n${p.background}`);
+  if (p.content) parts.push(p.background ? `[추진내용]\n${p.content}` : p.content);
+  if (p.expected_effect) parts.push(`[기대효과]\n${p.expected_effect}`);
+  if (p.attachment_note) parts.push(`[첨부 자료(사진, 현황자료 등)]\n${p.attachment_note}`);
+  const contentText = parts.join('\n\n');
+
   return {
     id: p.id,
     session_id: p.session_id,
@@ -388,8 +391,28 @@ function toSupabaseProposal(p: Proposal) {
 // 4. 제안 목록 (Proposals)
 export async function seedDefaultProposalsForSessionAsync(sessionId: string): Promise<Proposal[]> {
   const rawProposals = readJson<any[]>('proposals_2026_structured.json', []);
+  const attachmentsIndex = await getAttachmentsIndexAsync();
+  let indexChanged = false;
+
   const proposals: Proposal[] = rawProposals.map((item, index) => {
     const id = sessionId === DEFAULT_SESSION_ID ? `prop-${item.no || index + 1}` : `${sessionId}-prop-${item.no || index + 1}`;
+    const defaultAtts: ProposalAttachment[] = Array.isArray(item.default_attachments)
+      ? item.default_attachments.map((att: any, attIdx: number) => ({
+          id: `${id}-att-default-${attIdx + 1}`,
+          proposal_id: id,
+          name: att.name,
+          size: att.size,
+          type: att.type,
+          uploaded_at: att.uploaded_at || new Date().toISOString(),
+          static_url: att.static_url
+        }))
+      : [];
+
+    if (defaultAtts.length > 0 && (!attachmentsIndex[id] || attachmentsIndex[id].length === 0)) {
+      attachmentsIndex[id] = defaultAtts;
+      indexChanged = true;
+    }
+
     return {
       id,
       session_id: sessionId,
@@ -409,20 +432,27 @@ export async function seedDefaultProposalsForSessionAsync(sessionId: string): Pr
       assigned_raw_dept: item.assigned_raw_dept || '',
       submitted_at: item.submitted_at || '',
       title: item.title || '',
+      background: item.background || '',
+      content: item.content || '',
+      expected_effect: item.expected_effect || '',
+      attachment_note: item.attachment_note || '',
+      extra_sheets: item.extra_sheets,
+      attachments: attachmentsIndex[id] || defaultAtts,
       is_duplicate: item.is_duplicate || '',
       duplicate_title: item.duplicate_title || '',
       status: '미평가' as const
     };
   });
 
+  if (indexChanged) {
+    await saveAttachmentsIndexAsync(attachmentsIndex);
+  }
+
   // Local store sync
   let currentStore = readJson<Proposal[]>('proposals_store.json', []);
-  const existingIds = new Set(currentStore.map(p => p.id));
-  const toAdd = proposals.filter(p => !existingIds.has(p.id));
-  if (toAdd.length > 0) {
-    currentStore.push(...toAdd);
-    writeJson('proposals_store.json', currentStore);
-  }
+  currentStore = currentStore.filter(p => p.session_id !== sessionId);
+  currentStore.push(...proposals);
+  writeJson('proposals_store.json', currentStore);
 
   // Supabase sync in chunks
   try {
@@ -689,6 +719,40 @@ export async function deleteProposalAttachmentAsync(
 }
 
 export async function getAttachmentFileAsync(attachmentId: string): Promise<ProposalAttachment | null> {
+  // 1. Check attachments index for static_url first
+  const indexMap = await getAttachmentsIndexAsync();
+  for (const list of Object.values(indexMap)) {
+    if (Array.isArray(list)) {
+      const found = list.find(a => a.id === attachmentId);
+      if (found && found.static_url) {
+        return found;
+      }
+    }
+  }
+
+  // 2. Check default_attachments in proposals_2026_structured.json by matching suffix or id
+  const rawProposals = readJson<any[]>('proposals_2026_structured.json', []);
+  for (const item of rawProposals) {
+    if (Array.isArray(item.default_attachments)) {
+      const m = attachmentId.match(/-prop-(\d+)-att-default-(\d+)$/) || attachmentId.match(/^prop-(\d+)-att-default-(\d+)$/);
+      if (m && Number(m[1]) === Number(item.no)) {
+        const attIdx = Number(m[2]) - 1;
+        const rawAtt = item.default_attachments[attIdx];
+        if (rawAtt) {
+          return {
+            id: attachmentId,
+            proposal_id: attachmentId.replace(/-att-default-\d+$/, ''),
+            name: rawAtt.name,
+            size: rawAtt.size,
+            type: rawAtt.type,
+            uploaded_at: rawAtt.uploaded_at || new Date().toISOString(),
+            static_url: rawAtt.static_url
+          };
+        }
+      }
+    }
+  }
+
   try {
     const { data, error } = await supabase
       .from('organization_charts')
@@ -708,6 +772,11 @@ export async function getProposalsAsync(sessionId?: string): Promise<Proposal[]>
   const localList = getProposals(sessionId);
   const localMap = new Map(localList.map(p => [p.id, p]));
   const attachmentsIndex = await getAttachmentsIndexAsync();
+  const rawProposals = readJson<any[]>('proposals_2026_structured.json', []);
+  const rawByNoAndTitle = new Map<string, any>();
+  rawProposals.forEach(item => {
+    rawByNoAndTitle.set(`${item.no}::${item.title}`, item);
+  });
 
   try {
     let query = supabase.from('proposals').select('*').order('seq_no', { ascending: true });
@@ -718,6 +787,20 @@ export async function getProposalsAsync(sessionId?: string): Promise<Proposal[]>
     if (!error && Array.isArray(data) && data.length > 0) {
       return data.map(p => {
         const local = localMap.get(p.id);
+        const rawMatch = rawByNoAndTitle.get(`${p.seq_no}::${p.title}`);
+        const fallbackDefaultAtts: ProposalAttachment[] =
+          rawMatch && Array.isArray(rawMatch.default_attachments)
+            ? rawMatch.default_attachments.map((att: any, attIdx: number) => ({
+                id: `${p.id}-att-default-${attIdx + 1}`,
+                proposal_id: p.id,
+                name: att.name,
+                size: att.size,
+                type: att.type,
+                uploaded_at: att.uploaded_at || new Date().toISOString(),
+                static_url: att.static_url
+              }))
+            : [];
+
         return {
           id: p.id,
           session_id: p.session_id,
@@ -737,11 +820,15 @@ export async function getProposalsAsync(sessionId?: string): Promise<Proposal[]>
           assigned_raw_dept: p.assigned_raw_dept,
           submitted_at: p.submitted_at,
           title: p.title,
-          content: p.content,
+          background: local?.background || rawMatch?.background || '',
+          content: local?.content || rawMatch?.content || p.content || '',
+          expected_effect: local?.expected_effect || rawMatch?.expected_effect || '',
+          attachment_note: local?.attachment_note || rawMatch?.attachment_note || '',
+          extra_sheets: local?.extra_sheets || rawMatch?.extra_sheets,
           is_duplicate: p.is_duplicate,
           duplicate_title: p.duplicate_title,
           status: p.status,
-          attachments: attachmentsIndex[p.id] || local?.attachments || [],
+          attachments: attachmentsIndex[p.id] || local?.attachments || fallbackDefaultAtts,
           transfer_requested: p.transfer_requested ?? local?.transfer_requested,
           transfer_target_dept: p.transfer_target_dept ?? local?.transfer_target_dept,
           transfer_reason: p.transfer_reason ?? local?.transfer_reason,
@@ -769,8 +856,13 @@ export async function getProposalsAsync(sessionId?: string): Promise<Proposal[]>
 export function getProposals(sessionId?: string): Proposal[] {
   let proposals = readJson<Proposal[]>('proposals_store.json', []);
   const localIndex = readJson<Record<string, ProposalAttachment[]>>('proposal_attachments_index.json', {});
+  const rawProposals = readJson<any[]>('proposals_2026_structured.json', []);
+  const rawByNoAndTitle = new Map<string, any>();
+  rawProposals.forEach(item => {
+    rawByNoAndTitle.set(`${item.no}::${item.title}`, item);
+  });
+
   if (!isSystemInitialized() && proposals.length === 0) {
-    const rawProposals = readJson<any[]>('proposals_2026_structured.json', []);
     const evaluations = getEvaluations(DEFAULT_SESSION_ID);
     const evalMap = new Map(evaluations.map(e => [e.proposal_id, e]));
 
@@ -801,6 +893,11 @@ export function getProposals(sessionId?: string): Proposal[] {
         assigned_raw_dept: item.assigned_raw_dept || '',
         submitted_at: item.submitted_at || '',
         title: item.title || '',
+        background: item.background || '',
+        content: item.content || '',
+        expected_effect: item.expected_effect || '',
+        attachment_note: item.attachment_note || '',
+        extra_sheets: item.extra_sheets,
         is_duplicate: item.is_duplicate || '',
         duplicate_title: item.duplicate_title || '',
         status
@@ -809,10 +906,30 @@ export function getProposals(sessionId?: string): Proposal[] {
     writeJson('proposals_store.json', proposals);
   }
 
-  const enriched = proposals.map(p => ({
-    ...p,
-    attachments: localIndex[p.id] || p.attachments || []
-  }));
+  const enriched = proposals.map(p => {
+    const rawMatch = rawByNoAndTitle.get(`${p.seq_no}::${p.title}`);
+    const fallbackDefaultAtts: ProposalAttachment[] =
+      rawMatch && Array.isArray(rawMatch.default_attachments)
+        ? rawMatch.default_attachments.map((att: any, attIdx: number) => ({
+            id: `${p.id}-att-default-${attIdx + 1}`,
+            proposal_id: p.id,
+            name: att.name,
+            size: att.size,
+            type: att.type,
+            uploaded_at: att.uploaded_at || new Date().toISOString(),
+            static_url: att.static_url
+          }))
+        : [];
+    return {
+      ...p,
+      background: p.background || rawMatch?.background || '',
+      content: p.content || rawMatch?.content || '',
+      expected_effect: p.expected_effect || rawMatch?.expected_effect || '',
+      attachment_note: p.attachment_note || rawMatch?.attachment_note || '',
+      extra_sheets: p.extra_sheets || rawMatch?.extra_sheets,
+      attachments: localIndex[p.id] || p.attachments || fallbackDefaultAtts
+    };
+  });
 
   if (sessionId) {
     return enriched.filter(p => p.session_id === sessionId);

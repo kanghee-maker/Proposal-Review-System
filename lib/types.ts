@@ -90,6 +90,12 @@ export interface ProposalAttachment {
   type: string;
   uploaded_at: string;
   data_url?: string;
+  static_url?: string;
+}
+
+export interface ProposalExtraSheet {
+  sheetName: string;
+  rows: string[][];
 }
 
 export interface Proposal {
@@ -112,8 +118,11 @@ export interface Proposal {
   assigned_dept_code?: string;
   submitted_at: string;
   title: string;
+  background?: string;
   content?: string;
   expected_effect?: string;
+  attachment_note?: string;
+  extra_sheets?: ProposalExtraSheet[];
   is_duplicate: string;
   duplicate_title: string;
   status: '미평가' | '평가작성중' | '평가완료';

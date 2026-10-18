@@ -1,3 +1,5 @@
+import fs from 'fs';
+import path from 'path';
 import { NextResponse } from 'next/server';
 import {
   addProposalAttachmentAsync,
@@ -23,22 +25,41 @@ export async function GET(req: Request) {
       return NextResponse.json({ success: false, error: '첨부파일을 찾을 수 없습니다.' }, { status: 404 });
     }
 
-    if (download === '1' && attachment.data_url) {
-      const match = attachment.data_url.match(/^data:([^;]+);base64,(.+)$/);
-      const mimeType = match ? match[1] : (attachment.type || 'application/octet-stream');
-      const base64Data = match ? match[2] : attachment.data_url;
-      const buffer = Buffer.from(base64Data, 'base64');
-      const encodedName = encodeURIComponent(attachment.name);
-
-      return new Response(buffer, {
-        status: 200,
-        headers: {
-          'Content-Type': mimeType,
-          'Content-Disposition': `attachment; filename*=UTF-8''${encodedName}`,
-          'Content-Length': String(buffer.length),
-          'Cache-Control': 'no-store'
+    if (download === '1') {
+      if (attachment.static_url) {
+        const filePath = path.join(process.cwd(), 'public', 'default-attachments', attachment.name);
+        if (fs.existsSync(filePath)) {
+          const buffer = fs.readFileSync(filePath);
+          const encodedName = encodeURIComponent(attachment.name);
+          return new Response(buffer, {
+            status: 200,
+            headers: {
+              'Content-Type': attachment.type || 'application/octet-stream',
+              'Content-Disposition': `attachment; filename*=UTF-8''${encodedName}`,
+              'Content-Length': String(buffer.length),
+              'Cache-Control': 'no-store'
+            }
+          });
         }
-      });
+      }
+
+      if (attachment.data_url) {
+        const match = attachment.data_url.match(/^data:([^;]+);base64,(.+)$/);
+        const mimeType = match ? match[1] : (attachment.type || 'application/octet-stream');
+        const base64Data = match ? match[2] : attachment.data_url;
+        const buffer = Buffer.from(base64Data, 'base64');
+        const encodedName = encodeURIComponent(attachment.name);
+
+        return new Response(buffer, {
+          status: 200,
+          headers: {
+            'Content-Type': mimeType,
+            'Content-Disposition': `attachment; filename*=UTF-8''${encodedName}`,
+            'Content-Length': String(buffer.length),
+            'Cache-Control': 'no-store'
+          }
+        });
+      }
     }
 
     return NextResponse.json({ success: true, attachment });

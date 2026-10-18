@@ -376,23 +376,107 @@ export default function EvaluateProposalPage() {
             </div>
           )}
 
-          {/* 제안 내용 안내 */}
-          <div className="space-y-2 pt-2">
-            <h4 className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
-              <FileText className="w-4 h-4 text-sky-600" />
-              제안 주요 골자 및 타당성 검토 포인트
-            </h4>
-            <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 text-xs text-slate-700 leading-relaxed space-y-2">
-              <p>
-                본 제안은 <strong>{proposal.proposer_name}</strong> 제안자가 공사 혁신 및 업무개선을 위해 제안한 내용입니다.
-              </p>
-              <p className="text-slate-600 bg-white p-3 rounded-lg border border-slate-200 font-medium">
-                "{proposal.title}"
-              </p>
-              <p className="text-[11px] text-slate-500">
-                * 해당 제안이 부서의 실무 여건상 실현 가능한지, 예산 및 인력 배치가 타당한지 종합적으로 검토하여 우측 평가표를 작성해 주시기 바랍니다.
-              </p>
+          {/* 제안서 상세 내용 (첨부 xlsx 원문 바로보기) */}
+          <div className="space-y-3 pt-2">
+            <div className="flex items-center justify-between">
+              <h4 className="font-bold text-slate-800 text-xs sm:text-sm flex items-center gap-1.5">
+                <FileText className="w-4 h-4 text-sky-600" />
+                <span>제안서 본문 상세 내용</span>
+              </h4>
+              {(proposal.background || proposal.content || proposal.expected_effect) && (
+                <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-sky-50 text-sky-700 border border-sky-200">
+                  제안서(.xlsx) 원문 자동 연동됨
+                </span>
+              )}
             </div>
+
+            {proposal.background || proposal.content || proposal.expected_effect ? (
+              <div className="border border-slate-200 rounded-xl overflow-hidden bg-white divide-y divide-slate-200 text-xs">
+                {proposal.background && (
+                  <div className="grid sm:grid-cols-12">
+                    <div className="sm:col-span-2 bg-slate-50 px-3.5 py-3 font-bold text-slate-700 flex items-start sm:border-r border-slate-200">
+                      배 경
+                    </div>
+                    <div className="sm:col-span-10 p-3.5 text-slate-800 whitespace-pre-wrap leading-relaxed">
+                      {proposal.background}
+                    </div>
+                  </div>
+                )}
+
+                {proposal.content && (
+                  <div className="grid sm:grid-cols-12">
+                    <div className="sm:col-span-2 bg-slate-50 px-3.5 py-3 font-bold text-slate-700 flex items-start sm:border-r border-slate-200">
+                      추진내용
+                    </div>
+                    <div className="sm:col-span-10 p-3.5 text-slate-800 whitespace-pre-wrap leading-relaxed">
+                      {proposal.content}
+                    </div>
+                  </div>
+                )}
+
+                {proposal.expected_effect && (
+                  <div className="grid sm:grid-cols-12">
+                    <div className="sm:col-span-2 bg-slate-50 px-3.5 py-3 font-bold text-slate-700 flex items-start sm:border-r border-slate-200">
+                      기대효과
+                    </div>
+                    <div className="sm:col-span-10 p-3.5 text-slate-800 whitespace-pre-wrap leading-relaxed">
+                      {proposal.expected_effect}
+                    </div>
+                  </div>
+                )}
+
+                {proposal.attachment_note && (
+                  <div className="grid sm:grid-cols-12">
+                    <div className="sm:col-span-2 bg-slate-50 px-3.5 py-3 font-bold text-slate-700 flex items-start sm:border-r border-slate-200">
+                      첨부 자료 안내
+                    </div>
+                    <div className="sm:col-span-10 p-3.5 text-slate-600 whitespace-pre-wrap leading-relaxed">
+                      {proposal.attachment_note}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 text-xs text-slate-700 leading-relaxed space-y-2">
+                <p>
+                  본 제안은 <strong>{proposal.proposer_name}</strong> 제안자가 공사 혁신 및 업무개선을 위해 제안한 내용입니다.
+                </p>
+                <p className="text-slate-600 bg-white p-3 rounded-lg border border-slate-200 font-medium">
+                  "{proposal.title}"
+                </p>
+                <p className="text-[11px] text-slate-500">
+                  * 해당 제안이 부서의 실무 여건상 실현 가능한지, 예산 및 인력 배치가 타당한지 종합적으로 검토하여 우측 평가표를 작성해 주시기 바랍니다.
+                </p>
+              </div>
+            )}
+
+            {/* 추가 시트 데이터가 있는 경우 (예: 붙임_법적검토, 참고자료, 검토근거 등) */}
+            {proposal.extra_sheets && proposal.extra_sheets.length > 0 && (
+              <div className="space-y-3 pt-2">
+                {proposal.extra_sheets.map((sheet, sIdx) => (
+                  <div key={sIdx} className="border border-slate-200 rounded-xl overflow-hidden bg-white">
+                    <div className="bg-slate-100 px-3.5 py-2 border-b border-slate-200 font-bold text-xs text-slate-800 flex items-center justify-between">
+                      <span>[추가 시트] {sheet.sheetName}</span>
+                    </div>
+                    <div className="overflow-x-auto max-h-80">
+                      <table className="w-full text-[11px] border-collapse">
+                        <tbody className="divide-y divide-slate-100">
+                          {sheet.rows.map((row, rIdx) => (
+                            <tr key={rIdx} className={rIdx === 0 ? 'bg-slate-50 font-semibold text-slate-800' : 'text-slate-700'}>
+                              {row.map((cell, cIdx) => (
+                                <td key={cIdx} className="px-3 py-2 border-r border-slate-100 last:border-r-0 whitespace-pre-wrap align-top">
+                                  {cell}
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* 첨부파일 섹션 */}
@@ -414,7 +498,8 @@ export default function EvaluateProposalPage() {
                       <span className="font-semibold text-slate-800 truncate">{att.name}</span>
                     </div>
                     <a
-                      href={`/api/proposals/attachments?id=${encodeURIComponent(att.id)}&download=1`}
+                      href={att.static_url || `/api/proposals/attachments?id=${encodeURIComponent(att.id)}&download=1`}
+                      download={att.name}
                       className="px-3 py-1.5 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-700 font-semibold text-[11px] flex items-center gap-1 flex-shrink-0 transition"
                     >
                       <Download className="w-3 h-3" />

@@ -557,7 +557,8 @@ function AdminProposalsContent() {
                                 {attList.slice(0, 2).map(att => (
                                   <a
                                     key={att.id}
-                                    href={`/api/proposals/attachments?id=${encodeURIComponent(att.id)}&download=1`}
+                                    href={att.static_url || `/api/proposals/attachments?id=${encodeURIComponent(att.id)}&download=1`}
+                                    download={att.name}
                                     className="block text-[10px] text-sky-600 hover:underline truncate"
                                     title={`${att.name} 다운로드`}
                                   >
@@ -752,7 +753,8 @@ function AdminProposalsContent() {
 
                         <div className="flex items-center gap-1.5 flex-shrink-0">
                           <a
-                            href={`/api/proposals/attachments?id=${encodeURIComponent(att.id)}&download=1`}
+                            href={att.static_url || `/api/proposals/attachments?id=${encodeURIComponent(att.id)}&download=1`}
+                            download={att.name}
                             className="px-2.5 py-1.5 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-700 font-semibold text-[11px] flex items-center gap-1 transition"
                           >
                             <Download className="w-3 h-3" />
