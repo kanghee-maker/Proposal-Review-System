@@ -10,7 +10,6 @@ export default function Home() {
   const router = useRouter();
   const [departments, setDepartments] = useState<Department[]>([]);
   const [selectedDept, setSelectedDept] = useState<string>('');
-  const [evaluatorName, setEvaluatorName] = useState<string>('');
 
   // Modals state
   const [adminModalOpen, setAdminModalOpen] = useState(false);
@@ -119,7 +118,7 @@ export default function Home() {
         if (data.isTestMode) {
           alert(`[관리자 스페셜 인증]\n${selectedDept} 평가함에 관리자 권한으로 입장합니다.`);
         }
-        const name = evaluatorName.trim() || `${selectedDept} 부서장`;
+        const name = `${selectedDept} 평가자`;
         if (typeof window !== 'undefined') {
           localStorage.setItem('gcuc_user_role', 'EVALUATOR');
           localStorage.setItem('gcuc_dept_name', selectedDept);
@@ -308,19 +307,6 @@ export default function Home() {
                       </option>
                     ))}
                   </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                    평가자 성명 (선택)
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="예: 홍길동 (부장)"
-                    value={evaluatorName}
-                    onChange={(e) => setEvaluatorName(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  />
                 </div>
 
                 <button
