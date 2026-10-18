@@ -1,24 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
-import { getAllDepartmentPasswords, setupDepartmentPassword, saveAllDepartmentPasswords } from '@/lib/auth';
-
-const DATA_DIR = path.join(process.cwd(), 'data');
-const ORG_FILE = path.join(DATA_DIR, 'organization_2026.json');
+import { getAllDepartmentPasswordsAsync, setupDepartmentPassword, saveAllDepartmentPasswords } from '@/lib/auth';
+import { getOrganizationChartAsync } from '@/lib/store';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export async function GET() {
   try {
-    let orgData: any = { departments: [] };
-    if (fs.existsSync(ORG_FILE)) {
-      orgData = JSON.parse(fs.readFileSync(ORG_FILE, 'utf8'));
-    }
+    const orgChart = await getOrganizationChartAsync();
+    const departments = orgChart.departments || [];
 
-    const passwords = getAllDepartmentPasswords();
+    const passwords = await getAllDepartmentPasswordsAsync();
 
-    const deptsWithPasswords = (orgData.departments || []).map((d: any) => {
+    const deptsWithPasswords = departments.map((d: any) => {
       const pass = passwords[d.department] || '';
       return {
         ...d,

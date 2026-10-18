@@ -18,7 +18,8 @@ CREATE TABLE IF NOT EXISTS public.departments (
     office TEXT NOT NULL,        -- 처 / 실 / 단 (Office)
     department TEXT NOT NULL,    -- 부 (Department)
     name TEXT NOT NULL,          -- 전체 표기명
-    head_title TEXT DEFAULT '부장'
+    head_title TEXT DEFAULT '부장',
+    password TEXT                -- 부서 접속 4자리 비밀번호
 );
 
 -- 3. 제안평가 회차/세션 테이블

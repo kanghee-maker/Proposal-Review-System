@@ -44,8 +44,8 @@ export default function AdminPasswordsPage() {
     setTimeout(() => setToastMsg(''), 3000);
   };
 
-  const fetchPasswords = async () => {
-    setLoading(true);
+  const fetchPasswords = async (showLoadingSpinner: boolean = false) => {
+    if (showLoadingSpinner) setLoading(true);
     try {
       const res = await fetch(`/api/admin/passwords?_t=${Date.now()}`, { cache: 'no-store' });
       const data = await res.json();
@@ -61,12 +61,12 @@ export default function AdminPasswordsPage() {
       console.error(err);
       showToast('비밀번호 목록을 불러오는 중 오류가 발생했습니다.');
     } finally {
-      setLoading(false);
+      if (showLoadingSpinner) setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchPasswords();
+    fetchPasswords(true);
   }, []);
 
   // 4자리 랜덤 숫자 생성 (1000 ~ 9999)
@@ -139,8 +139,9 @@ export default function AdminPasswordsPage() {
           password: pass,
           hasPassword: Boolean(pass)
         } : d));
+        setInputPasswords(prev => ({ ...prev, [deptName]: pass }));
         showToast(`[${deptName}] 비밀번호가 성공적으로 저장되었습니다.`);
-        fetchPasswords();
+        await fetchPasswords(false);
       } else {
         alert(data.error || '저장 실패');
       }
@@ -172,7 +173,7 @@ export default function AdminPasswordsPage() {
           };
         }));
         showToast('전체 부서 비밀번호가 성공적으로 일괄 저장되었습니다.');
-        fetchPasswords();
+        await fetchPasswords(false);
       } else {
         alert(data.error || '일괄 저장 실패');
       }
