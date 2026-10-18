@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Shield, Users, CheckCircle, Award, ChevronRight, KeyRound, Lock, AlertCircle, X, Check } from 'lucide-react';
+import { Shield, Users, CheckCircle, Award, ChevronRight, KeyRound, Lock, AlertCircle, X, Check, Building2, HelpCircle } from 'lucide-react';
 import { Department } from '@/lib/types';
 
 export default function Home() {
@@ -253,67 +253,89 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-sky-950 text-white flex flex-col justify-between">
-      {/* Header */}
-      <header className="border-b border-slate-700/60 bg-slate-900/60 backdrop-blur px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3.5">
-          <div className="bg-white px-2.5 py-1.5 rounded-xl shadow-sm flex items-center justify-center">
-            <img src="/images/logo.png" alt="과천도시공사 로고" className="h-7 w-auto object-contain" />
+    <div className="min-h-screen bg-white text-slate-800 flex flex-col justify-between">
+      {/* 1. GCUC Top Utility Bar (#383a41) */}
+      <div className="bg-[#383a41] text-xs text-slate-300 py-1.5 px-6 border-b border-[#25262b]">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="bg-[#25262b] text-white px-2 py-0.5 rounded text-[11px] font-semibold">GCUC</span>
+            <span className="hidden sm:inline text-slate-300 text-[11px]">과천도시공사 제안 평가 관리 포털</span>
           </div>
-          <div>
-            <h1 className="font-bold text-lg leading-tight tracking-tight">과천도시공사 제안 평가 시스템</h1>
-            <p className="text-xs text-sky-300 font-medium tracking-wide">GWACHEON CITY URBAN CORPORATION</p>
+          <div className="flex items-center gap-4 text-[11px] text-slate-300">
+            <span>2026년 혁신 제안 심사 플랫폼</span>
+            <span className="text-slate-500">|</span>
+            <a href="https://www.gcuc.or.kr" target="_blank" rel="noreferrer" className="hover:text-white transition">공사 홈페이지</a>
           </div>
         </div>
-        <div className="text-xs text-slate-400 bg-slate-800/80 px-3 py-1.5 rounded-full border border-slate-700">
-          2026년도 혁신 제안 심사 플랫폼
+      </div>
+
+      {/* 2. Main Header (Clean White with GCUC Identity) */}
+      <header className="border-b border-slate-200 bg-white/95 backdrop-blur sticky top-0 z-40 px-6 py-3.5 shadow-sm">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3.5">
+            <div className="bg-white p-1 rounded-xl border border-slate-100 shadow-sm flex items-center justify-center">
+              <img src="/images/logo.png" alt="과천도시공사 로고" className="h-8 w-auto object-contain" />
+            </div>
+            <div>
+              <h1 className="font-extrabold text-lg sm:text-xl leading-tight tracking-tight text-slate-900">
+                과천도시공사 <span className="text-[#1768d5]">제안 평가 시스템</span>
+              </h1>
+              <p className="text-[10px] sm:text-xs text-slate-500 font-medium tracking-wide">
+                GWACHEON CITY URBAN CORPORATION PROPOSAL REVIEW PORTAL
+              </p>
+            </div>
+          </div>
+          <div className="text-xs font-semibold text-[#1768d5] bg-blue-50 px-3.5 py-1.5 rounded-full border border-blue-200/60 hidden sm:flex items-center gap-1.5">
+            <Award className="w-3.5 h-3.5" />
+            <span>2026 혁신 제안 0차 부서평가</span>
+          </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="max-w-5xl mx-auto w-full px-6 py-12 flex-1 flex flex-col justify-center">
+      {/* 3. Main Content (Clean White Background) */}
+      <main className="max-w-5xl mx-auto w-full px-4 sm:px-6 py-8 sm:py-14 flex-1 flex flex-col justify-center">
         <div className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-400/20 text-sky-300 text-xs font-semibold mb-4">
-            <Award className="w-3.5 h-3.5 text-sky-400" />
-            2026년 혁신 제안 0차 부서평가 진행 중
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-[#1768d5] text-xs font-bold mb-3 shadow-sm">
+            <Award className="w-4 h-4 text-[#1768d5]" />
+            2026년도 혁신 제안 0차 부서 타당성 심사 진행 중
           </div>
-          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-3">
-            제안 검토 및 평가 포털
+          <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-slate-900 mb-3">
+            과천도시공사 혁신 제안 평가 포털
           </h2>
-          <p className="text-slate-300 text-sm sm:text-base max-w-2xl mx-auto">
-            공사 임직원 및 시민이 제출한 137건의 제안에 대해 각 부서의 타당성(0차 부서평가)을 심사하고,
-            전체 평가 건을 체계적으로 관리합니다.
+          <p className="text-slate-600 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">
+            공사 임직원 및 시민이 제출한 137건의 혁신 제안에 대해 각 부서의 타당성(0차 부서평가)을 신속히 심사하고,
+            전체 평가 현황을 체계적으로 총괄 관리합니다.
           </p>
         </div>
 
         {/* 2 Roles Card Grid */}
         <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto w-full">
           {/* 1. 관리자 (Admin) 카드 */}
-          <div className="bg-slate-800/80 rounded-2xl border border-slate-700/80 p-8 flex flex-col justify-between shadow-xl shadow-black/30 hover:border-sky-500/50 transition">
+          <div className="bg-white rounded-2xl border-2 border-slate-200 p-6 sm:p-8 flex flex-col justify-between shadow-lg shadow-slate-100 hover:border-[#1768d5] transition group">
             <div>
-              <div className="w-12 h-12 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center mb-5">
+              <div className="w-12 h-12 rounded-2xl bg-blue-50 text-[#1768d5] flex items-center justify-center mb-5 group-hover:scale-105 transition">
                 <Shield className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-bold mb-2">총괄 관리자 로그인</h3>
-              <p className="text-sm text-slate-400 mb-6">
+              <h3 className="text-xl font-bold text-slate-900 mb-2">총괄 관리자 로그인</h3>
+              <p className="text-xs sm:text-sm text-slate-600 mb-6 leading-relaxed">
                 제안평가 회차 생성, 엑셀 일괄 업로드 및 파싱, 부서별 배정 수정, 2026 조직도 관리, 종합 평가결과 엑셀 다운로드를 수행합니다.
               </p>
 
-              <div className="space-y-2 text-xs text-slate-300 mb-8 bg-slate-900/50 p-4 rounded-xl border border-slate-700/50">
+              <div className="space-y-2 text-xs text-slate-700 mb-8 bg-slate-50 p-4 rounded-xl border border-slate-200">
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-sky-400 flex-shrink-0" />
+                  <CheckCircle className="w-4 h-4 text-[#1768d5] flex-shrink-0" />
                   <span>제안평가 건 생성 &amp; 제안 엑셀 일괄 등록</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-sky-400 flex-shrink-0" />
+                  <CheckCircle className="w-4 h-4 text-[#1768d5] flex-shrink-0" />
                   <span>2026 조직도(JPEG 뷰어 및 부서 트리) 관리</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-sky-400 flex-shrink-0" />
+                  <CheckCircle className="w-4 h-4 text-[#1768d5] flex-shrink-0" />
                   <span>부서평가 항목(Result / Opinion) 동적 설정</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-sky-400 flex-shrink-0" />
+                  <CheckCircle className="w-4 h-4 text-[#1768d5] flex-shrink-0" />
                   <span>0차 부서평가 취합 결과 엑셀 Export</span>
                 </div>
               </div>
@@ -321,7 +343,7 @@ export default function Home() {
 
             <button
               onClick={openAdminModal}
-              className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 font-semibold text-white shadow-lg shadow-sky-500/25 flex items-center justify-center gap-2 transition"
+              className="w-full py-3.5 px-4 rounded-xl bg-[#1768d5] hover:bg-[#1357b3] font-semibold text-white shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 transition"
             >
               <Lock className="w-4 h-4" />
               <span>관리자 모드로 입장 (비밀번호 확인)</span>
@@ -330,25 +352,25 @@ export default function Home() {
           </div>
 
           {/* 2. 평가자 (Evaluator) 카드 */}
-          <div className="bg-slate-800/80 rounded-2xl border border-slate-700/80 p-8 flex flex-col justify-between shadow-xl shadow-black/30 hover:border-emerald-500/50 transition">
+          <div className="bg-white rounded-2xl border-2 border-slate-200 p-6 sm:p-8 flex flex-col justify-between shadow-lg shadow-slate-100 hover:border-[#169268] transition group">
             <div>
-              <div className="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center mb-5">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-[#169268] flex items-center justify-center mb-5 group-hover:scale-105 transition">
                 <Users className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-bold mb-2">부서 평가자 로그인</h3>
-              <p className="text-sm text-slate-400 mb-6">
+              <h3 className="text-xl font-bold text-slate-900 mb-2">부서 평가자 로그인</h3>
+              <p className="text-xs sm:text-sm text-slate-600 mb-6 leading-relaxed">
                 담당 부서(실행부서)를 선택하여 본인 부서에 배정된 제안 목록을 열람하고, 0차 부서평가(수용 여부 및 의견)를 진행합니다.
               </p>
 
-              <form onSubmit={handleEvaluatorCheck} className="space-y-4 mb-6">
+              <form onSubmit={handleEvaluatorCheck} className="space-y-4 mb-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                    담당 부서 선택 <span className="text-emerald-400">*</span>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    담당 부서 선택 <span className="text-emerald-600">*</span>
                   </label>
                   <select
                     value={selectedDept}
                     onChange={(e) => setSelectedDept(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-700 text-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   >
                     {departments.map((dept) => (
                       <option key={dept.code} value={dept.department}>
@@ -359,7 +381,7 @@ export default function Home() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                     평가자 성명 (선택)
                   </label>
                   <input
@@ -367,14 +389,14 @@ export default function Home() {
                     placeholder="예: 홍길동 (부장)"
                     value={evaluatorName}
                     onChange={(e) => setEvaluatorName(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-700 text-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={deptLoading}
-                  className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 font-semibold text-white shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2 transition mt-2 disabled:opacity-50"
+                  className="w-full py-3.5 px-4 rounded-xl bg-[#169268] hover:bg-[#127754] font-semibold text-white shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2 transition mt-2 disabled:opacity-50"
                 >
                   <KeyRound className="w-4 h-4" />
                   <span>{deptLoading ? '부서 확인 중...' : '해당 부서 평가함 입장'}</span>
@@ -383,14 +405,15 @@ export default function Home() {
               </form>
             </div>
 
-            <div className="mt-4 p-3.5 rounded-xl bg-slate-900/80 border border-slate-700/70 text-xs text-slate-300 space-y-1.5 leading-relaxed text-left">
-              <p className="font-semibold text-emerald-400">
+            {/* 안내 문구 (GCUC 스타일 박스) */}
+            <div className="mt-2 p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 space-y-1.5 leading-relaxed text-left">
+              <p className="font-bold text-emerald-700">
                 ※ 각 부서는 최초 1회 비밀번호를 설정한 후 안전하게 평가를 수행합니다.
               </p>
-              <p className="text-[11px] text-slate-300">
+              <p className="text-[11px] text-slate-600">
                 담당 부서를 유의하여 초기비밀번호를 세팅해 주세요. 타 부서의 비밀번호를 설정 하지 않도록 주의해 주세요.
               </p>
-              <p className="text-[11px] text-amber-300/90 font-medium pt-1 border-t border-slate-800">
+              <p className="text-[11px] text-amber-800 font-medium pt-1 border-t border-slate-200">
                 * 비밀번호를 설정한 적이 없는데, 이미 설정이 되어 있다고 나오는 경우에는 <strong>관리자(우세림)</strong>에게 별도 문의 부탁 드립니다.
               </p>
             </div>
@@ -398,34 +421,70 @@ export default function Home() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-800 bg-slate-900/60 py-4 text-center text-xs text-slate-400">
-        과천도시공사 (13807) 경기도 과천시 통영로 5 과천도시공사 • TEL 02-504-7300 • FAX 02-500-1450
+      {/* 4. GCUC Official Style Footer */}
+      <footer className="w-full mt-auto">
+        {/* Footer Top Sub-bar (#383a41) */}
+        <div className="bg-[#383a41] border-b border-[#25262b] py-2.5 px-6 text-xs text-slate-300">
+          <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+            <div className="flex items-center gap-4 text-xs font-medium">
+              <span className="text-[#ffd300] font-bold">개인정보 처리방침</span>
+              <span className="text-slate-500">|</span>
+              <span className="hover:text-white cursor-pointer">이메일주소무단수집거부</span>
+              <span className="text-slate-500">|</span>
+              <span className="hover:text-white cursor-pointer">과천도시공사 윤리경영</span>
+            </div>
+            <div className="text-[11px] text-slate-400">
+              과천도시공사 통합 제안 심사 관리 시스템
+            </div>
+          </div>
+        </div>
+
+        {/* Footer Bottom Address (#25262b) */}
+        <div className="bg-[#25262b] text-[#afafaf] py-5 px-6 text-xs leading-relaxed">
+          <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
+            <div>
+              <p className="text-xs">
+                (우 13807) 경기도 과천시 통영로 5 과천도시공사 / 5, Tongyeong-ro, Gwacheon-si, Gyeonggi-do, Korea
+              </p>
+              <p className="text-xs text-slate-400 mt-1">
+                TEL : 02-504-7300 <span className="mx-2 text-slate-600">|</span> FAX : 02-500-1450
+              </p>
+              <p className="text-[11px] text-slate-500 mt-1.5 font-mono">
+                Copyright © Gwacheon City Urban Corporation (GCUC) All rights reserved.
+              </p>
+            </div>
+            <div className="text-right hidden md:block">
+              <span className="inline-block px-3 py-1.5 rounded-lg bg-[#383a41] text-slate-300 text-xs border border-slate-700">
+                시민과 함께 미래를 여는 혁신 공기업
+              </span>
+            </div>
+          </div>
+        </div>
       </footer>
 
-      {/* --- 모달 1: 관리자 비밀번호 입력 --- */}
+      {/* --- 모달 1: 관리자 비밀번호 입력 (Clean White Modal) --- */}
       {adminModalOpen && (
-        <div className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-700 w-full max-w-md rounded-2xl shadow-2xl p-6 relative text-white">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-200 w-full max-w-md rounded-2xl shadow-2xl p-6 relative text-slate-800">
             <button
               onClick={() => setAdminModalOpen(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg"
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-1 rounded-lg"
             >
               <X className="w-5 h-5" />
             </button>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#1768d5] flex items-center justify-center">
                 <Lock className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-lg font-bold">총괄 관리자 비밀번호 확인</h3>
-                <p className="text-xs text-slate-400">관리자 모드 접근을 위해 비밀번호를 입력해주세요.</p>
+                <h3 className="text-lg font-bold text-slate-900">총괄 관리자 비밀번호 확인</h3>
+                <p className="text-xs text-slate-500">관리자 모드 접근을 위해 비밀번호를 입력해주세요.</p>
               </div>
             </div>
 
             <form onSubmit={handleAdminSubmit} className="space-y-4 mt-2">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                   비밀번호 입력
                 </label>
                 <input
@@ -434,12 +493,12 @@ export default function Home() {
                   placeholder="관리자 비밀번호를 입력하세요"
                   value={adminPassword}
                   onChange={(e) => setAdminPassword(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  className="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#1768d5]"
                 />
               </div>
 
               {adminError && (
-                <div className="flex items-center gap-2 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs">
+                <div className="flex items-center gap-2 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs">
                   <AlertCircle className="w-4 h-4 flex-shrink-0" />
                   <span>{adminError}</span>
                 </div>
@@ -449,14 +508,14 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => setAdminModalOpen(false)}
-                  className="w-1/3 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 transition"
+                  className="w-1/3 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-slate-700 transition"
                 >
                   취소
                 </button>
                 <button
                   type="submit"
                   disabled={adminLoading}
-                  className="w-2/3 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-xs font-semibold text-white shadow-lg shadow-sky-600/30 transition disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="w-2/3 py-2.5 rounded-xl bg-[#1768d5] hover:bg-[#1357b3] text-xs font-semibold text-white shadow-lg shadow-blue-500/20 transition disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   <Lock className="w-3.5 h-3.5" />
                   <span>{adminLoading ? '인증 확인 중...' : '관리자 입장'}</span>
@@ -467,29 +526,29 @@ export default function Home() {
         </div>
       )}
 
-      {/* --- 모달 2: 부서 비밀번호 로그인 --- */}
+      {/* --- 모달 2: 부서 비밀번호 로그인 (Clean White Modal) --- */}
       {deptLoginModalOpen && (
-        <div className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-700 w-full max-w-md rounded-2xl shadow-2xl p-6 relative text-white">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-200 w-full max-w-md rounded-2xl shadow-2xl p-6 relative text-slate-800">
             <button
               onClick={() => setDeptLoginModalOpen(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg"
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-1 rounded-lg"
             >
               <X className="w-5 h-5" />
             </button>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-[#169268] flex items-center justify-center">
                 <KeyRound className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-lg font-bold">[{selectedDept}] 비밀번호 입력</h3>
-                <p className="text-xs text-slate-400">부서 평가함에 접근하려면 비밀번호를 입력해주세요.</p>
+                <h3 className="text-lg font-bold text-slate-900">[{selectedDept}] 비밀번호 입력</h3>
+                <p className="text-xs text-slate-500">부서 평가함에 접근하려면 비밀번호를 입력해주세요.</p>
               </div>
             </div>
 
             <form onSubmit={handleDeptLoginSubmit} className="space-y-4 mt-2">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                   부서 비밀번호
                 </label>
                 <input
@@ -498,12 +557,12 @@ export default function Home() {
                   placeholder="부서 비밀번호를 입력하세요"
                   value={deptPassword}
                   onChange={(e) => setDeptPassword(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
 
               {deptError && (
-                <div className="flex items-center gap-2 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs">
+                <div className="flex items-center gap-2 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs">
                   <AlertCircle className="w-4 h-4 flex-shrink-0" />
                   <span>{deptError}</span>
                 </div>
@@ -513,21 +572,21 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => setDeptLoginModalOpen(false)}
-                  className="w-1/3 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 transition"
+                  className="w-1/3 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-slate-700 transition"
                 >
                   취소
                 </button>
                 <button
                   type="submit"
                   disabled={deptLoading}
-                  className="w-2/3 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold text-white shadow-lg shadow-emerald-600/30 transition disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="w-2/3 py-2.5 rounded-xl bg-[#169268] hover:bg-[#127754] text-xs font-semibold text-white shadow-lg shadow-emerald-600/20 transition disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   <KeyRound className="w-3.5 h-3.5" />
                   <span>{deptLoading ? '확인 중...' : '부서 평가함 입장'}</span>
                 </button>
               </div>
 
-              <div className="mt-3 p-2.5 rounded-xl bg-slate-800/80 border border-slate-700/80 text-[11px] text-slate-400 leading-relaxed">
+              <div className="mt-3 p-3 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-600 leading-relaxed">
                 * 비밀번호를 설정한 적이 없는데, 이미 설정이 되어 있다고 나오는 경우에는 <strong>관리자(우세림)</strong>에게 별도 문의 부탁 드립니다.
               </div>
             </form>
@@ -535,44 +594,44 @@ export default function Home() {
         </div>
       )}
 
-      {/* --- 모달 3: 부서 초기 비밀번호 설정 --- */}
+      {/* --- 모달 3: 부서 초기 비밀번호 설정 (Clean White Modal) --- */}
       {deptSetupModalOpen && (
-        <div className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-700 w-full max-w-md rounded-2xl shadow-2xl p-6 relative text-white">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-200 w-full max-w-md rounded-2xl shadow-2xl p-6 relative text-slate-800">
             <button
               onClick={() => setDeptSetupModalOpen(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg"
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-1 rounded-lg"
             >
               <X className="w-5 h-5" />
             </button>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
                 <KeyRound className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-lg font-bold">[{selectedDept}] 초기 비밀번호 설정</h3>
-                <p className="text-xs text-slate-400">
+                <h3 className="text-lg font-bold text-slate-900">[{selectedDept}] 초기 비밀번호 설정</h3>
+                <p className="text-xs text-slate-500">
                   아직 설정된 비밀번호가 없습니다. 앞으로 사용할 비밀번호를 설정해주세요.
                 </p>
               </div>
             </div>
 
-            <div className="mb-4 p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-200 text-xs leading-relaxed space-y-1.5">
-              <div className="font-semibold text-amber-300">
+            <div className="mb-4 p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs leading-relaxed space-y-1.5">
+              <div className="font-semibold text-amber-800">
                 ※ 담당 부서(<strong>[{selectedDept}]</strong>)를 유의하여 초기비밀번호를 세팅해 주세요.
               </div>
-              <p className="text-[11px] text-slate-300">
+              <p className="text-[11px] text-slate-600">
                 타 부서의 비밀번호를 설정 하지 않도록 주의해 주세요.
               </p>
-              <p className="text-[11px] text-amber-300/90 font-medium pt-1 border-t border-amber-500/20">
+              <p className="text-[11px] text-amber-700 font-medium pt-1 border-t border-amber-200">
                 * 비밀번호를 설정한 적이 없는데, 이미 설정이 되어 있다고 나오는 경우에는 <strong>관리자(우세림)</strong>에게 별도 문의 부탁 드립니다.
               </p>
             </div>
 
             <form onSubmit={handleDeptSetupSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                  새 비밀번호 (4자리 이상) <span className="text-amber-400">*</span>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  새 비밀번호 (4자리 이상) <span className="text-amber-600">*</span>
                 </label>
                 <input
                   type="password"
@@ -580,25 +639,25 @@ export default function Home() {
                   placeholder="사용할 비밀번호를 입력하세요"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  className="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                  비밀번호 확인 <span className="text-amber-400">*</span>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  비밀번호 확인 <span className="text-amber-600">*</span>
                 </label>
                 <input
                   type="password"
                   placeholder="비밀번호를 다시 한번 입력하세요"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  className="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
                 />
               </div>
 
               {setupError && (
-                <div className="flex items-center gap-2 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs">
+                <div className="flex items-center gap-2 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs">
                   <AlertCircle className="w-4 h-4 flex-shrink-0" />
                   <span>{setupError}</span>
                 </div>
@@ -608,14 +667,14 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => setDeptSetupModalOpen(false)}
-                  className="w-1/3 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 transition"
+                  className="w-1/3 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-slate-700 transition"
                 >
                   취소
                 </button>
                 <button
                   type="submit"
                   disabled={setupLoading}
-                  className="w-2/3 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-xs font-semibold text-white shadow-lg shadow-amber-600/30 transition disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="w-2/3 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-xs font-semibold text-white shadow-lg shadow-amber-600/25 transition disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   <Check className="w-4 h-4" />
                   <span>{setupLoading ? '설정 중...' : '비밀번호 등록 및 입장'}</span>

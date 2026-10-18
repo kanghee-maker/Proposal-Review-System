@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Building2, User, LogOut, CheckCircle, FileText } from 'lucide-react';
+import { Building2, User, LogOut, CheckCircle, FileText, ExternalLink } from 'lucide-react';
 
 export default function EvaluatorLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -41,45 +41,63 @@ export default function EvaluatorLayout({ children }: { children: React.ReactNod
 
   if (!authorized) {
     return (
-      <div className="min-h-screen bg-emerald-950 flex items-center justify-center text-white">
+      <div className="min-h-screen bg-white flex items-center justify-center text-slate-800">
         <div className="text-center">
-          <div className="w-8 h-8 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-          <p className="text-xs text-emerald-300">부서 인증 확인 중...</p>
+          <div className="w-8 h-8 border-2 border-[#169268] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-xs text-slate-500 font-medium">부서 인증 확인 중...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col text-slate-800">
-      {/* Header */}
-      <header className="bg-emerald-950 text-white shadow-md sticky top-0 z-40">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 sm:gap-3 hover:opacity-90 transition" title="메인 포털(초기 화면)로 이동">
-            <div className="bg-white p-1 rounded-lg shadow-sm flex items-center justify-center">
-              <img src="/images/logo.png" alt="과천도시공사 로고" className="h-5 sm:h-6 w-auto object-contain cursor-pointer" />
+    <div className="min-h-screen bg-[#f8fafc] flex flex-col text-slate-800">
+      {/* 1. GCUC Top Utility Bar (#383a41) */}
+      <div className="bg-[#383a41] text-xs text-slate-300 py-1 px-4 sm:px-6 border-b border-[#25262b]">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-2 text-[11px]">
+            <span className="bg-[#25262b] text-white px-2 py-0.5 rounded font-bold">GCUC</span>
+            <span>과천도시공사 제안 평가 시스템 • 부서 0차 타당성 심사</span>
+          </div>
+          <div className="flex items-center gap-3 text-[11px] text-slate-400">
+            <span>2026년 혁신 제안 심사</span>
+            <span className="text-slate-600">|</span>
+            <a href="https://www.gcuc.or.kr" target="_blank" rel="noreferrer" className="hover:text-white transition flex items-center gap-0.5">
+              <span>공사 대표사이트</span>
+              <ExternalLink className="w-2.5 h-2.5" />
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* 2. Main Header (Clean White with GCUC Identity) */}
+      <header className="bg-white text-slate-800 shadow-sm border-b border-slate-200 sticky top-0 z-40">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2.5 sm:gap-3 hover:opacity-90 transition" title="메인 포털(초기 화면)로 이동">
+            <div className="bg-white p-1 rounded-xl border border-slate-100 shadow-sm flex items-center justify-center">
+              <img src="/images/logo.png" alt="과천도시공사 로고" className="h-7 sm:h-8 w-auto object-contain cursor-pointer" />
             </div>
             <div>
-              <h1 className="font-bold text-sm sm:text-base leading-tight tracking-tight text-white line-clamp-1">
-                제안 평가 시스템
+              <h1 className="font-extrabold text-base sm:text-lg leading-tight tracking-tight text-slate-900 line-clamp-1">
+                제안 평가 시스템 <span className="text-[#169268]">부서 심사</span>
               </h1>
-              <p className="text-[10px] sm:text-[11px] text-emerald-300 font-medium tracking-wide">
-                0차 부서평가 전용
+              <p className="text-[10px] sm:text-[11px] text-[#169268] font-semibold tracking-wide">
+                0차 부서 타당성 심사 전용
               </p>
             </div>
           </Link>
 
           <div className="flex items-center gap-2 sm:gap-4 text-xs">
-            <div className="bg-emerald-900/80 px-2.5 sm:px-3.5 py-1.5 rounded-xl border border-emerald-800/80 flex items-center gap-1.5 sm:gap-2">
-              <Building2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
-              <strong className="text-white text-xs truncate max-w-[100px] sm:max-w-none">{deptName}</strong>
-              <span className="text-emerald-500 hidden sm:inline">|</span>
-              <span className="text-slate-300 hidden sm:inline">{userName}</span>
+            <div className="bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 flex items-center gap-1.5 sm:gap-2 shadow-sm">
+              <Building2 className="w-4 h-4 text-[#169268] flex-shrink-0" />
+              <strong className="text-slate-900 text-xs font-bold truncate max-w-[120px] sm:max-w-none">{deptName}</strong>
+              <span className="text-slate-300 hidden sm:inline">|</span>
+              <span className="text-slate-600 hidden sm:inline">{userName}</span>
             </div>
 
             <button
               onClick={handleLogout}
-              className="flex items-center gap-1 text-slate-300 hover:text-white bg-emerald-900/60 hover:bg-emerald-900 px-2.5 py-1.5 rounded-lg border border-emerald-800 transition"
+              className="flex items-center gap-1 text-slate-600 hover:text-rose-600 bg-slate-50 hover:bg-rose-50 px-3 py-1.5 rounded-lg border border-slate-200 transition font-medium"
               title="로그아웃"
             >
               <LogOut className="w-3.5 h-3.5" />
@@ -89,14 +107,50 @@ export default function EvaluatorLayout({ children }: { children: React.ReactNod
         </div>
       </header>
 
-      {/* Main Content */}
+      {/* 3. Main Content */}
       <main className="flex-1 max-w-6xl w-full mx-auto px-3 sm:px-6 py-4 sm:py-8">
         {children}
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-200 bg-white py-4 text-center text-xs text-slate-500">
-        과천도시공사 제안 평가 시스템 • 0차 부서 타당성 심사
+      {/* 4. GCUC Official Style Footer */}
+      <footer className="w-full mt-auto">
+        {/* Footer Top Sub-bar (#383a41) */}
+        <div className="bg-[#383a41] border-b border-[#25262b] py-2 px-6 text-xs text-slate-300">
+          <div className="max-w-6xl mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-4 text-xs font-medium">
+              <span className="text-[#ffd300] font-bold">개인정보 처리방침</span>
+              <span className="text-slate-500">|</span>
+              <span className="hover:text-white cursor-pointer">이메일주소무단수집거부</span>
+              <span className="text-slate-500">|</span>
+              <span className="hover:text-white cursor-pointer">과천도시공사 윤리경영</span>
+            </div>
+            <div className="text-[11px] text-slate-400">
+              과천도시공사 제안 평가 시스템 • 0차 부서 타당성 심사
+            </div>
+          </div>
+        </div>
+
+        {/* Footer Bottom Address (#25262b) */}
+        <div className="bg-[#25262b] text-[#afafaf] py-5 px-6 text-xs leading-relaxed">
+          <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
+            <div>
+              <p className="text-xs">
+                (우 13807) 경기도 과천시 통영로 5 과천도시공사 / 5, Tongyeong-ro, Gwacheon-si, Gyeonggi-do, Korea
+              </p>
+              <p className="text-xs text-slate-400 mt-1">
+                TEL : 02-504-7300 <span className="mx-2 text-slate-600">|</span> FAX : 02-500-1450
+              </p>
+              <p className="text-[11px] text-slate-500 mt-1.5 font-mono">
+                Copyright © Gwacheon City Urban Corporation (GCUC) All rights reserved.
+              </p>
+            </div>
+            <div className="text-right hidden md:block">
+              <span className="inline-block px-3 py-1.5 rounded-lg bg-[#383a41] text-slate-300 text-xs border border-slate-700">
+                시민과 함께 미래를 여는 혁신 공기업
+              </span>
+            </div>
+          </div>
+        </div>
       </footer>
     </div>
   );
