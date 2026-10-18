@@ -185,7 +185,7 @@ export default function Home() {
             2026년도 혁신 제안 부서 평가(0차 평가) 진행 중
           </div>
           <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-slate-900 mb-3">
-            과천도시공사 혁신 제안 평가 시스템
+            과천도시공사 <span className="text-[#1768d5]">제안 평가 시스템</span>
           </h2>
           <p className="text-slate-600 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed font-medium">
             공사 임직원이 제출한 혁신 제안에 대해 각 부서의 타당성 평가를 신속히 심사하고, 전체 평가 현황을 체계적으로 총괄 관리합니다.
