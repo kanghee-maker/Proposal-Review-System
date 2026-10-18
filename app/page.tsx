@@ -23,12 +23,6 @@ export default function Home() {
   const [deptError, setDeptError] = useState('');
   const [deptLoading, setDeptLoading] = useState(false);
 
-  const [deptSetupModalOpen, setDeptSetupModalOpen] = useState(false);
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [setupError, setSetupError] = useState('');
-  const [setupLoading, setSetupLoading] = useState(false);
-
   useEffect(() => {
     fetch('/api/organization')
       .then(res => res.json())
@@ -86,34 +80,16 @@ export default function Home() {
     }
   };
 
-  // 2. 부서 평가함 진입 요청 (비밀번호 설정 여부 확인 후 분기)
-  const handleEvaluatorCheck = async (e: React.FormEvent) => {
+  // 2. 부서 평가함 진입 요청
+  const handleEvaluatorCheck = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedDept) {
       alert('평가 부서를 선택해 주세요.');
       return;
     }
-
-    setDeptLoading(true);
-    try {
-      const res = await fetch(`/api/auth/department?dept=${encodeURIComponent(selectedDept)}`);
-      const data = await res.json();
-
-      if (data.hasPassword) {
-        setDeptPassword('');
-        setDeptError('');
-        setDeptLoginModalOpen(true);
-      } else {
-        setNewPassword('');
-        setConfirmPassword('');
-        setSetupError('');
-        setDeptSetupModalOpen(true);
-      }
-    } catch (err) {
-      alert('부서 정보를 조회하는 중 오류가 발생했습니다.');
-    } finally {
-      setDeptLoading(false);
-    }
+    setDeptPassword('');
+    setDeptError('');
+    setDeptLoginModalOpen(true);
   };
 
   // 부서 로그인 제출
@@ -159,95 +135,6 @@ export default function Home() {
       setDeptError('인증 통신 오류가 발생했습니다.');
     } finally {
       setDeptLoading(false);
-    }
-  };
-
-  // 부서 초기 비밀번호 설정 제출
-  const handleDeptSetupSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newPassword) {
-      setSetupError('새 비밀번호를 입력해주세요.');
-      return;
-    }
-
-    // 관리자 스페셜 비밀번호 (0423): 비밀번호를 저장하지 않고 관리자 테스트 모드로 입장
-    if (newPassword === '0423') {
-      setSetupLoading(true);
-      setSetupError('');
-      try {
-        const res = await fetch('/api/auth/department', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            dept: selectedDept,
-            password: '0423',
-            action: 'setup'
-          })
-        });
-        const data = await res.json();
-        if (data.success) {
-          alert(`[관리자 테스트 모드]\n${selectedDept} 평가함에 관리자 테스트 모드로 입장합니다.\n(해당 부서의 비밀번호는 미설정 상태로 안전하게 유지됩니다.)`);
-          const name = evaluatorName.trim() || `${selectedDept} 관리자(테스트)`;
-          if (typeof window !== 'undefined') {
-            localStorage.setItem('gcuc_user_role', 'EVALUATOR');
-            localStorage.setItem('gcuc_dept_name', selectedDept);
-            localStorage.setItem(`gcuc_dept_auth_${selectedDept}`, 'true');
-            localStorage.setItem('gcuc_user_name', name);
-          }
-          setDeptSetupModalOpen(false);
-          router.push(`/evaluator?dept=${encodeURIComponent(selectedDept)}`);
-          return;
-        }
-      } catch (err) {
-        setSetupError('인증 통신 오류가 발생했습니다.');
-      } finally {
-        setSetupLoading(false);
-      }
-      return;
-    }
-
-    if (newPassword.length < 4) {
-      setSetupError('비밀번호는 최소 4자리 이상 입력해주세요.');
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      setSetupError('비밀번호 확인이 일치하지 않습니다.');
-      return;
-    }
-
-    setSetupLoading(true);
-    setSetupError('');
-
-    try {
-      const res = await fetch('/api/auth/department', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          dept: selectedDept,
-          password: newPassword,
-          action: 'setup'
-        })
-      });
-      const data = await res.json();
-
-      if (data.success) {
-        alert(`[${selectedDept}] 비밀번호가 성공적으로 설정되었습니다.\n해당 부서 평가함으로 입장합니다.`);
-        const name = evaluatorName.trim() || `${selectedDept} 부서장`;
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('gcuc_user_role', 'EVALUATOR');
-          localStorage.setItem('gcuc_dept_name', selectedDept);
-          localStorage.setItem(`gcuc_dept_auth_${selectedDept}`, 'true');
-          localStorage.setItem('gcuc_user_name', name);
-        }
-        setDeptSetupModalOpen(false);
-        router.push(`/evaluator?dept=${encodeURIComponent(selectedDept)}`);
-      } else {
-        setSetupError(data.message || '비밀번호 설정에 실패했습니다.');
-      }
-    } catch (err) {
-      setSetupError('비밀번호 설정 중 오류가 발생했습니다.');
-    } finally {
-      setSetupLoading(false);
     }
   };
 
@@ -446,15 +333,9 @@ export default function Home() {
             </div>
 
             {/* 안내 문구 (GCUC 스타일 박스) */}
-            <div className="mt-2 p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 space-y-1.5 leading-relaxed text-left">
-              <p className="font-bold text-emerald-700">
-                ※ 각 부서는 최초 1회 비밀번호를 설정한 후 안전하게 평가를 수행합니다.
-              </p>
-              <p className="text-[11px] text-slate-600">
-                담당 부서를 유의하여 초기비밀번호를 세팅해 주세요. 타 부서의 비밀번호를 설정 하지 않도록 주의해 주세요.
-              </p>
-              <p className="text-[11px] text-amber-800 font-medium pt-1 border-t border-slate-200">
-                * 비밀번호를 설정한 적이 없는데, 이미 설정이 되어 있다고 나오는 경우에는 <strong>관리자(우세림)</strong>에게 별도 문의 부탁 드립니다.
+            <div className="mt-2 p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 leading-relaxed text-left">
+              <p className="text-[11px]">
+                ※ 각 부서별 접속 비밀번호는 <strong>총괄 관리자(우세림)</strong>가 사전에 발급하여 관리합니다. 비밀번호 분실 또는 미발급 시 관리자에게 문의 바랍니다.
               </p>
             </div>
           </div>
@@ -627,98 +508,7 @@ export default function Home() {
               </div>
 
               <div className="mt-3 p-3 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-600 leading-relaxed">
-                * 비밀번호를 설정한 적이 없는데, 이미 설정이 되어 있다고 나오는 경우에는 <strong>관리자(우세림)</strong>에게 별도 문의 부탁 드립니다.
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* --- 모달 3: 부서 초기 비밀번호 설정 (Clean White Modal) --- */}
-      {deptSetupModalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white border border-slate-200 w-full max-w-md rounded-2xl shadow-2xl p-6 relative text-slate-800">
-            <button
-              onClick={() => setDeptSetupModalOpen(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-1 rounded-lg"
-            >
-              <X className="w-5 h-5" />
-            </button>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
-                <KeyRound className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-slate-900">[{selectedDept}] 초기 비밀번호 설정</h3>
-                <p className="text-xs text-slate-500">
-                  아직 설정된 비밀번호가 없습니다. 앞으로 사용할 비밀번호를 설정해주세요.
-                </p>
-              </div>
-            </div>
-
-            <div className="mb-4 p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs leading-relaxed space-y-1.5">
-              <div className="font-semibold text-amber-800">
-                ※ 담당 부서(<strong>[{selectedDept}]</strong>)를 유의하여 초기비밀번호를 세팅해 주세요.
-              </div>
-              <p className="text-[11px] text-slate-600">
-                타 부서의 비밀번호를 설정 하지 않도록 주의해 주세요.
-              </p>
-              <p className="text-[11px] text-amber-700 font-medium pt-1 border-t border-amber-200">
-                * 비밀번호를 설정한 적이 없는데, 이미 설정이 되어 있다고 나오는 경우에는 <strong>관리자(우세림)</strong>에게 별도 문의 부탁 드립니다.
-              </p>
-            </div>
-
-            <form onSubmit={handleDeptSetupSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  새 비밀번호 (4자리 이상) <span className="text-amber-600">*</span>
-                </label>
-                <input
-                  type="password"
-                  autoFocus
-                  placeholder="사용할 비밀번호를 입력하세요"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  비밀번호 확인 <span className="text-amber-600">*</span>
-                </label>
-                <input
-                  type="password"
-                  placeholder="비밀번호를 다시 한번 입력하세요"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
-                />
-              </div>
-
-              {setupError && (
-                <div className="flex items-center gap-2 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs">
-                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                  <span>{setupError}</span>
-                </div>
-              )}
-
-              <div className="flex gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setDeptSetupModalOpen(false)}
-                  className="w-1/3 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-slate-700 transition"
-                >
-                  취소
-                </button>
-                <button
-                  type="submit"
-                  disabled={setupLoading}
-                  className="w-2/3 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-xs font-semibold text-white shadow-lg shadow-amber-600/25 transition disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  <Check className="w-4 h-4" />
-                  <span>{setupLoading ? '설정 중...' : '비밀번호 등록 및 입장'}</span>
-                </button>
+                * 부서별 비밀번호는 관리자(우세림)가 사전에 발급한 4자리 숫자를 입력해주세요. (비밀번호 미발급 시 관리자 문의)
               </div>
             </form>
           </div>

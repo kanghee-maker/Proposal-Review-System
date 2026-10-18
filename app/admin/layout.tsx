@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Layers, FileText, Network, DownloadCloud, LogOut, Shield, Menu, X, ExternalLink, Award } from 'lucide-react';
+import { Layers, FileText, Network, DownloadCloud, LogOut, Shield, Menu, X, ExternalLink, Award, KeyRound } from 'lucide-react';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -28,6 +28,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { href: '/admin/reports', label: '부서 평가(0차)', icon: DownloadCloud },
     { href: '/admin/stage1', label: '제안 심사(1차)', icon: Award },
     { href: '/admin/organization', label: '2026 조직도', icon: Network },
+    { href: '/admin/passwords', label: '부서 비밀번호', icon: KeyRound },
   ];
 
   const handleLogout = () => {

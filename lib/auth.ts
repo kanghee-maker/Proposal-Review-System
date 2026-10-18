@@ -103,3 +103,18 @@ export async function setupDepartmentPassword(deptName: string, newPass: string)
     await supabase.from('departments').update({ password: newPass } as any).eq('department', deptName);
   } catch (err) {}
 }
+
+export function getAllDepartmentPasswords(): Record<string, string> {
+  const store = getAuthStore();
+  return store.departmentPasswords || {};
+}
+
+export async function saveAllDepartmentPasswords(map: Record<string, string>): Promise<void> {
+  const store = getAuthStore();
+  if (!store.departmentPasswords) {
+    store.departmentPasswords = {};
+  }
+  Object.assign(store.departmentPasswords, map);
+  saveAuthStore(store);
+}
+
