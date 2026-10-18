@@ -1,0 +1,30 @@
+[
+  {
+    "id": "eval-session-1792313214080-prop-1",
+    "proposal_id": "session-1792313214080-prop-1",
+    "session_id": "session-1792313214080",
+    "department_name": "총무행정부",
+    "evaluator_name": "총무행정부 부서장",
+    "answers": {
+      "result": "Yes",
+      "opinion": "전사적 업무 능률 향상 및 예산 절감 기대되므로 적극 채택 추진함."
+    },
+    "is_submitted": true,
+    "submitted_at": "2026-10-18T08:46:54.768Z",
+    "updated_at": "2026-10-18T08:46:54.768Z"
+  },
+  {
+    "id": "eval-session-1792313214080-prop-2",
+    "proposal_id": "session-1792313214080-prop-2",
+    "session_id": "session-1792313214080",
+    "department_name": "총무행정부",
+    "evaluator_name": "총무행정부 부서장",
+    "answers": {
+      "result": "No",
+      "opinion": "기존 공원 환경 및 관리 예산 소요 대비 실익 부족."
+    },
+    "is_submitted": true,
+    "submitted_at": "2026-10-18T08:46:55.033Z",
+    "updated_at": "2026-10-18T08:46:55.033Z"
+  }
+]

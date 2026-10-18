@@ -1,4 +1,6 @@
 {
   "adminPassword": "0423",
-  "departmentPasswords": {}
+  "departmentPasswords": {
+    "총무행정부": "8821"
+  }
 }
