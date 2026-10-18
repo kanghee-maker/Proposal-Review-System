@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Layers, Plus, Calendar, FileText, CheckCircle2, Clock, ArrowRight, Settings, Upload, Check, Edit, X, Sparkles, CheckCircle, FileSpreadsheet, DownloadCloud } from 'lucide-react';
+import { Layers, Plus, Calendar, FileText, CheckCircle2, Clock, ArrowRight, Settings, Upload, Check, Edit, X, Sparkles, CheckCircle, FileSpreadsheet, DownloadCloud, Trash2, AlertTriangle, Lock } from 'lucide-react';
 import { EvaluationSession, EvaluationCriteria } from '@/lib/types';
 
 export default function AdminDashboardPage() {
@@ -53,6 +53,59 @@ export default function AdminDashboardPage() {
   const [editDescription, setEditDescription] = useState<string>('');
   const [editStatus, setEditStatus] = useState<'ACTIVE' | 'ARCHIVED' | 'UPCOMING'>('ACTIVE');
   const [editSaving, setEditSaving] = useState<boolean>(false);
+
+  // 3. 세션 삭제 확인 모달 상태 (비밀번호 재인증)
+  const [isDeleteOpen, setIsDeleteOpen] = useState<boolean>(false);
+  const [deleteSession, setDeleteSession] = useState<EvaluationSession | null>(null);
+  const [deletePassword, setDeletePassword] = useState<string>('');
+  const [deleteLoading, setDeleteLoading] = useState<boolean>(false);
+  const [deleteError, setDeleteError] = useState<string>('');
+
+  const openDeleteModal = (s: EvaluationSession, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setDeleteSession(s);
+    setDeletePassword('');
+    setDeleteError('');
+    setIsDeleteOpen(true);
+  };
+
+  const handleDeleteSession = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!deleteSession) return;
+    if (!deletePassword) {
+      setDeleteError('관리자 비밀번호를 입력해주세요.');
+      return;
+    }
+
+    setDeleteLoading(true);
+    setDeleteError('');
+
+    try {
+      const res = await fetch('/api/sessions', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: deleteSession.id,
+          password: deletePassword
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert(`[${deleteSession.title}] 회차가 성공적으로 삭제되었습니다.`);
+        setIsDeleteOpen(false);
+        if (activeSessionId === deleteSession.id && typeof window !== 'undefined') {
+          localStorage.removeItem('gcuc_active_session_id');
+        }
+        fetchSessions();
+      } else {
+        setDeleteError(data.error || '삭제 중 오류가 발생했습니다.');
+      }
+    } catch (err) {
+      setDeleteError('서버 통신 오류가 발생했습니다.');
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
 
   const fetchSessions = () => {
     setLoading(true);
@@ -284,6 +337,15 @@ export default function AdminDashboardPage() {
                           <Edit className="w-3.5 h-3.5" />
                           <span>이름 수정</span>
                         </button>
+                        {/* 삭제 버튼 */}
+                        <button
+                          type="button"
+                          onClick={(e) => openDeleteModal(s, e)}
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-slate-200 hover:border-rose-200 transition"
+                          title="제안평가 회차 삭제"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                     </div>
 
@@ -433,6 +495,89 @@ export default function AdminDashboardPage() {
                 >
                   <Check className="w-4 h-4" />
                   <span>{editSaving ? '저장 중...' : '수정사항 저장'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* --- 모달: 제안평가 회차 삭제 (관리자 비밀번호 재확인) --- */}
+      {isDeleteOpen && deleteSession && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 relative text-slate-800">
+            <button
+              onClick={() => setIsDeleteOpen(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-1 rounded-lg"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center flex-shrink-0">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-slate-900">제안평가 회차 삭제</h3>
+                <p className="text-xs text-rose-600 font-medium">주의: 삭제 시 복구할 수 없습니다.</p>
+              </div>
+            </div>
+
+            <div className="p-3.5 bg-rose-50/70 border border-rose-200 rounded-xl text-xs space-y-1.5 mb-4 text-slate-700">
+              <div>
+                <span className="text-slate-400 block text-[10px]">삭제 대상 회차</span>
+                <strong className="text-slate-900 text-xs block">{deleteSession.title}</strong>
+              </div>
+              <p className="text-[11px] text-rose-800 leading-relaxed">
+                해당 회차에 배정된 <strong>제안 {deleteSession.proposals_count}건</strong>과 부서 평가 내역, 심사위원 채점 결과가 완전히 삭제됩니다.
+              </p>
+            </div>
+
+            <form onSubmit={handleDeleteSession} className="space-y-4 text-xs">
+              <div>
+                <label className="block font-semibold text-slate-700 mb-1.5 flex items-center justify-between">
+                  <span className="flex items-center gap-1">
+                    <Lock className="w-3.5 h-3.5 text-slate-500" />
+                    <span>관리자 비밀번호 확인</span>
+                  </span>
+                  <span className="text-[10px] text-slate-400">* 안전을 위해 재입력</span>
+                </label>
+                <input
+                  type="password"
+                  required
+                  value={deletePassword}
+                  onChange={(e) => {
+                    setDeletePassword(e.target.value);
+                    setDeleteError('');
+                  }}
+                  placeholder="관리자 비밀번호를 입력해주세요"
+                  autoFocus
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-rose-500"
+                />
+              </div>
+
+              {deleteError && (
+                <div className="p-2.5 bg-rose-100/80 border border-rose-200 text-rose-700 text-xs rounded-xl flex items-center gap-1.5 font-medium">
+                  <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span>{deleteError}</span>
+                </div>
+              )}
+
+              <div className="flex gap-2 pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setIsDeleteOpen(false)}
+                  className="w-1/3 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-slate-600 transition"
+                >
+                  취소
+                </button>
+                <button
+                  type="submit"
+                  disabled={deleteLoading}
+                  className="w-2/3 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-xs font-semibold text-white shadow-lg shadow-rose-600/25 transition disabled:opacity-50 flex items-center justify-center gap-1.5"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>{deleteLoading ? '삭제 처리 중...' : '회차 영구 삭제'}</span>
                 </button>
               </div>
             </form>

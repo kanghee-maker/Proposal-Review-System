@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getSessionsAsync, saveSessionAsync, updateSessionAsync, getDefaultCriteria, getDefaultStage1Criteria, DEFAULT_STAGE1_JUDGES, seedDefaultProposalsForSessionAsync } from '@/lib/store';
+import { getSessionsAsync, saveSessionAsync, updateSessionAsync, deleteSessionAsync, getDefaultCriteria, getDefaultStage1Criteria, DEFAULT_STAGE1_JUDGES, seedDefaultProposalsForSessionAsync } from '@/lib/store';
 
 export async function GET() {
   const sessions = await getSessionsAsync();
@@ -52,6 +52,27 @@ export async function PUT(req: Request) {
     }
 
     return NextResponse.json({ success: true, session: updated });
+  } catch (err: any) {
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: Request) {
+  try {
+    const body = await req.json();
+    const { id, password } = body;
+
+    if (!id) {
+      return NextResponse.json({ success: false, error: '삭제할 평가 세션 ID가 필요합니다.' }, { status: 400 });
+    }
+
+    // 관리자 비밀번호 검증 (0423)
+    if (password !== '0423') {
+      return NextResponse.json({ success: false, error: '관리자 비밀번호가 일치하지 않습니다.' }, { status: 401 });
+    }
+
+    await deleteSessionAsync(id);
+    return NextResponse.json({ success: true, message: '제안평가 건이 성공적으로 삭제되었습니다.' });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }

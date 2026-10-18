@@ -288,6 +288,37 @@ export function saveSession(session: EvaluationSession): void {
   writeJson('sessions.json', sessions);
 }
 
+export async function deleteSessionAsync(sessionId: string): Promise<boolean> {
+  // 1. Supabase delete
+  try {
+    await supabase.from('committee_scores').delete().eq('session_id', sessionId);
+    await supabase.from('evaluations').delete().eq('session_id', sessionId);
+    await supabase.from('proposals').delete().eq('session_id', sessionId);
+    await supabase.from('evaluation_sessions').delete().eq('id', sessionId);
+  } catch (err) {
+    console.error('Error deleting session in Supabase:', err);
+  }
+
+  // 2. Local JSON store delete
+  const sessions = readJson<EvaluationSession[]>('sessions.json', []);
+  const updatedSessions = sessions.filter(s => s.id !== sessionId);
+  writeJson('sessions.json', updatedSessions);
+
+  const proposals = readJson<Proposal[]>('proposals_store.json', []);
+  const updatedProposals = proposals.filter(p => p.session_id !== sessionId);
+  writeJson('proposals_store.json', updatedProposals);
+
+  const evals = readJson<Evaluation[]>('evaluations_store.json', []);
+  const updatedEvals = evals.filter(e => e.session_id !== sessionId);
+  writeJson('evaluations_store.json', updatedEvals);
+
+  const scores = readJson<CommitteeScore[]>('committee_scores_store.json', []);
+  const updatedScores = scores.filter(s => s.session_id !== sessionId);
+  writeJson('committee_scores_store.json', updatedScores);
+
+  return true;
+}
+
 // 4. 제안 목록 (Proposals)
 export async function seedDefaultProposalsForSessionAsync(sessionId: string): Promise<Proposal[]> {
   const rawProposals = readJson<any[]>('proposals_2026_structured.json', []);
