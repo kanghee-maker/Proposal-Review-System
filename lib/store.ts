@@ -387,6 +387,100 @@ export async function seedDefaultProposalsForSessionAsync(sessionId: string): Pr
   return proposals;
 }
 
+function lookupDepartmentOrg(deptName: string): { division: string; office: string; department: string } {
+  if (!deptName) return { division: '', office: '', department: '' };
+  const org = readJson<{ departments: Department[] }>('organization_2026.json', { departments: [] });
+  const found = org.departments?.find(d => 
+    d.department === deptName || 
+    d.name === deptName || 
+    deptName.includes(d.department) ||
+    (d.office && deptName.includes(d.office))
+  );
+  if (found) {
+    return {
+      division: found.division,
+      office: found.office,
+      department: found.department
+    };
+  }
+  return { division: '', office: '', department: deptName };
+}
+
+export async function saveCustomProposalsForSessionAsync(
+  sessionId: string,
+  rawList: any[]
+): Promise<Proposal[]> {
+  const proposals: Proposal[] = rawList.map((item, index) => {
+    const seq = Number(item.seq_no ?? item['연번'] ?? item['순번'] ?? (index + 1));
+    const id = `${sessionId}-prop-${seq || (index + 1)}`;
+
+    // Resolve proposer org if missing
+    let pDivision = String(item.proposer_division || item['제안자_본부/부문'] || item['제안자_본부'] || item['제안자본부'] || '');
+    let pOffice = String(item.proposer_office || item['제안자_처/실/단'] || item['제안자_처실단'] || item['제안자처'] || '');
+    let pDept = String(item.proposer_department || item['제안자_부'] || item['제안자_부서'] || item['제안자부'] || item['소속부서'] || item['소속'] || '');
+    if ((!pDivision || !pOffice) && pDept) {
+      const resolved = lookupDepartmentOrg(pDept);
+      if (!pDivision) pDivision = resolved.division;
+      if (!pOffice) pOffice = resolved.office;
+    }
+
+    // Resolve assigned (execution) org if missing
+    let aDivision = String(item.assigned_division || item['실행(평가)_본부/부문'] || item['실행_본부/부문'] || item['실행본부'] || item['평가본부'] || '');
+    let aOffice = String(item.assigned_office || item['실행(평가)_처/실/단'] || item['실행_처/실/단'] || item['실행처'] || item['평가처'] || '');
+    let aDept = String(item.assigned_department || item['실행(평가)_부'] || item['실행_부'] || item['실행부서'] || item['담당부서'] || item['평가부서'] || item['부서'] || '');
+    if ((!aDivision || !aOffice) && aDept) {
+      const resolved = lookupDepartmentOrg(aDept);
+      if (!aDivision) aDivision = resolved.division;
+      if (!aOffice) aOffice = resolved.office;
+    }
+
+    return {
+      id,
+      session_id: sessionId,
+      seq_no: seq,
+      board_no: String(item.board_no ?? item['게시판번호'] ?? item['글번호'] ?? ''),
+      proposer_name: String(item.proposer_name || item['제안자'] || item['제안자명'] || item['성명'] || item['이름'] || ''),
+      proposer_rank: String(item.proposer_rank || item['직급'] || item['직책'] || ''),
+      proposer_division: pDivision,
+      proposer_office: pOffice,
+      proposer_department: pDept,
+      proposer_raw_dept: String(item.proposer_raw_dept || item['제안자_원소속부서'] || pDept),
+      proposal_type: String(item.proposal_type || item['제안구분'] || item['구분'] || '지정제안'),
+      category: String(item.category || item['분야'] || item['제안분야'] || '업무개선'),
+      assigned_division: aDivision,
+      assigned_office: aOffice,
+      assigned_department: aDept,
+      assigned_raw_dept: String(item.assigned_raw_dept || item['실행_원부서명'] || aDept),
+      submitted_at: String(item.submitted_at || item['접수일자'] || item['등록일자'] || new Date().toISOString().split('T')[0]),
+      title: String(item.title || item['제안제목'] || item['제목'] || `제안 ${seq}`),
+      content: String(item.content || item['제안내용'] || item['내용'] || ''),
+      expected_effect: String(item.expected_effect || item['기대효과'] || ''),
+      is_duplicate: String(item.is_duplicate || item['중복제안여부'] || item['중복여부'] || ''),
+      duplicate_title: String(item.duplicate_title || item['중복제안제목'] || item['중복제목'] || ''),
+      status: '미평가' as const,
+      contribution_rate: 100
+    };
+  });
+
+  // 1. Local store sync
+  let currentStore = readJson<Proposal[]>('proposals_store.json', []);
+  currentStore = currentStore.filter(p => p.session_id !== sessionId);
+  currentStore.push(...proposals);
+  writeJson('proposals_store.json', currentStore);
+
+  // 2. Supabase sync in chunks
+  try {
+    for (let i = 0; i < proposals.length; i += 50) {
+      const chunk = proposals.slice(i, i + 50);
+      await supabase.from('proposals').upsert(chunk);
+    }
+  } catch (err) {
+    console.error('Error saving custom proposals to Supabase:', err);
+  }
+
+  return proposals;
+}
+
 export async function getProposalsAsync(sessionId?: string): Promise<Proposal[]> {
   try {
     let query = supabase.from('proposals').select('*').order('seq_no', { ascending: true });

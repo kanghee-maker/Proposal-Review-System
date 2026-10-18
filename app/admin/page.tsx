@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Layers, Plus, Calendar, FileText, CheckCircle2, Clock, ArrowRight, Settings, Upload, Check, Edit, X, Sparkles, CheckCircle, FileSpreadsheet, DownloadCloud, Trash2, AlertTriangle, Lock } from 'lucide-react';
+import * as XLSX from 'xlsx';
 import { EvaluationSession, EvaluationCriteria } from '@/lib/types';
 
 export default function AdminDashboardPage() {
@@ -19,7 +20,12 @@ export default function AdminDashboardPage() {
   const [title, setTitle] = useState<string>('2026년 하반기 혁신 제안 심사 (0차 부서평가)');
   const [year, setYear] = useState<string>('2026');
   const [description, setDescription] = useState<string>('공사 경영개선 및 시민 편익 증진을 위한 부서 평가(0차 평가)');
-  const [selectedExcel, setSelectedExcel] = useState<string>('DEFAULT'); // DEFAULT: 137건 샘플
+  const [selectedExcel, setSelectedExcel] = useState<string>('DEFAULT'); // DEFAULT: 137건 샘플, NEW: 직접 업로드
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [uploadedProposals, setUploadedProposals] = useState<any[]>([]);
+  const [uploadError, setUploadError] = useState<string>('');
+  const [isParsingExcel, setIsParsingExcel] = useState<boolean>(false);
+  const [isCreatingSession, setIsCreatingSession] = useState<boolean>(false);
   const [customCriteria, setCustomCriteria] = useState<EvaluationCriteria[]>([
     {
       id: 'crit-result',
@@ -213,7 +219,73 @@ export default function AdminDashboardPage() {
     setCustomCriteria(customCriteria.filter(c => c.id !== id));
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    processExcelFile(file);
+  };
+
+  const processExcelFile = (file: File) => {
+    setIsParsingExcel(true);
+    setUploadError('');
+    const reader = new FileReader();
+
+    reader.onload = (evt) => {
+      try {
+        const buffer = evt.target?.result;
+        const wb = XLSX.read(buffer, { type: 'array' });
+        
+        // 시트 탐색: '제안데이터' 포함 시트 우선, 없으면 첫번째 시트
+        const targetSheetName = wb.SheetNames.find(n => n.includes('제안') && !n.includes('가이드')) || wb.SheetNames[0];
+        const ws = wb.Sheets[targetSheetName];
+        if (!ws) {
+          throw new Error('엑셀 시트를 찾을 수 없습니다.');
+        }
+
+        const rawRows = XLSX.utils.sheet_to_json<any>(ws, { defval: '' });
+        if (!rawRows || rawRows.length === 0) {
+          throw new Error('엑셀 파일에 유효한 데이터 행이 없습니다.');
+        }
+
+        // 제안 유효성 필터: 제목, 제안자, 연번 중 1개 이상 존재하는 행
+        const validRows = rawRows.filter((r: any) => {
+          const title = r['제안제목'] || r['제목'] || r.title;
+          const proposer = r['제안자'] || r['제안자명'] || r['성명'] || r.proposer;
+          const seq = r['연번'] || r['순번'] || r.seq_no;
+          return Boolean(title || proposer || seq);
+        });
+
+        if (validRows.length === 0) {
+          throw new Error('제안 제목 또는 제안자 정보가 포함된 행을 찾을 수 없습니다. 표준 엑셀 양식을 확인해주세요.');
+        }
+
+        setUploadedFile(file);
+        setUploadedProposals(validRows);
+        setIsParsingExcel(false);
+      } catch (err: any) {
+        console.error('Excel parse error:', err);
+        setUploadError(err.message || '엑셀 파일을 읽는 중 오류가 발생했습니다.');
+        setUploadedFile(null);
+        setUploadedProposals([]);
+        setIsParsingExcel(false);
+      }
+    };
+
+    reader.onerror = () => {
+      setUploadError('파일을 읽지 못했습니다. 다시 시도해주세요.');
+      setIsParsingExcel(false);
+    };
+
+    reader.readAsArrayBuffer(file);
+  };
+
   const handleCreateSession = async () => {
+    if (selectedExcel === 'NEW' && uploadedProposals.length === 0) {
+      alert('신규 엑셀 파일이 업로드되지 않았습니다. 엑셀 파일을 먼저 등록해주세요.');
+      return;
+    }
+
+    setIsCreatingSession(true);
     try {
       const res = await fetch('/api/sessions', {
         method: 'POST',
@@ -223,7 +295,8 @@ export default function AdminDashboardPage() {
           year,
           description,
           stage,
-          proposals_count: selectedExcel === 'DEFAULT' ? 137 : 0,
+          proposals: selectedExcel === 'NEW' ? uploadedProposals : undefined,
+          proposals_count: selectedExcel === 'NEW' ? uploadedProposals.length : (selectedExcel === 'DEFAULT' ? 137 : 0),
           criteria: customCriteria
         })
       });
@@ -231,15 +304,21 @@ export default function AdminDashboardPage() {
       if (data.success) {
         setIsCreateOpen(false);
         setStep(1);
+        setUploadedFile(null);
+        setUploadedProposals([]);
         fetchSessions();
         if (data.session?.id && typeof window !== 'undefined') {
           localStorage.setItem('gcuc_active_session_id', data.session.id);
           setActiveSessionId(data.session.id);
         }
+      } else {
+        alert(data.error || '세션 생성 실패');
       }
     } catch (err) {
       console.error(err);
       alert('세션 생성 실패');
+    } finally {
+      setIsCreatingSession(false);
     }
   };
 
@@ -803,7 +882,11 @@ export default function AdminDashboardPage() {
                       </div>
                     </label>
 
-                    <label className="flex items-start gap-3 p-3 rounded-xl border border-slate-200 hover:border-slate-300 cursor-pointer opacity-70">
+                    <label className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition ${
+                      selectedExcel === 'NEW' 
+                        ? 'border-sky-500 bg-sky-50/60 shadow-sm ring-1 ring-sky-400' 
+                        : 'border-slate-200 hover:border-slate-300'
+                    }`}>
                       <input
                         type="radio"
                         name="excel_source"
@@ -811,15 +894,122 @@ export default function AdminDashboardPage() {
                         onChange={() => setSelectedExcel('NEW')}
                         className="mt-0.5 text-sky-600"
                       />
-                      <div>
-                        <strong className="text-slate-900 block font-semibold">
-                          신규 엑셀 파일 직접 업로드 (준비중)
+                      <div className="flex-1">
+                        <strong className="text-slate-900 block font-semibold text-xs">
+                          신규 엑셀 파일 직접 업로드 (사용자 지정 데이터)
                         </strong>
-                        <span className="text-slate-500 text-[11px]">
-                          상단에서 다운로드한 <strong>[표준 제안 엑셀 양식]</strong>에 맞춰 데이터를 작성한 후 업로드합니다.
+                        <span className="text-slate-500 text-[11px] block mt-0.5">
+                          공사 표준 제안 엑셀 양식에 맞춰 작성된 파일을 첨부하면, 내용을 분석하여 새 회차의 제안 데이터베이스로 즉시 구축합니다.
                         </span>
                       </div>
                     </label>
+
+                    {/* 업로드 파일 선택 및 파싱 결과 UI (NEW 선택 시 노출) */}
+                    {selectedExcel === 'NEW' && (
+                      <div className="mt-3 p-4 rounded-xl bg-white border border-sky-200 space-y-3 shadow-sm">
+                        <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                          <span className="font-semibold text-slate-800 text-xs flex items-center gap-1.5">
+                            <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+                            엑셀 파일 첨부 (.xlsx, .xls, .csv)
+                          </span>
+                          <a
+                            href="/api/sample-excel"
+                            download="과천도시공사_표준_제안서_양식.xlsx"
+                            className="text-[11px] font-semibold text-sky-700 hover:text-sky-800 flex items-center gap-1 hover:underline"
+                          >
+                            <DownloadCloud className="w-3.5 h-3.5" />
+                            <span>표준 양식 다운로드</span>
+                          </a>
+                        </div>
+
+                        {!uploadedFile ? (
+                          <div className="relative border-2 border-dashed border-sky-200 hover:border-sky-400 rounded-xl p-5 text-center transition bg-sky-50/30 hover:bg-sky-50/60 cursor-pointer group">
+                            <input
+                              type="file"
+                              accept=".xlsx, .xls, .csv"
+                              onChange={handleFileChange}
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                            />
+                            <div className="flex flex-col items-center justify-center gap-2">
+                              <div className="w-10 h-10 rounded-full bg-sky-100 text-sky-600 flex items-center justify-center group-hover:scale-105 transition">
+                                <Upload className="w-5 h-5" />
+                              </div>
+                              <p className="text-xs font-semibold text-slate-700">
+                                {isParsingExcel ? '엑셀 데이터를 분석 중입니다...' : '클릭하거나 엑셀 파일을 이곳에 드래그하세요'}
+                              </p>
+                              <p className="text-[11px] text-slate-400">
+                                '연번', '제안자', '제안제목', '실행(평가)_부' 등의 컬럼이 포함된 파일을 지원합니다.
+                              </p>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-between">
+                              <div className="flex items-center gap-2.5">
+                                <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center flex-shrink-0">
+                                  <CheckCircle2 className="w-5 h-5" />
+                                </div>
+                                <div>
+                                  <div className="text-xs font-bold text-emerald-900 flex items-center gap-2">
+                                    <span>{uploadedFile.name}</span>
+                                    <span className="px-2 py-0.5 rounded-full bg-emerald-200 text-emerald-800 text-[10px]">
+                                      총 {uploadedProposals.length}건 인식 완료
+                                    </span>
+                                  </div>
+                                  <p className="text-[11px] text-emerald-700 mt-0.5">
+                                    제안 번호, 제목, 제안자, 실행부서가 정상적으로 분석되었습니다.
+                                  </p>
+                                </div>
+                              </div>
+                              <label className="px-3 py-1.5 rounded-lg bg-white border border-emerald-300 hover:bg-emerald-100 text-[11px] font-semibold text-emerald-800 cursor-pointer shadow-sm transition">
+                                <span>파일 변경</span>
+                                <input
+                                  type="file"
+                                  accept=".xlsx, .xls, .csv"
+                                  onChange={handleFileChange}
+                                  className="hidden"
+                                />
+                              </label>
+                            </div>
+
+                            {/* 미니 미리보기 테이블 (상위 3건) */}
+                            {uploadedProposals.length > 0 && (
+                              <div className="bg-white rounded-lg border border-slate-200 overflow-hidden text-[11px]">
+                                <div className="px-3 py-1.5 bg-slate-50 border-b border-slate-200 font-semibold text-slate-600 flex justify-between">
+                                  <span>탑재 대상 제안 데이터 미리보기 (상위 {Math.min(3, uploadedProposals.length)}건)</span>
+                                  <span className="text-slate-400">전체 {uploadedProposals.length}건</span>
+                                </div>
+                                <div className="divide-y divide-slate-100 max-h-36 overflow-y-auto">
+                                  {uploadedProposals.slice(0, 3).map((row, idx) => {
+                                    const seq = row['연번'] || row['순번'] || row.seq_no || (idx + 1);
+                                    const proposer = row['제안자'] || row['제안자명'] || row.proposer_name || '-';
+                                    const title = row['제안제목'] || row['제목'] || row.title || '-';
+                                    const dept = row['실행(평가)_부'] || row['실행부서'] || row['담당부서'] || row.assigned_department || '-';
+                                    return (
+                                      <div key={idx} className="p-2 flex items-center gap-2 hover:bg-slate-50">
+                                        <span className="w-8 font-mono text-slate-400 font-bold text-center">#{seq}</span>
+                                        <span className="w-16 font-semibold text-slate-700 truncate">{proposer}</span>
+                                        <span className="flex-1 text-slate-800 font-medium truncate">{title}</span>
+                                        <span className="px-2 py-0.5 rounded bg-sky-50 text-sky-700 text-[10px] font-semibold flex-shrink-0">
+                                          {dept}
+                                        </span>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {uploadError && (
+                          <div className="p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-[11px] flex items-center gap-2">
+                            <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                            <span>{uploadError}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -831,7 +1021,13 @@ export default function AdminDashboardPage() {
                     이전
                   </button>
                   <button
-                    onClick={() => setStep(3)}
+                    onClick={() => {
+                      if (selectedExcel === 'NEW' && uploadedProposals.length === 0) {
+                        alert('신규 엑셀 파일을 먼저 업로드해주세요.');
+                        return;
+                      }
+                      setStep(3);
+                    }}
                     className="px-5 py-2 bg-sky-600 hover:bg-sky-500 text-white font-semibold rounded-xl flex items-center gap-1 shadow-md shadow-sky-600/20"
                   >
                     <span>다음: 부서 평가항목 설정</span>
@@ -919,10 +1115,11 @@ export default function AdminDashboardPage() {
                   </button>
                   <button
                     onClick={handleCreateSession}
-                    className="px-5 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold rounded-xl flex items-center gap-1 shadow-md shadow-emerald-600/20"
+                    disabled={isCreatingSession}
+                    className="px-5 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold rounded-xl flex items-center gap-1 shadow-md shadow-emerald-600/20 disabled:opacity-50"
                   >
                     <Check className="w-4 h-4" />
-                    <span>제안평가 회차 생성 완료</span>
+                    <span>{isCreatingSession ? '제안 데이터 구축 중...' : '제안평가 회차 생성 완료'}</span>
                   </button>
                 </div>
               </div>

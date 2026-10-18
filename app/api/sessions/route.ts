@@ -1,5 +1,15 @@
 import { NextResponse } from 'next/server';
-import { getSessionsAsync, saveSessionAsync, updateSessionAsync, deleteSessionAsync, getDefaultCriteria, getDefaultStage1Criteria, DEFAULT_STAGE1_JUDGES, seedDefaultProposalsForSessionAsync } from '@/lib/store';
+import { 
+  getSessionsAsync, 
+  saveSessionAsync, 
+  updateSessionAsync, 
+  deleteSessionAsync, 
+  getDefaultCriteria, 
+  getDefaultStage1Criteria, 
+  DEFAULT_STAGE1_JUDGES, 
+  seedDefaultProposalsForSessionAsync,
+  saveCustomProposalsForSessionAsync
+} from '@/lib/store';
 
 export async function GET() {
   const sessions = await getSessionsAsync();
@@ -12,6 +22,11 @@ export async function POST(req: Request) {
     const stage = body.stage || 'STAGE_0';
     const isStage1 = stage === 'STAGE_1';
 
+    const hasCustomProposals = Array.isArray(body.proposals) && body.proposals.length > 0;
+    const proposalsCount = hasCustomProposals
+      ? body.proposals.length
+      : (body.proposals_count !== undefined ? body.proposals_count : 137);
+
     const newSession = {
       id: `session-${Date.now()}`,
       title: body.title || (isStage1 ? '2026년 하반기 혁신 제안 심사 (1차 평가)' : '2026년 하반기 혁신 제안 심사 (0차 부서평가)'),
@@ -21,15 +36,17 @@ export async function POST(req: Request) {
       judges: isStage1 ? (body.judges || DEFAULT_STAGE1_JUDGES) : undefined,
       status: 'ACTIVE' as const,
       created_at: new Date().toISOString(),
-      proposals_count: body.proposals_count || 137,
+      proposals_count: proposalsCount,
       criteria: body.criteria && body.criteria.length > 0
         ? body.criteria
         : (isStage1 ? getDefaultStage1Criteria() : getDefaultCriteria())
     };
     await saveSessionAsync(newSession);
 
-    // 기본 제안 탑재 또는 proposals_count > 0 인 경우 제안 데이터 자동 생성 및 Supabase 연동
-    if (body.proposals_count !== 0) {
+    // 신규 업로드된 사용자 제안 데이터가 있는 경우 일괄 등록 및 Supabase 연동
+    if (hasCustomProposals) {
+      await saveCustomProposalsForSessionAsync(newSession.id, body.proposals);
+    } else if (proposalsCount !== 0) {
       await seedDefaultProposalsForSessionAsync(newSession.id);
     }
 
