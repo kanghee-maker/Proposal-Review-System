@@ -1,67 +1,36 @@
 [
   {
-    "id": "session-1792320986840",
-    "title": "새로운 엑셀 업로드 회차",
+    "id": "session-1792320516156",
+    "title": "test",
     "year": "2026",
-    "description": "",
+    "description": "공사 경영개선 및 시민 편익 증진을 위한 부서 평가(0차 평가)",
     "stage": "STAGE_0",
     "status": "ACTIVE",
-    "created_at": "2026-10-18T10:56:26.840Z",
-    "proposals_count": 1,
+    "created_at": "2026-10-18T10:48:36.156+00:00",
+    "proposals_count": 9,
     "criteria": [
       {
+        "id": "crit-result",
         "key": "result",
-        "label": "부서 검토 결과 (수용 여부)",
         "type": "RADIO",
+        "label": "부서 검토 결과 (수용 여부)",
         "options": [
           "Yes",
           "No"
         ],
         "required": true,
-        "display_order": 1,
-        "description": "해당 제안에 대한 부서 차원의 채택/수용 여부를 선택합니다."
+        "description": "해당 제안에 대한 부서 차원의 채택/수용 여부",
+        "display_order": 1
       },
       {
+        "id": "crit-opinion",
         "key": "opinion",
-        "label": "부서 검토 의견 (Opinion)",
         "type": "TEXTAREA",
+        "label": "부서 검토 의견 (Opinion)",
         "options": [],
         "required": true,
-        "display_order": 2,
-        "description": "선택 사유, 추진 가능 여부, 예산 및 일정 등 구체적 검토 의견을 기술합니다."
-      }
-    ]
-  },
-  {
-    "id": "session-1792320763789",
-    "title": "디버그 세션",
-    "year": "2026",
-    "description": "",
-    "stage": "STAGE_0",
-    "status": "ACTIVE",
-    "created_at": "2026-10-18T10:52:43.789Z",
-    "proposals_count": 2,
-    "criteria": [
-      {
-        "key": "result",
-        "label": "부서 검토 결과 (수용 여부)",
-        "type": "RADIO",
-        "options": [
-          "Yes",
-          "No"
-        ],
-        "required": true,
-        "display_order": 1,
-        "description": "해당 제안에 대한 부서 차원의 채택/수용 여부를 선택합니다."
-      },
-      {
-        "key": "opinion",
-        "label": "부서 검토 의견 (Opinion)",
-        "type": "TEXTAREA",
-        "options": [],
-        "required": true,
-        "display_order": 2,
-        "description": "선택 사유, 추진 가능 여부, 예산 및 일정 등 구체적 검토 의견을 기술합니다."
+        "description": "부서장 서술형 타당성 검토 의견",
+        "display_order": 2
       }
     ]
   }

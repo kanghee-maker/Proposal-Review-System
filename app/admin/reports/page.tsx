@@ -499,7 +499,7 @@ function AdminReportsContent() {
                         부서 채택(Yes) 제안만 1차 심사로 이관 (권장)
                       </strong>
                       <span className="text-[11px] text-slate-500">
-                        부서 자체 타당성 검토에서 'Yes'를 받은 우수 제안({yesCount > 0 ? `${yesCount}건` : '부서평가 0건 시 시범 30건'})만 제안심사위원회 심사 대상으로 선별 이관합니다.
+                        부서 자체 타당성 검토에서 &apos;Yes&apos;를 받은 우수 제안({yesCount}건)만 제안심사위원회 심사 대상으로 선별 이관합니다.
                       </span>
                     </div>
                   </label>

@@ -56,14 +56,17 @@ function AdminStage1Content() {
   const [isClosed, setIsClosed] = useState<boolean>(true); // 1차마감여부(Y/N)
   const [finalDecision, setFinalDecision] = useState<string>('채택');
 
-  // 1. 회차 목록 로드
+  // 1. 회차 목록 로드 (오직 1차 심사로 연계 생성된 STAGE_1 회차만 표시)
   useEffect(() => {
     fetch(`/api/sessions?_t=${Date.now()}`, { cache: 'no-store' })
       .then(res => res.json())
       .then((sessionList: EvaluationSession[]) => {
-        setSessions(sessionList);
+        const stage1Sessions = Array.isArray(sessionList)
+          ? sessionList.filter(s => s.stage === 'STAGE_1')
+          : [];
+        setSessions(stage1Sessions);
 
-        if (!sessionList || sessionList.length === 0) {
+        if (stage1Sessions.length === 0) {
           setSelectedSessionId('');
           setProposals([]);
           setLoading(false);
@@ -71,22 +74,18 @@ function AdminStage1Content() {
         }
 
         const urlSessionId = searchParams.get('session_id');
-        let initialId = urlSessionId;
+        let initialId = urlSessionId || '';
 
         if (!initialId && typeof window !== 'undefined') {
           initialId = localStorage.getItem('gcuc_active_session_id') || '';
         }
 
-        // 1차 심사 회차가 있으면 우선 선택
-        const stage1Session = sessionList.find(s => s.stage === 'STAGE_1');
-        if (!initialId || !sessionList.some(s => s.id === initialId)) {
-          initialId = stage1Session ? stage1Session.id : (sessionList[0]?.id || '');
+        // 선택된 ID가 STAGE_1 목록에 없으면 첫 번째 STAGE_1 회차 선택
+        if (!initialId || !stage1Sessions.some(s => s.id === initialId)) {
+          initialId = stage1Sessions[0].id;
         }
 
         setSelectedSessionId(initialId);
-        if (initialId && typeof window !== 'undefined') {
-          localStorage.setItem('gcuc_active_session_id', initialId);
-        }
       })
       .catch(err => {
         console.error(err);
@@ -314,13 +313,18 @@ function AdminStage1Content() {
               <select
                 value={selectedSessionId}
                 onChange={(e) => handleSessionChange(e.target.value)}
-                className="bg-white border-2 border-amber-400 font-bold text-slate-900 text-sm sm:text-base rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-amber-500 shadow-sm cursor-pointer"
+                disabled={sessions.length === 0}
+                className="bg-white border-2 border-amber-400 font-bold text-slate-900 text-sm sm:text-base rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-amber-500 shadow-sm cursor-pointer disabled:opacity-60"
               >
-                {sessions.map(s => (
-                  <option key={s.id} value={s.id}>
-                    [{s.stage === 'STAGE_1' ? '1차 심사' : '0차 부서'}] {s.title} ({s.proposals_count}건)
-                  </option>
-                ))}
+                {sessions.length === 0 ? (
+                  <option value="">1차 심사로 이관된 회차 없음</option>
+                ) : (
+                  sessions.map(s => (
+                    <option key={s.id} value={s.id}>
+                      [1차 심사] {s.title} ({s.proposals_count}건)
+                    </option>
+                  ))
+                )}
               </select>
             </div>
           </div>
@@ -335,7 +339,7 @@ function AdminStage1Content() {
             <span>회차 대시보드</span>
           </Link>
           <Link
-            href={`/admin/reports?session_id=${encodeURIComponent(selectedSessionId)}`}
+            href={`/admin/reports${selectedSessionId ? `?session_id=${encodeURIComponent(selectedSessionId)}` : ''}`}
             className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition flex items-center gap-1.5"
           >
             <span>0차 부서평가 취합 보기</span>
@@ -477,8 +481,8 @@ function AdminStage1Content() {
       <div className="bg-white rounded-b-xl border border-slate-200 shadow-sm overflow-hidden">
         {sessions.length === 0 ? (
           <div className="p-12 text-center text-xs text-slate-500">
-            <p className="font-semibold text-slate-700 mb-1">등록된 제안평가 회차가 없습니다.</p>
-            <p className="text-slate-400">관리자 대시보드에서 새로운 제안평가를 생성해주세요.</p>
+            <p className="font-semibold text-slate-700 mb-1">현재 1차 제안심사로 넘긴(이관된) 평가 회차가 없습니다.</p>
+            <p className="text-slate-400">0차 부서평가 완료 후 [부서 평가 취합] 또는 [관리자 대시보드]에서 1차 심사 연계 생성을 진행해주세요.</p>
           </div>
         ) : loading ? (
           <div className="p-12 text-center text-xs text-slate-500">

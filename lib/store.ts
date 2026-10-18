@@ -207,25 +207,35 @@ export async function getSessionsAsync(): Promise<EvaluationSession[]> {
   const localSessions = getSessions();
   try {
     const { data, error } = await supabase.from('evaluation_sessions').select('*');
-    if (!error && Array.isArray(data) && data.length > 0) {
-      markSystemInitialized();
-      const localMap = new Map(localSessions.map(s => [s.id, s]));
-      return data.map(s => {
-        const local = localMap.get(s.id);
-        return {
-          id: s.id,
-          title: s.title,
-          year: s.year,
-          description: s.description,
-          stage: local?.stage || s.stage || 'STAGE_0',
-          source_session_id: local?.source_session_id || s.source_session_id,
-          judges: local?.judges || s.judges || (s.stage === 'STAGE_1' ? DEFAULT_STAGE1_JUDGES : undefined),
-          status: s.status,
-          created_at: s.created_at,
-          proposals_count: s.proposals_count || local?.proposals_count || 0,
-          criteria: s.criteria || local?.criteria || (s.stage === 'STAGE_1' ? getDefaultStage1Criteria() : getDefaultCriteria())
-        };
-      });
+    if (!error && Array.isArray(data)) {
+      if (data.length > 0 || isSystemInitialized()) {
+        markSystemInitialized();
+        const localMap = new Map(localSessions.map(s => [s.id, s]));
+        const synced: EvaluationSession[] = data.map(s => {
+          const local = localMap.get(s.id);
+          const isStage1 =
+            local?.stage === 'STAGE_1' ||
+            s.stage === 'STAGE_1' ||
+            String(s.id).startsWith('session-stage1-') ||
+            (Array.isArray(s.criteria) && s.criteria.some((c: any) => c.key === 'creativity'));
+          const stage: 'STAGE_0' | 'STAGE_1' = isStage1 ? 'STAGE_1' : 'STAGE_0';
+          return {
+            id: s.id,
+            title: s.title,
+            year: s.year,
+            description: s.description,
+            stage,
+            source_session_id: local?.source_session_id || s.source_session_id,
+            judges: local?.judges || s.judges || (stage === 'STAGE_1' ? DEFAULT_STAGE1_JUDGES : undefined),
+            status: s.status,
+            created_at: s.created_at,
+            proposals_count: s.proposals_count ?? local?.proposals_count ?? 0,
+            criteria: s.criteria || local?.criteria || (stage === 'STAGE_1' ? getDefaultStage1Criteria() : getDefaultCriteria())
+          };
+        });
+        writeJson('sessions.json', synced);
+        return synced;
+      }
     }
   } catch (err) {
     // fallback
@@ -459,9 +469,32 @@ export async function saveCustomProposalsForSessionAsync(
     const id = `${sessionId}-prop-${seq || (index + 1)}`;
 
     // Resolve proposer org if missing
-    let pDivision = String(item.proposer_division || item['제안자_본부/부문'] || item['제안자_본부'] || item['제안자본부'] || '');
-    let pOffice = String(item.proposer_office || item['제안자_처/실/단'] || item['제안자_처실단'] || item['제안자처'] || '');
-    let pDept = String(item.proposer_department || item['제안자_부'] || item['제안자_부서'] || item['제안자부'] || item['소속부서'] || item['소속'] || '');
+    let pDivision = String(
+      item.proposer_division ||
+      item['제안자_본부/부문'] ||
+      item['제안자_본부/부문 (Division)'] ||
+      item['제안자_본부'] ||
+      item['제안자본부'] ||
+      ''
+    ).trim();
+    let pOffice = String(
+      item.proposer_office ||
+      item['제안자_처/실/단'] ||
+      item['제안자_처/실/단 (Office)'] ||
+      item['제안자_처실단'] ||
+      item['제안자처'] ||
+      ''
+    ).trim();
+    let pDept = String(
+      item.proposer_department ||
+      item['제안자_부'] ||
+      item['제안자_부 (Department)'] ||
+      item['제안자_부서'] ||
+      item['제안자부'] ||
+      item['소속부서'] ||
+      item['소속'] ||
+      ''
+    ).trim();
     if ((!pDivision || !pOffice) && pDept) {
       const resolved = lookupDepartmentOrg(pDept);
       if (!pDivision) pDivision = resolved.division;
@@ -469,9 +502,35 @@ export async function saveCustomProposalsForSessionAsync(
     }
 
     // Resolve assigned (execution) org if missing
-    let aDivision = String(item.assigned_division || item['실행(평가)_본부/부문'] || item['실행_본부/부문'] || item['실행본부'] || item['평가본부'] || '');
-    let aOffice = String(item.assigned_office || item['실행(평가)_처/실/단'] || item['실행_처/실/단'] || item['실행처'] || item['평가처'] || '');
-    let aDept = String(item.assigned_department || item['실행(평가)_부'] || item['실행_부'] || item['실행부서'] || item['담당부서'] || item['평가부서'] || item['부서'] || '');
+    let aDivision = String(
+      item.assigned_division ||
+      item['실행(평가)_본부/부문'] ||
+      item['실행(평가)_본부/부문 (Division)'] ||
+      item['실행_본부/부문'] ||
+      item['실행본부'] ||
+      item['평가본부'] ||
+      ''
+    ).trim();
+    let aOffice = String(
+      item.assigned_office ||
+      item['실행(평가)_처/실/단'] ||
+      item['실행(평가)_처/실/단 (Office)'] ||
+      item['실행_처/실/단'] ||
+      item['실행처'] ||
+      item['평가처'] ||
+      ''
+    ).trim();
+    let aDept = String(
+      item.assigned_department ||
+      item['실행(평가)_부'] ||
+      item['실행(평가)_부 (Department)'] ||
+      item['실행_부'] ||
+      item['실행부서'] ||
+      item['담당부서'] ||
+      item['평가부서'] ||
+      item['부서'] ||
+      ''
+    ).trim();
     if ((!aDivision || !aOffice) && aDept) {
       const resolved = lookupDepartmentOrg(aDept);
       if (!aDivision) aDivision = resolved.division;
@@ -483,24 +542,24 @@ export async function saveCustomProposalsForSessionAsync(
       session_id: sessionId,
       seq_no: seq,
       board_no: String(item.board_no ?? item['게시판번호'] ?? item['글번호'] ?? ''),
-      proposer_name: String(item.proposer_name || item['제안자'] || item['제안자명'] || item['성명'] || item['이름'] || ''),
-      proposer_rank: String(item.proposer_rank || item['직급'] || item['직책'] || ''),
+      proposer_name: String(item.proposer_name || item['제안자'] || item['제안자명'] || item['성명'] || item['이름'] || '').trim(),
+      proposer_rank: String(item.proposer_rank || item['직급'] || item['직책'] || '').trim(),
       proposer_division: pDivision,
       proposer_office: pOffice,
       proposer_department: pDept,
-      proposer_raw_dept: String(item.proposer_raw_dept || item['제안자_원소속부서'] || pDept),
-      proposal_type: String(item.proposal_type || item['제안구분'] || item['구분'] || '지정제안'),
-      category: String(item.category || item['분야'] || item['제안분야'] || '업무개선'),
+      proposer_raw_dept: String(item.proposer_raw_dept || item['제안자_원소속부서'] || item['제안자_기존소속표기'] || pDept).trim(),
+      proposal_type: String(item.proposal_type || item['제안구분'] || item['구분'] || '지정제안').trim(),
+      category: String(item.category || item['분야'] || item['제안분야'] || '업무개선').trim(),
       assigned_division: aDivision,
       assigned_office: aOffice,
       assigned_department: aDept,
-      assigned_raw_dept: String(item.assigned_raw_dept || item['실행_원부서명'] || aDept),
-      submitted_at: String(item.submitted_at || item['접수일자'] || item['등록일자'] || new Date().toISOString().split('T')[0]),
-      title: String(item.title || item['제안제목'] || item['제목'] || `제안 ${seq}`),
-      content: String(item.content || item['제안내용'] || item['내용'] || ''),
-      expected_effect: String(item.expected_effect || item['기대효과'] || ''),
-      is_duplicate: String(item.is_duplicate || item['중복제안여부'] || item['중복여부'] || ''),
-      duplicate_title: String(item.duplicate_title || item['중복제안제목'] || item['중복제목'] || ''),
+      assigned_raw_dept: String(item.assigned_raw_dept || item['실행_원부서명'] || item['실행(평가)_기존부서표기'] || aDept).trim(),
+      submitted_at: String(item.submitted_at || item['접수일자'] || item['등록일자'] || new Date().toISOString().split('T')[0]).trim(),
+      title: String(item.title || item['제안제목'] || item['제목'] || `제안 ${seq}`).trim(),
+      content: String(item.content || item['제안내용'] || item['내용'] || '').trim(),
+      expected_effect: String(item.expected_effect || item['기대효과'] || '').trim(),
+      is_duplicate: String(item.is_duplicate || item['중복제안여부'] || item['중복제안 여부'] || item['중복여부'] || '').trim(),
+      duplicate_title: String(item.duplicate_title || item['중복제안제목'] || item['중복제안 제목'] || item['중복제목'] || '').trim(),
       status: '미평가' as const,
       contribution_rate: 100
     };
@@ -512,8 +571,9 @@ export async function saveCustomProposalsForSessionAsync(
   currentStore.push(...proposals);
   writeJson('proposals_store.json', currentStore);
 
-  // 2. Supabase sync in chunks with schema validation
+  // 2. Supabase sync: clear any old proposals for this session first, then insert in chunks
   try {
+    await supabase.from('proposals').delete().eq('session_id', sessionId);
     for (let i = 0; i < proposals.length; i += 50) {
       const chunk = proposals.slice(i, i + 50).map(toSupabaseProposal);
       const res = await supabase.from('proposals').upsert(chunk);
@@ -529,62 +589,59 @@ export async function saveCustomProposalsForSessionAsync(
 }
 
 export async function getProposalsAsync(sessionId?: string): Promise<Proposal[]> {
+  const localList = getProposals(sessionId);
+  const localMap = new Map(localList.map(p => [p.id, p]));
+
   try {
     let query = supabase.from('proposals').select('*').order('seq_no', { ascending: true });
     if (sessionId) {
       query = query.eq('session_id', sessionId);
     }
-    const { data } = await query;
-    if (data && data.length > 0) {
-      return data.map(p => ({
-        id: p.id,
-        session_id: p.session_id,
-        seq_no: p.seq_no,
-        board_no: p.board_no,
-        proposer_name: p.proposer_name,
-        proposer_rank: p.proposer_rank,
-        proposer_division: p.proposer_division,
-        proposer_office: p.proposer_office,
-        proposer_department: p.proposer_department,
-        proposer_raw_dept: p.proposer_raw_dept,
-        proposal_type: p.proposal_type,
-        category: p.category,
-        assigned_division: p.assigned_division,
-        assigned_office: p.assigned_office,
-        assigned_department: p.assigned_department,
-        assigned_raw_dept: p.assigned_raw_dept,
-        submitted_at: p.submitted_at,
-        title: p.title,
-        content: p.content,
-        is_duplicate: p.is_duplicate,
-        duplicate_title: p.duplicate_title,
-        status: p.status,
-        transfer_requested: p.transfer_requested,
-        transfer_target_dept: p.transfer_target_dept,
-        transfer_reason: p.transfer_reason,
-        transfer_requested_at: p.transfer_requested_at,
-        transfer_status: p.transfer_status,
-        stage0_result: p.stage0_result,
-        stage0_opinion: p.stage0_opinion,
-        stage0_dept: p.stage0_dept,
-        contribution_rate: p.contribution_rate ?? 100,
-        stage1_is_closed: p.stage1_is_closed ?? false,
-        stage1_decision: p.stage1_decision || '미결',
-        stage1_avg_score: p.stage1_avg_score,
-        stage1_review_date: p.stage1_review_date
-      }));
+    const { data, error } = await query;
+    if (!error && Array.isArray(data) && data.length > 0) {
+      return data.map(p => {
+        const local = localMap.get(p.id);
+        return {
+          id: p.id,
+          session_id: p.session_id,
+          seq_no: p.seq_no,
+          board_no: p.board_no,
+          proposer_name: p.proposer_name,
+          proposer_rank: p.proposer_rank,
+          proposer_division: p.proposer_division,
+          proposer_office: p.proposer_office,
+          proposer_department: p.proposer_department,
+          proposer_raw_dept: p.proposer_raw_dept,
+          proposal_type: p.proposal_type,
+          category: p.category,
+          assigned_division: p.assigned_division,
+          assigned_office: p.assigned_office,
+          assigned_department: p.assigned_department,
+          assigned_raw_dept: p.assigned_raw_dept,
+          submitted_at: p.submitted_at,
+          title: p.title,
+          content: p.content,
+          is_duplicate: p.is_duplicate,
+          duplicate_title: p.duplicate_title,
+          status: p.status,
+          transfer_requested: p.transfer_requested ?? local?.transfer_requested,
+          transfer_target_dept: p.transfer_target_dept ?? local?.transfer_target_dept,
+          transfer_reason: p.transfer_reason ?? local?.transfer_reason,
+          transfer_requested_at: p.transfer_requested_at ?? local?.transfer_requested_at,
+          transfer_status: p.transfer_status ?? local?.transfer_status,
+          stage0_result: p.stage0_result ?? local?.stage0_result,
+          stage0_opinion: p.stage0_opinion ?? local?.stage0_opinion,
+          stage0_dept: p.stage0_dept ?? local?.stage0_dept,
+          contribution_rate: p.contribution_rate ?? local?.contribution_rate ?? 100,
+          stage1_is_closed: p.stage1_is_closed ?? local?.stage1_is_closed ?? false,
+          stage1_decision: p.stage1_decision || local?.stage1_decision || '미결',
+          stage1_avg_score: p.stage1_avg_score ?? local?.stage1_avg_score,
+          stage1_review_date: p.stage1_review_date ?? local?.stage1_review_date
+        };
+      });
     }
   } catch (err) {}
 
-  const localList = getProposals(sessionId);
-  if (sessionId && localList.length === 0) {
-    const sessions = await getSessionsAsync();
-    const targetSession = sessions.find(s => s.id === sessionId);
-    if (targetSession && targetSession.proposals_count > 0) {
-      const seeded = await seedDefaultProposalsForSessionAsync(sessionId);
-      if (seeded && seeded.length > 0) return seeded;
-    }
-  }
   return localList;
 }
 
@@ -631,37 +688,7 @@ export function getProposals(sessionId?: string): Proposal[] {
   }
 
   if (sessionId) {
-    const filtered = proposals.filter(p => p.session_id === sessionId);
-    if (filtered.length === 0 && !isSystemInitialized() && sessionId === DEFAULT_SESSION_ID) {
-      const rawProposals = readJson<any[]>('proposals_2026_structured.json', []);
-      const newProposals: Proposal[] = rawProposals.map((item, index) => ({
-        id: `${sessionId}-prop-${item.no || index + 1}`,
-        session_id: sessionId,
-        seq_no: item.no,
-        board_no: item.board_no || '',
-        proposer_name: item.proposer || '',
-        proposer_rank: item.proposer_rank || '',
-        proposer_division: item.proposer_division || '',
-        proposer_office: item.proposer_office || '',
-        proposer_department: item.proposer_department || '',
-        proposer_raw_dept: item.proposer_raw_dept || '',
-        proposal_type: item.proposal_type || '지정제안',
-        category: item.category || '업무개선',
-        assigned_division: item.assigned_division || '',
-        assigned_office: item.assigned_office || '',
-        assigned_department: item.assigned_department || '',
-        assigned_raw_dept: item.assigned_raw_dept || '',
-        submitted_at: item.submitted_at || '',
-        title: item.title || '',
-        is_duplicate: item.is_duplicate || '',
-        duplicate_title: item.duplicate_title || '',
-        status: '미평가' as const
-      }));
-      proposals.push(...newProposals);
-      writeJson('proposals_store.json', proposals);
-      return newProposals;
-    }
-    return filtered;
+    return proposals.filter(p => p.session_id === sessionId);
   }
 
   return proposals;
@@ -675,18 +702,10 @@ export async function updateProposalAsync(updated: Proposal): Promise<void> {
       assigned_department: updated.assigned_department,
       assigned_raw_dept: updated.assigned_raw_dept,
       status: updated.status,
-      transfer_requested: updated.transfer_requested,
-      transfer_target_dept: updated.transfer_target_dept,
-      transfer_reason: updated.transfer_reason,
-      transfer_requested_at: updated.transfer_requested_at,
-      transfer_status: updated.transfer_status,
-      stage0_result: updated.stage0_result,
-      stage0_opinion: updated.stage0_opinion,
-      stage1_is_closed: updated.stage1_is_closed,
-      stage1_decision: updated.stage1_decision,
-      stage1_avg_score: updated.stage1_avg_score,
-      stage1_review_date: updated.stage1_review_date,
-      contribution_rate: updated.contribution_rate
+      title: updated.title,
+      content: updated.content,
+      is_duplicate: updated.is_duplicate,
+      duplicate_title: updated.duplicate_title
     }).eq('id', updated.id);
   } catch (err) {}
   updateProposal(updated);
@@ -697,8 +716,10 @@ export function updateProposal(updated: Proposal): void {
   const idx = proposals.findIndex(p => p.id === updated.id);
   if (idx >= 0) {
     proposals[idx] = updated;
-    writeJson('proposals_store.json', proposals);
+  } else {
+    proposals.push(updated);
   }
+  writeJson('proposals_store.json', proposals);
 }
 
 // 5. 0차 부서평가 결과 (Evaluations)
@@ -855,11 +876,10 @@ export async function createStage1SessionFromStage0Async(params: {
   } else if (filterOnlyYes) {
     targetProposals = sourceProposals.filter(p => {
       const ev = evalMap.get(p.id);
-      return ev?.answers?.result === 'Yes';
+      return ev?.answers?.result === 'Yes' || p.stage0_result === 'Yes';
     });
-    // 만약 아직 Yes가 하나도 없으면 전체 제안 중 상위 30건을 데모 연계
     if (targetProposals.length === 0) {
-      targetProposals = sourceProposals.slice(0, 30);
+      throw new Error('0차 부서평가에서 채택(Yes)된 제안이 없습니다. 부서 평가에서 채택(Yes)된 제안이 있을 때만 1차 심사로 넘길 수 있습니다.');
     }
   }
 
@@ -891,15 +911,15 @@ export async function createStage1SessionFromStage0Async(params: {
       id: newPropId,
       session_id: newSessionId,
       seq_no: idx + 1,
-      stage0_result: ev?.answers?.result || 'Yes',
-      stage0_opinion: ev?.answers?.opinion || '부서 자체 타당성 검토 결과 채택 및 1차 심사 추천',
+      stage0_result: ev?.answers?.result || p.stage0_result || 'Yes',
+      stage0_opinion: ev?.answers?.opinion || p.stage0_opinion || '부서 자체 타당성 검토 결과 채택 및 1차 심사 추천',
       stage0_dept: p.assigned_department,
       contribution_rate: 100,
-      stage1_is_closed: idx === 0, // 첫 번째 샘플 제안은 마감 상태로 예시 제공
-      stage1_decision: idx === 0 ? '채택' : '심사대기',
-      stage1_avg_score: idx === 0 ? 59 : undefined,
-      stage1_review_date: idx === 0 ? '2026-10-18' : undefined,
-      status: (idx === 0 ? '평가완료' : '미평가') as any
+      stage1_is_closed: false,
+      stage1_decision: '심사대기',
+      stage1_avg_score: undefined,
+      stage1_review_date: undefined,
+      status: '미평가' as any
     };
   });
 
@@ -911,7 +931,8 @@ export async function createStage1SessionFromStage0Async(params: {
   // Supabase에 저장 시도
   try {
     for (let i = 0; i < clonedProposals.length; i += 50) {
-      await supabase.from('proposals').upsert(clonedProposals.slice(i, i + 50));
+      const chunk = clonedProposals.slice(i, i + 50).map(toSupabaseProposal);
+      await supabase.from('proposals').upsert(chunk);
     }
   } catch (err) {}
 

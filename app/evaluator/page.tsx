@@ -21,9 +21,12 @@ function EvaluatorDashboardContent() {
     fetch(`/api/sessions?_t=${Date.now()}`, { cache: 'no-store' })
       .then(res => res.json())
       .then((sessionList: EvaluationSession[]) => {
-        setSessions(sessionList);
+        const stage0Sessions = Array.isArray(sessionList)
+          ? sessionList.filter(s => s.stage !== 'STAGE_1')
+          : [];
+        setSessions(stage0Sessions);
 
-        if (!sessionList || sessionList.length === 0) {
+        if (stage0Sessions.length === 0) {
           setSelectedSessionId('');
           setProposals([]);
           setEvaluations([]);
@@ -38,8 +41,8 @@ function EvaluatorDashboardContent() {
           initialId = localStorage.getItem('gcuc_active_session_id') || '';
         }
 
-        if (!initialId || !sessionList.some(s => s.id === initialId)) {
-          initialId = sessionList[0]?.id || '';
+        if (!initialId || !stage0Sessions.some(s => s.id === initialId)) {
+          initialId = stage0Sessions[0]?.id || '';
         }
 
         setSelectedSessionId(initialId);
