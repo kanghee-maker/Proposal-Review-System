@@ -58,7 +58,7 @@ function AdminStage1Content() {
 
   // 1. 회차 목록 로드
   useEffect(() => {
-    fetch('/api/sessions')
+    fetch(`/api/sessions?_t=${Date.now()}`, { cache: 'no-store' })
       .then(res => res.json())
       .then((sessionList: EvaluationSession[]) => {
         setSessions(sessionList);

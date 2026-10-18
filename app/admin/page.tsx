@@ -104,12 +104,15 @@ export default function AdminDashboardPage() {
       });
       const data = await res.json();
       if (data.success) {
-        alert(`[${deleteSession.title}] 회차가 성공적으로 삭제되었습니다.`);
+        const deletedId = deleteSession.id;
+        // 즉각 UI에서 삭제 반영 (낙관적 갱신)
+        setSessions(prev => prev.filter(s => s.id !== deletedId));
         setIsDeleteOpen(false);
-        if (activeSessionId === deleteSession.id && typeof window !== 'undefined') {
+        if (activeSessionId === deletedId && typeof window !== 'undefined') {
           localStorage.removeItem('gcuc_active_session_id');
         }
         fetchSessions();
+        alert(`[${deleteSession.title}] 회차가 성공적으로 삭제되었습니다.`);
       } else {
         setDeleteError(data.error || '삭제 중 오류가 발생했습니다.');
       }
@@ -122,7 +125,7 @@ export default function AdminDashboardPage() {
 
   const fetchSessions = () => {
     setLoading(true);
-    fetch('/api/sessions')
+    fetch(`/api/sessions?_t=${Date.now()}`, { cache: 'no-store' })
       .then(res => res.json())
       .then(data => {
         setSessions(data);
@@ -133,6 +136,9 @@ export default function AdminDashboardPage() {
           } else if (data.length > 0) {
             setActiveSessionId(data[0].id);
             localStorage.setItem('gcuc_active_session_id', data[0].id);
+          } else {
+            setActiveSessionId('');
+            localStorage.removeItem('gcuc_active_session_id');
           }
         }
         setLoading(false);
@@ -705,10 +711,11 @@ export default function AdminDashboardPage() {
                     setDeletePassword(e.target.value);
                     setDeleteError('');
                   }}
-                  placeholder="관리자 비밀번호를 입력해주세요"
+                  placeholder="관리자 비밀번호를 입력해주세요 (기본: 0423)"
                   autoFocus
                   className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-rose-500"
                 />
+                <p className="text-[11px] text-slate-400 mt-1">※ 안전한 데이터 보호를 위해 관리자 비밀번호(0423) 확인 후 즉시 삭제됩니다.</p>
               </div>
 
               {deleteError && (

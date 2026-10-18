@@ -11,9 +11,18 @@ import {
   saveCustomProposalsForSessionAsync
 } from '@/lib/store';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET() {
   const sessions = await getSessionsAsync();
-  return NextResponse.json(sessions);
+  return NextResponse.json(sessions, {
+    headers: {
+      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0',
+    }
+  });
 }
 
 export async function POST(req: Request) {
@@ -91,8 +100,9 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ success: false, error: '삭제할 평가 세션 ID가 필요합니다.' }, { status: 400 });
     }
 
-    // 관리자 비밀번호 검증 (0423)
-    if (password !== '0423') {
+    // 관리자 비밀번호 검증 (0423 또는 auth_store adminPassword)
+    const { verifyAdminPassword } = await import('@/lib/auth');
+    if (!verifyAdminPassword(password) && password !== '0423') {
       return NextResponse.json({ success: false, error: '관리자 비밀번호가 일치하지 않습니다.' }, { status: 401 });
     }
 
