@@ -23,7 +23,20 @@ function writeJson<T>(filename: string, data: T): void {
       fs.mkdirSync(DATA_DIR, { recursive: true });
     }
     const fullPath = path.join(DATA_DIR, filename);
-    fs.writeFileSync(fullPath, JSON.stringify(data, null, 2), 'utf8');
+    const content = JSON.stringify(data, null, 2);
+    try {
+      fs.writeFileSync(fullPath, content, 'utf8');
+    } catch (writeErr) {
+      // Retry once for Windows file locks
+      try {
+        const tempPath = `${fullPath}.${Date.now()}.tmp`;
+        fs.writeFileSync(tempPath, content, 'utf8');
+        fs.copyFileSync(tempPath, fullPath);
+        fs.unlinkSync(tempPath);
+      } catch (retryErr) {
+        console.error(`Error retry writing ${filename}:`, retryErr);
+      }
+    }
   } catch (err) {
     console.error(`Error writing ${filename}:`, err);
   }
@@ -331,6 +344,37 @@ export async function deleteSessionAsync(sessionId: string): Promise<boolean> {
   return true;
 }
 
+function toSupabaseProposal(p: Proposal) {
+  let contentText = p.content || '';
+  if (p.expected_effect) {
+    contentText = contentText ? `${contentText}\n\n[기대효과]\n${p.expected_effect}` : `[기대효과]\n${p.expected_effect}`;
+  }
+  return {
+    id: p.id,
+    session_id: p.session_id,
+    seq_no: Number(p.seq_no) || 1,
+    board_no: String(p.board_no || ''),
+    proposer_name: String(p.proposer_name || ''),
+    proposer_rank: String(p.proposer_rank || ''),
+    proposer_division: String(p.proposer_division || ''),
+    proposer_office: String(p.proposer_office || ''),
+    proposer_department: String(p.proposer_department || ''),
+    proposer_raw_dept: String(p.proposer_raw_dept || ''),
+    proposal_type: String(p.proposal_type || '지정제안'),
+    category: String(p.category || '업무개선'),
+    assigned_division: String(p.assigned_division || ''),
+    assigned_office: String(p.assigned_office || ''),
+    assigned_department: String(p.assigned_department || ''),
+    assigned_raw_dept: String(p.assigned_raw_dept || ''),
+    submitted_at: String(p.submitted_at || ''),
+    title: String(p.title || ''),
+    content: String(contentText || ''),
+    is_duplicate: String(p.is_duplicate || ''),
+    duplicate_title: String(p.duplicate_title || ''),
+    status: String(p.status || '미평가')
+  };
+}
+
 // 4. 제안 목록 (Proposals)
 export async function seedDefaultProposalsForSessionAsync(sessionId: string): Promise<Proposal[]> {
   const rawProposals = readJson<any[]>('proposals_2026_structured.json', []);
@@ -373,8 +417,11 @@ export async function seedDefaultProposalsForSessionAsync(sessionId: string): Pr
   // Supabase sync in chunks
   try {
     for (let i = 0; i < proposals.length; i += 50) {
-      const chunk = proposals.slice(i, i + 50);
-      await supabase.from('proposals').upsert(chunk);
+      const chunk = proposals.slice(i, i + 50).map(toSupabaseProposal);
+      const res = await supabase.from('proposals').upsert(chunk);
+      if (res.error) {
+        console.error('Error seeding proposals chunk to Supabase:', res.error);
+      }
     }
   } catch (err) {
     console.error('Error seeding proposals to Supabase:', err);
@@ -383,14 +430,15 @@ export async function seedDefaultProposalsForSessionAsync(sessionId: string): Pr
   return proposals;
 }
 
-function lookupDepartmentOrg(deptName: string): { division: string; office: string; department: string } {
+function lookupDepartmentOrg(deptName: any): { division: string; office: string; department: string } {
   if (!deptName) return { division: '', office: '', department: '' };
+  const dStr = String(deptName).trim();
   const org = readJson<{ departments: Department[] }>('organization_2026.json', { departments: [] });
   const found = org.departments?.find(d => 
-    d.department === deptName || 
-    d.name === deptName || 
-    deptName.includes(d.department) ||
-    (d.office && deptName.includes(d.office))
+    d.department === dStr || 
+    d.name === dStr || 
+    dStr.includes(d.department) ||
+    (d.office && dStr.includes(d.office))
   );
   if (found) {
     return {
@@ -399,7 +447,7 @@ function lookupDepartmentOrg(deptName: string): { division: string; office: stri
       department: found.department
     };
   }
-  return { division: '', office: '', department: deptName };
+  return { division: '', office: '', department: dStr };
 }
 
 export async function saveCustomProposalsForSessionAsync(
@@ -464,11 +512,14 @@ export async function saveCustomProposalsForSessionAsync(
   currentStore.push(...proposals);
   writeJson('proposals_store.json', currentStore);
 
-  // 2. Supabase sync in chunks
+  // 2. Supabase sync in chunks with schema validation
   try {
     for (let i = 0; i < proposals.length; i += 50) {
-      const chunk = proposals.slice(i, i + 50);
-      await supabase.from('proposals').upsert(chunk);
+      const chunk = proposals.slice(i, i + 50).map(toSupabaseProposal);
+      const res = await supabase.from('proposals').upsert(chunk);
+      if (res.error) {
+        console.error('Error upserting custom proposals to Supabase:', res.error);
+      }
     }
   } catch (err) {
     console.error('Error saving custom proposals to Supabase:', err);
@@ -522,13 +573,19 @@ export async function getProposalsAsync(sessionId?: string): Promise<Proposal[]>
         stage1_avg_score: p.stage1_avg_score,
         stage1_review_date: p.stage1_review_date
       }));
-    } else if (sessionId && sessionId === DEFAULT_SESSION_ID && !isSystemInitialized()) {
-      // 최초 시스템 실행 시에만 기본 세션에 한해 자동 시딩
+    }
+  } catch (err) {}
+
+  const localList = getProposals(sessionId);
+  if (sessionId && localList.length === 0) {
+    const sessions = await getSessionsAsync();
+    const targetSession = sessions.find(s => s.id === sessionId);
+    if (targetSession && targetSession.proposals_count > 0) {
       const seeded = await seedDefaultProposalsForSessionAsync(sessionId);
       if (seeded && seeded.length > 0) return seeded;
     }
-  } catch (err) {}
-  return getProposals(sessionId);
+  }
+  return localList;
 }
 
 export function getProposals(sessionId?: string): Proposal[] {
