@@ -182,23 +182,37 @@ export function getDefaultStage1Criteria(): EvaluationCriteria[] {
 // 3. 제안평가 건 (Sessions)
 const DEFAULT_SESSION_ID = 'session-2026-gwacheon';
 
+function isSystemInitialized(): boolean {
+  return readJson<{ initialized: boolean }>('system_initialized.json', { initialized: false }).initialized;
+}
+
+function markSystemInitialized(): void {
+  writeJson('system_initialized.json', { initialized: true });
+}
+
 export async function getSessionsAsync(): Promise<EvaluationSession[]> {
   try {
     const { data, error } = await supabase.from('evaluation_sessions').select('*');
-    if (data && data.length > 0) {
-      return data.map(s => ({
-        id: s.id,
-        title: s.title,
-        year: s.year,
-        description: s.description,
-        stage: s.stage || 'STAGE_0',
-        source_session_id: s.source_session_id,
-        judges: s.judges || (s.stage === 'STAGE_1' ? DEFAULT_STAGE1_JUDGES : undefined),
-        status: s.status,
-        created_at: s.created_at,
-        proposals_count: s.proposals_count || 0,
-        criteria: s.criteria || (s.stage === 'STAGE_1' ? getDefaultStage1Criteria() : getDefaultCriteria())
-      }));
+    if (!error && Array.isArray(data)) {
+      if (data.length > 0) {
+        markSystemInitialized();
+        return data.map(s => ({
+          id: s.id,
+          title: s.title,
+          year: s.year,
+          description: s.description,
+          stage: s.stage || 'STAGE_0',
+          source_session_id: s.source_session_id,
+          judges: s.judges || (s.stage === 'STAGE_1' ? DEFAULT_STAGE1_JUDGES : undefined),
+          status: s.status,
+          created_at: s.created_at,
+          proposals_count: s.proposals_count || 0,
+          criteria: s.criteria || (s.stage === 'STAGE_1' ? getDefaultStage1Criteria() : getDefaultCriteria())
+        }));
+      } else if (isSystemInitialized()) {
+        // 이미 초기화된 상태에서 사용자가 모든 회차를 삭제한 경우 빈 배열 유지
+        return [];
+      }
     }
   } catch (err) {
     // fallback
@@ -208,7 +222,8 @@ export async function getSessionsAsync(): Promise<EvaluationSession[]> {
 
 export function getSessions(): EvaluationSession[] {
   let sessions = readJson<EvaluationSession[]>('sessions.json', []);
-  if (sessions.length === 0) {
+  // 시스템이 최초 실행된 적이 없고 sessions.json도 완전히 비어있는 최초 1회만 기본 회차 생성
+  if (!isSystemInitialized() && sessions.length === 0) {
     const rawProposals = readJson<any[]>('proposals_2026_structured.json', []);
     const defaultSession: EvaluationSession = {
       id: DEFAULT_SESSION_ID,
@@ -223,6 +238,7 @@ export function getSessions(): EvaluationSession[] {
     };
     sessions = [defaultSession];
     writeJson('sessions.json', sessions);
+    markSystemInitialized();
   }
   return sessions;
 }
@@ -416,8 +432,8 @@ export async function getProposalsAsync(sessionId?: string): Promise<Proposal[]>
         stage1_avg_score: p.stage1_avg_score,
         stage1_review_date: p.stage1_review_date
       }));
-    } else if (sessionId) {
-      // If 0 proposals exist for this requested session, auto-seed default proposals
+    } else if (sessionId && sessionId === DEFAULT_SESSION_ID && !isSystemInitialized()) {
+      // 최초 시스템 실행 시에만 기본 세션에 한해 자동 시딩
       const seeded = await seedDefaultProposalsForSessionAsync(sessionId);
       if (seeded && seeded.length > 0) return seeded;
     }
@@ -427,7 +443,7 @@ export async function getProposalsAsync(sessionId?: string): Promise<Proposal[]>
 
 export function getProposals(sessionId?: string): Proposal[] {
   let proposals = readJson<Proposal[]>('proposals_store.json', []);
-  if (proposals.length === 0) {
+  if (!isSystemInitialized() && proposals.length === 0) {
     const rawProposals = readJson<any[]>('proposals_2026_structured.json', []);
     const evaluations = getEvaluations(DEFAULT_SESSION_ID);
     const evalMap = new Map(evaluations.map(e => [e.proposal_id, e]));
@@ -469,7 +485,7 @@ export function getProposals(sessionId?: string): Proposal[] {
 
   if (sessionId) {
     const filtered = proposals.filter(p => p.session_id === sessionId);
-    if (filtered.length === 0) {
+    if (filtered.length === 0 && !isSystemInitialized() && sessionId === DEFAULT_SESSION_ID) {
       const rawProposals = readJson<any[]>('proposals_2026_structured.json', []);
       const newProposals: Proposal[] = rawProposals.map((item, index) => ({
         id: `${sessionId}-prop-${item.no || index + 1}`,
