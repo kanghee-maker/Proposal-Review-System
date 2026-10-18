@@ -76,7 +76,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2.5 sm:gap-3">
             <Link href="/" className="flex items-center gap-2 sm:gap-3 hover:opacity-90 transition" title="메인 포털(초기 화면)로 이동">
-              <div className="bg-white p-1 rounded-xl border border-slate-100 shadow-sm flex items-center justify-center">
+              <div className="flex items-center justify-center">
                 <img src="/images/logo.png" alt="과천도시공사 로고" className="h-7 sm:h-8 w-auto object-contain cursor-pointer" />
               </div>
               <div>
