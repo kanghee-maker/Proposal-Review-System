@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { OrganizationChart, EvaluationSession, Proposal, Evaluation, EvaluationCriteria, Department } from './types';
+import { OrganizationChart, EvaluationSession, Proposal, Evaluation, EvaluationCriteria, Department, CommitteeJudge, CommitteeScore, EvaluationStage } from './types';
 import { supabase } from './supabaseClient';
 
 const DATA_DIR = path.join(process.cwd(), 'data');
@@ -123,6 +123,62 @@ export function getDefaultCriteria(): EvaluationCriteria[] {
   ]);
 }
 
+// 2-2. 1차 심사위원 기본 목록 (과천도시공사 1차 심사위원단 11명)
+export const DEFAULT_STAGE1_JUDGES: CommitteeJudge[] = [
+  { id: 'j-1', name: '박민호', dept: '경영감사실', title: '제안1차심사자' },
+  { id: 'j-2', name: '유경모', dept: '미래전략실', title: '제안1차심사자' },
+  { id: 'j-3', name: '배규한', dept: '교육시설부', title: '제안1차심사자' },
+  { id: 'j-4', name: '곽현석', dept: '시설기획부', title: '제안1차심사자' },
+  { id: 'j-5', name: '김동수', dept: '시설기획부', title: '제안1차심사자' },
+  { id: 'j-6', name: '이정문', dept: '시설기획부', title: '제안1차심사자' },
+  { id: 'j-7', name: '박종원', dept: '사업기획부', title: '제안1차심사자' },
+  { id: 'j-8', name: '김수호', dept: '개발1부', title: '제안1차심사자' },
+  { id: 'j-9', name: '최종순', dept: '여가체육부', title: '제안1차심사자' },
+  { id: 'j-10', name: '이기범', dept: '솔빛정원부', title: '제안1차심사자' },
+  { id: 'j-11', name: '오세풍', dept: '안전총괄단', title: '제안1차심사자' }
+];
+
+export function getDefaultStage1Criteria(): EvaluationCriteria[] {
+  return [
+    {
+      id: 'crit-creativity',
+      key: 'creativity',
+      label: '창의성 (25점)',
+      type: 'NUMBER',
+      required: true,
+      display_order: 1,
+      description: '독창성 및 기존 관행 개선 정도'
+    },
+    {
+      id: 'crit-feasibility',
+      key: 'feasibility',
+      label: '실현성 (25점)',
+      type: 'NUMBER',
+      required: true,
+      display_order: 2,
+      description: '기술적·행정적 실행 가능성 및 예산 적정성'
+    },
+    {
+      id: 'crit-effectiveness',
+      key: 'effectiveness',
+      label: '효과성 (25점)',
+      type: 'NUMBER',
+      required: true,
+      display_order: 3,
+      description: '예산 절감, 업무 능률 및 시민 만족도 증진 효과'
+    },
+    {
+      id: 'crit-dissemination',
+      key: 'dissemination',
+      label: '전파성 (25점)',
+      type: 'NUMBER',
+      required: true,
+      display_order: 4,
+      description: '타 부서 또는 전사적 확산 가능성 및 파급 효과'
+    }
+  ];
+}
+
 // 3. 제안평가 건 (Sessions)
 const DEFAULT_SESSION_ID = 'session-2026-gwacheon';
 
@@ -135,10 +191,13 @@ export async function getSessionsAsync(): Promise<EvaluationSession[]> {
         title: s.title,
         year: s.year,
         description: s.description,
+        stage: s.stage || 'STAGE_0',
+        source_session_id: s.source_session_id,
+        judges: s.judges || (s.stage === 'STAGE_1' ? DEFAULT_STAGE1_JUDGES : undefined),
         status: s.status,
         created_at: s.created_at,
         proposals_count: s.proposals_count || 0,
-        criteria: s.criteria || getDefaultCriteria()
+        criteria: s.criteria || (s.stage === 'STAGE_1' ? getDefaultStage1Criteria() : getDefaultCriteria())
       }));
     }
   } catch (err) {
@@ -155,6 +214,7 @@ export function getSessions(): EvaluationSession[] {
       id: DEFAULT_SESSION_ID,
       title: '2026년 상반기 과천도시공사 제안 심사 (0차 부서평가)',
       year: '2026',
+      stage: 'STAGE_0',
       description: '과천도시공사 전 부서 대상 제안평가 0차 부서 타당성 심사 및 검토의견 수렴',
       status: 'ACTIVE',
       created_at: '2026-07-28T09:00:00Z',
@@ -168,12 +228,19 @@ export function getSessions(): EvaluationSession[] {
 }
 
 export async function saveSessionAsync(session: EvaluationSession): Promise<void> {
+  if (!session.stage) session.stage = 'STAGE_0';
+  if (session.stage === 'STAGE_1' && (!session.judges || session.judges.length === 0)) {
+    session.judges = DEFAULT_STAGE1_JUDGES;
+  }
   try {
     await supabase.from('evaluation_sessions').upsert({
       id: session.id,
       title: session.title,
       year: session.year,
       description: session.description,
+      stage: session.stage,
+      source_session_id: session.source_session_id,
+      judges: session.judges,
       status: session.status,
       proposals_count: session.proposals_count,
       criteria: session.criteria,
@@ -198,6 +265,9 @@ export async function updateSessionAsync(sessionData: Partial<EvaluationSession>
       title: updated.title,
       year: updated.year,
       description: updated.description,
+      stage: updated.stage,
+      source_session_id: updated.source_session_id,
+      judges: updated.judges,
       status: updated.status,
       proposals_count: updated.proposals_count,
       criteria: updated.criteria
@@ -305,7 +375,15 @@ export async function getProposalsAsync(sessionId?: string): Promise<Proposal[]>
         transfer_target_dept: p.transfer_target_dept,
         transfer_reason: p.transfer_reason,
         transfer_requested_at: p.transfer_requested_at,
-        transfer_status: p.transfer_status
+        transfer_status: p.transfer_status,
+        stage0_result: p.stage0_result,
+        stage0_opinion: p.stage0_opinion,
+        stage0_dept: p.stage0_dept,
+        contribution_rate: p.contribution_rate ?? 100,
+        stage1_is_closed: p.stage1_is_closed ?? false,
+        stage1_decision: p.stage1_decision || '미결',
+        stage1_avg_score: p.stage1_avg_score,
+        stage1_review_date: p.stage1_review_date
       }));
     } else if (sessionId) {
       // If 0 proposals exist for this requested session, auto-seed default proposals
@@ -407,7 +485,14 @@ export async function updateProposalAsync(updated: Proposal): Promise<void> {
       transfer_target_dept: updated.transfer_target_dept,
       transfer_reason: updated.transfer_reason,
       transfer_requested_at: updated.transfer_requested_at,
-      transfer_status: updated.transfer_status
+      transfer_status: updated.transfer_status,
+      stage0_result: updated.stage0_result,
+      stage0_opinion: updated.stage0_opinion,
+      stage1_is_closed: updated.stage1_is_closed,
+      stage1_decision: updated.stage1_decision,
+      stage1_avg_score: updated.stage1_avg_score,
+      stage1_review_date: updated.stage1_review_date,
+      contribution_rate: updated.contribution_rate
     }).eq('id', updated.id);
   } catch (err) {}
   updateProposal(updated);
@@ -491,3 +576,170 @@ export function saveEvaluation(evaluation: Evaluation): void {
     writeJson('proposals_store.json', proposals);
   }
 }
+
+// 6. 1차 제안심사 다면평가 (Committee Scores)
+export async function getCommitteeScoresAsync(sessionId?: string, proposalId?: string): Promise<CommitteeScore[]> {
+  try {
+    let query = supabase.from('committee_scores').select('*');
+    if (sessionId) query = query.eq('session_id', sessionId);
+    if (proposalId) query = query.eq('proposal_id', proposalId);
+    const { data } = await query;
+    if (data && data.length > 0) {
+      return data;
+    }
+  } catch (err) {}
+  return getCommitteeScores(sessionId, proposalId);
+}
+
+export function getCommitteeScores(sessionId?: string, proposalId?: string): CommitteeScore[] {
+  let scores = readJson<CommitteeScore[]>('committee_scores_store.json', []);
+  if (sessionId) {
+    scores = scores.filter(s => s.session_id === sessionId);
+  }
+  if (proposalId) {
+    scores = scores.filter(s => s.proposal_id === proposalId);
+  }
+  return scores;
+}
+
+export async function saveCommitteeScoreAsync(score: CommitteeScore): Promise<void> {
+  try {
+    await supabase.from('committee_scores').upsert(score);
+  } catch (err) {}
+  saveCommitteeScore(score);
+}
+
+export function saveCommitteeScore(score: CommitteeScore): void {
+  const scores = readJson<CommitteeScore[]>('committee_scores_store.json', []);
+  const idx = scores.findIndex(s => s.proposal_id === score.proposal_id && s.judge_name === score.judge_name);
+  if (idx >= 0) {
+    scores[idx] = score;
+  } else {
+    scores.push(score);
+  }
+  writeJson('committee_scores_store.json', scores);
+}
+
+export async function saveCommitteeScoresBatchAsync(scoresToSave: CommitteeScore[]): Promise<void> {
+  try {
+    await supabase.from('committee_scores').upsert(scoresToSave);
+  } catch (err) {}
+  const scores = readJson<CommitteeScore[]>('committee_scores_store.json', []);
+  const map = new Map<string, CommitteeScore>();
+  scores.forEach(s => map.set(`${s.proposal_id}_${s.judge_name}`, s));
+  scoresToSave.forEach(s => map.set(`${s.proposal_id}_${s.judge_name}`, s));
+  writeJson('committee_scores_store.json', Array.from(map.values()));
+}
+
+// 7. 0차 부서평가 완결 결과 기반 -> 1차 제안심사 회차 연계 생성
+export async function createStage1SessionFromStage0Async(params: {
+  sourceSessionId: string;
+  newTitle?: string;
+  year?: string;
+  description?: string;
+  filterOnlyYes?: boolean;
+  selectedProposalIds?: string[];
+  judges?: CommitteeJudge[];
+}): Promise<{ session: EvaluationSession; proposalsCount: number }> {
+  const { sourceSessionId, filterOnlyYes = true } = params;
+  
+  // 1) 출처 세션 조회
+  const sessions = await getSessionsAsync();
+  const sourceSession = sessions.find(s => s.id === sourceSessionId);
+  const sourceTitle = sourceSession?.title || '과천도시공사 제안 심사';
+
+  // 2) 출처 세션의 제안 및 0차 평가결과 조회
+  const sourceProposals = await getProposalsAsync(sourceSessionId);
+  const sourceEvaluations = await getEvaluationsAsync(sourceSessionId);
+  const evalMap = new Map(sourceEvaluations.map(e => [e.proposal_id, e]));
+
+  // 3) 대상 제안 필터링 (부서 채택 Yes 제안만 또는 선택된 제안)
+  let targetProposals = sourceProposals;
+  if (params.selectedProposalIds && params.selectedProposalIds.length > 0) {
+    const selSet = new Set(params.selectedProposalIds);
+    targetProposals = sourceProposals.filter(p => selSet.has(p.id));
+  } else if (filterOnlyYes) {
+    targetProposals = sourceProposals.filter(p => {
+      const ev = evalMap.get(p.id);
+      return ev?.answers?.result === 'Yes';
+    });
+    // 만약 아직 Yes가 하나도 없으면 전체 제안 중 상위 30건을 데모 연계
+    if (targetProposals.length === 0) {
+      targetProposals = sourceProposals.slice(0, 30);
+    }
+  }
+
+  // 4) 신규 1차 세션 정의
+  const newSessionId = `session-stage1-${Date.now()}`;
+  const judges = params.judges && params.judges.length > 0 ? params.judges : DEFAULT_STAGE1_JUDGES;
+  const newSession: EvaluationSession = {
+    id: newSessionId,
+    title: params.newTitle || `${sourceTitle.replace('(0차 부서평가)', '').trim()} (1차 제안심사)`,
+    year: params.year || sourceSession?.year || '2026',
+    description: params.description || `부서평가(0차 평가) 완료 제안 대상 제안심사위원회(1차) 심사`,
+    stage: 'STAGE_1',
+    source_session_id: sourceSessionId,
+    status: 'ACTIVE',
+    created_at: new Date().toISOString(),
+    proposals_count: targetProposals.length,
+    judges,
+    criteria: getDefaultStage1Criteria()
+  };
+
+  await saveSessionAsync(newSession);
+
+  // 5) 제안 데이터 복제 및 0차 평가결과 보존
+  const clonedProposals: Proposal[] = targetProposals.map((p, idx) => {
+    const ev = evalMap.get(p.id);
+    const newPropId = `${newSessionId}-prop-${idx + 1}`;
+    return {
+      ...p,
+      id: newPropId,
+      session_id: newSessionId,
+      seq_no: idx + 1,
+      stage0_result: ev?.answers?.result || 'Yes',
+      stage0_opinion: ev?.answers?.opinion || '부서 자체 타당성 검토 결과 채택 및 1차 심사 추천',
+      stage0_dept: p.assigned_department,
+      contribution_rate: 100,
+      stage1_is_closed: idx === 0, // 첫 번째 샘플 제안은 마감 상태로 예시 제공
+      stage1_decision: idx === 0 ? '채택' : '심사대기',
+      stage1_avg_score: idx === 0 ? 59 : undefined,
+      stage1_review_date: idx === 0 ? '2026-10-18' : undefined,
+      status: (idx === 0 ? '평가완료' : '미평가') as any
+    };
+  });
+
+  // 로컬 proposals_store에 추가
+  let currentStore = readJson<Proposal[]>('proposals_store.json', []);
+  currentStore.push(...clonedProposals);
+  writeJson('proposals_store.json', currentStore);
+
+  // Supabase에 저장 시도
+  try {
+    for (let i = 0; i < clonedProposals.length; i += 50) {
+      await supabase.from('proposals').upsert(clonedProposals.slice(i, i + 50));
+    }
+  } catch (err) {}
+
+  // 6) 첫 번째 제안에 대해 사용자 첨부 이미지 2와 100% 동일한 11인 심사위원 실전 채점 데이터 시딩!
+  if (clonedProposals.length > 0) {
+    const firstProp = clonedProposals[0];
+    const initialScores: CommitteeScore[] = [
+      { id: `cs-${Date.now()}-1`, proposal_id: firstProp.id, session_id: newSessionId, judge_name: '박민호', judge_dept: '경영감사실', judge_title: '제안1차심사자', creativity: 15, feasibility: 10, effectiveness: 10, dissemination: 5, total_score: 40, opinion: '● 좋은제안입니다' },
+      { id: `cs-${Date.now()}-2`, proposal_id: firstProp.id, session_id: newSessionId, judge_name: '유경모', judge_dept: '미래전략실', judge_title: '제안1차심사자', creativity: 9, feasibility: 10, effectiveness: 10, dissemination: 6, total_score: 35, opinion: '-' },
+      { id: `cs-${Date.now()}-3`, proposal_id: firstProp.id, session_id: newSessionId, judge_name: '배규한', judge_dept: '교육시설부', judge_title: '제안1차심사자', creativity: 15, feasibility: 16, effectiveness: 16, dissemination: 6, total_score: 53, opinion: '제안 취지는 타당하나, 어린이 이용 교육실동 교육생 동선 유도 및 운영 방식에 대한 추가 검토가 필요해 보입니다' },
+      { id: `cs-${Date.now()}-4`, proposal_id: firstProp.id, session_id: newSessionId, judge_name: '곽현석', judge_dept: '시설기획부', judge_title: '제안1차심사자', creativity: 16, feasibility: 18, effectiveness: 18, dissemination: 8, total_score: 60, opinion: '좋은 제안입니다.' },
+      { id: `cs-${Date.now()}-5`, proposal_id: firstProp.id, session_id: newSessionId, judge_name: '김동수', judge_dept: '시설기획부', judge_title: '제안1차심사자', creativity: 16, feasibility: 16, effectiveness: 16, dissemination: 6, total_score: 54, opinion: '좋은 제안입니다' },
+      { id: `cs-${Date.now()}-6`, proposal_id: firstProp.id, session_id: newSessionId, judge_name: '이정문', judge_dept: '시설기획부', judge_title: '제안1차심사자', creativity: 18, feasibility: 18, effectiveness: 18, dissemination: 6, total_score: 60, opinion: '좋은 제안입니다' },
+      { id: `cs-${Date.now()}-7`, proposal_id: firstProp.id, session_id: newSessionId, judge_name: '박종원', judge_dept: '사업기획부', judge_title: '제안1차심사자', creativity: 16, feasibility: 24, effectiveness: 24, dissemination: 8, total_score: 72, opinion: '좋은 의견 입니다.' },
+      { id: `cs-${Date.now()}-8`, proposal_id: firstProp.id, session_id: newSessionId, judge_name: '김수호', judge_dept: '개발1부', judge_title: '제안1차심사자', creativity: 16, feasibility: 18, effectiveness: 18, dissemination: 8, total_score: 60, opinion: '● 좋은제안이며, 관악체육공원 내 실내체육관 홀 등에서 진행하는 사업으로 추후 협의가 필요' },
+      { id: `cs-${Date.now()}-9`, proposal_id: firstProp.id, session_id: newSessionId, judge_name: '최종순', judge_dept: '여가체육부', judge_title: '제안1차심사자', creativity: 24, feasibility: 24, effectiveness: 24, dissemination: 8, total_score: 80, opinion: '좋은 제안입니다.' },
+      { id: `cs-${Date.now()}-10`, proposal_id: firstProp.id, session_id: newSessionId, judge_name: '이기범', judge_dept: '솔빛정원부', judge_title: '제안1차심사자', creativity: 16, feasibility: 18, effectiveness: 18, dissemination: 8, total_score: 60, opinion: '좋은제안입니다.' },
+      { id: `cs-${Date.now()}-11`, proposal_id: firstProp.id, session_id: newSessionId, judge_name: '오세풍', judge_dept: '안전총괄단', judge_title: '제안1차심사자', creativity: 24, feasibility: 24, effectiveness: 24, dissemination: 8, total_score: 80, opinion: '좋은 제안입니다.' }
+    ];
+    await saveCommitteeScoresBatchAsync(initialScores);
+  }
+
+  return { session: newSession, proposalsCount: clonedProposals.length };
+}
+

@@ -3,7 +3,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { DownloadCloud, CheckCircle2, Clock, FileSpreadsheet, AlertTriangle, ArrowDownToLine, Layers, ChevronRight } from 'lucide-react';
+import { DownloadCloud, CheckCircle2, Clock, FileSpreadsheet, AlertTriangle, ArrowDownToLine, Layers, ChevronRight, Sparkles, X, Check, ArrowRight } from 'lucide-react';
 import { Proposal, Evaluation, EvaluationSession } from '@/lib/types';
 
 function AdminReportsContent() {
@@ -15,6 +15,12 @@ function AdminReportsContent() {
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+
+  // 1차 제안심사 연계 생성 모달 상태
+  const [isBridgeModalOpen, setIsBridgeModalOpen] = useState<boolean>(false);
+  const [bridgeTitle, setBridgeTitle] = useState<string>('');
+  const [bridgeFilterOnlyYes, setBridgeFilterOnlyYes] = useState<boolean>(true);
+  const [bridgeSubmitting, setBridgeSubmitting] = useState<boolean>(false);
 
   // 1. 회차 목록 로드 및 현재 회차 결정
   useEffect(() => {
@@ -97,6 +103,39 @@ function AdminReportsContent() {
     window.location.href = `/api/export?session_id=${encodeURIComponent(selectedSessionId)}`;
   };
 
+  const handleCreateStage1 = async () => {
+    if (!selectedSessionId) return;
+    setBridgeSubmitting(true);
+    try {
+      const defaultTitle = `${(currentSession?.title || '과천도시공사 제안 심사').replace('(0차 부서평가)', '').trim()} (1차 제안심사)`;
+      const res = await fetch('/api/stage1/bridge', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sourceSessionId: selectedSessionId,
+          newTitle: bridgeTitle.trim() || defaultTitle,
+          year: currentSession?.year || '2026',
+          filterOnlyYes: bridgeFilterOnlyYes
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setIsBridgeModalOpen(false);
+        alert(`1차 제안심사 회차가 성공적으로 연계 생성되었습니다! (대상 제안: ${data.proposalsCount}건)`);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('gcuc_active_session_id', data.session.id);
+        }
+        router.push(`/admin/stage1?session_id=${encodeURIComponent(data.session.id)}`);
+      } else {
+        alert(data.error || '생성 실패');
+      }
+    } catch (err) {
+      alert('1차 심사 회차 연계 생성 중 오류가 발생했습니다.');
+    } finally {
+      setBridgeSubmitting(false);
+    }
+  };
+
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* 1. 제안평가 회차 선행 선택 바 */}
@@ -156,17 +195,32 @@ function AdminReportsContent() {
             <span>[{currentSession?.title || '제안평가'}] 부서 평가(0차 평가) 취합 및 엑셀 다운로드</span>
           </h2>
           <p className="text-[11px] sm:text-xs text-slate-500 mt-1">
-            선택된 평가 회차의 각 부서 심사 결과(Yes/No 및 검토의견)를 실시간 집계하고 보고용 엑셀로 내보냅니다. (향후 제안 심사(1차 평가) 위원회 기초자료로 활용)
+            선택된 평가 회차의 각 부서 심사 결과(Yes/No 및 검토의견)를 실시간 집계하고 보고용 엑셀로 내보냅니다. (부서 평가 완료 후 1차 제안심사 회차로 바로 연계)
           </p>
         </div>
 
-        <button
-          onClick={handleDownloadExcel}
-          className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs sm:text-sm shadow-lg shadow-emerald-600/25 transition whitespace-nowrap"
-        >
-          <ArrowDownToLine className="w-4 h-4" />
-          <span>선택 회차 종합 결과 엑셀 다운로드 (.xlsx)</span>
-        </button>
+        <div className="flex items-center gap-2.5 flex-wrap">
+          {/* 1차 제안심사 연계 버튼 */}
+          <button
+            onClick={() => {
+              const defaultTitle = `${(currentSession?.title || '과천도시공사 제안 심사').replace('(0차 부서평가)', '').trim()} (1차 제안심사)`;
+              setBridgeTitle(defaultTitle);
+              setIsBridgeModalOpen(true);
+            }}
+            className="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white font-semibold text-xs sm:text-sm shadow-md shadow-amber-600/25 transition whitespace-nowrap"
+          >
+            <Sparkles className="w-4 h-4 text-amber-200" />
+            <span>✨ 이 결과로 1차 제안심사 생성</span>
+          </button>
+
+          <button
+            onClick={handleDownloadExcel}
+            className="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs sm:text-sm shadow-md shadow-emerald-600/25 transition whitespace-nowrap"
+          >
+            <ArrowDownToLine className="w-4 h-4" />
+            <span>종합 결과 엑셀 다운로드</span>
+          </button>
+        </div>
       </div>
 
       {/* KPI Cards (모바일 반응형 2x2 또는 4열 그리드) */}
@@ -357,6 +411,138 @@ function AdminReportsContent() {
           </>
         )}
       </div>
+
+      {/* --- 모달: 1차 제안심사 연계 생성 --- */}
+      {isBridgeModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-slate-200">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shadow-sm">
+                  <Sparkles className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">제안 심사(1차 평가) 회차로 연계 생성</h3>
+                  <p className="text-xs text-slate-500">부서평가(0차) 검토 결과를 바탕으로 1차 심사위원회를 개설합니다.</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsBridgeModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4 text-xs">
+              <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+                <span className="text-slate-500 block mb-1 font-medium">출처 부서평가(0차) 회차</span>
+                <strong className="text-sm text-slate-900 block mb-2">{currentSession?.title}</strong>
+                <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-200 text-center">
+                  <div className="bg-white p-2 rounded-lg border border-slate-100">
+                    <span className="text-slate-400 block text-[10px]">전체 제안</span>
+                    <strong className="text-slate-800 text-xs">{totalCount}건</strong>
+                  </div>
+                  <div className="bg-sky-50 p-2 rounded-lg border border-sky-100">
+                    <span className="text-sky-600 block text-[10px]">부서 채택 (Yes)</span>
+                    <strong className="text-sky-700 text-xs">{yesCount}건</strong>
+                  </div>
+                  <div className="bg-slate-50 p-2 rounded-lg border border-slate-200">
+                    <span className="text-slate-400 block text-[10px]">부서 불채택 (No)</span>
+                    <strong className="text-slate-600 text-xs">{noCount}건</strong>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-semibold text-slate-700 mb-1.5">이관 대상 제안 선택</label>
+                <div className="space-y-2">
+                  <label className={`flex items-start gap-2.5 p-3 rounded-xl border cursor-pointer transition ${
+                    bridgeFilterOnlyYes ? 'border-amber-400 bg-amber-50/60 shadow-sm' : 'border-slate-200 bg-white hover:border-slate-300'
+                  }`}>
+                    <input
+                      type="radio"
+                      name="bridgeFilter"
+                      checked={bridgeFilterOnlyYes}
+                      onChange={() => setBridgeFilterOnlyYes(true)}
+                      className="mt-0.5 text-amber-600"
+                    />
+                    <div>
+                      <strong className="text-slate-900 block font-semibold">
+                        부서 채택(Yes) 제안만 1차 심사로 이관 (권장)
+                      </strong>
+                      <span className="text-[11px] text-slate-500">
+                        부서 자체 타당성 검토에서 'Yes'를 받은 우수 제안({yesCount > 0 ? `${yesCount}건` : '부서평가 0건 시 시범 30건'})만 제안심사위원회 심사 대상으로 선별 이관합니다.
+                      </span>
+                    </div>
+                  </label>
+
+                  <label className={`flex items-start gap-2.5 p-3 rounded-xl border cursor-pointer transition ${
+                    !bridgeFilterOnlyYes ? 'border-amber-400 bg-amber-50/60 shadow-sm' : 'border-slate-200 bg-white hover:border-slate-300'
+                  }`}>
+                    <input
+                      type="radio"
+                      name="bridgeFilter"
+                      checked={!bridgeFilterOnlyYes}
+                      onChange={() => setBridgeFilterOnlyYes(false)}
+                      className="mt-0.5 text-amber-600"
+                    />
+                    <div>
+                      <strong className="text-slate-900 block font-semibold">
+                        전체 제안 ({totalCount}건) 모두 1차 심사로 이관
+                      </strong>
+                      <span className="text-[11px] text-slate-500">
+                        부서 채택 여부와 무관하게 모든 제안을 1차 위원회 심사 대상으로 이관합니다.
+                      </span>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-semibold text-slate-700 mb-1">
+                  새로 생성할 1차 제안심사 회차명 <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={bridgeTitle}
+                  onChange={(e) => setBridgeTitle(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500"
+                />
+              </div>
+
+              <div className="p-3 bg-amber-50/80 rounded-xl border border-amber-200/80 text-[11px] text-amber-950 space-y-1">
+                <div className="font-bold flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-amber-600" />
+                  <span>1차 심사위원회 11인 평가단 자동 배정</span>
+                </div>
+                <p className="text-slate-600 leading-relaxed">
+                  경영감사실, 미래전략실, 시설기획부, 사업기획부, 개발1부, 여가체육부 등 11인의 제안1차심사위원이 자동 배정되며, 0차 부서 검토의견이 1차 심사위원들에게 참고자료로 자동 연계 제공됩니다.
+                </p>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setIsBridgeModalOpen(false)}
+                  className="px-4 py-2 text-slate-600 font-semibold hover:bg-slate-100 rounded-xl"
+                >
+                  취소
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCreateStage1}
+                  disabled={bridgeSubmitting}
+                  className="px-5 py-2.5 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white font-semibold rounded-xl flex items-center gap-1.5 shadow-md shadow-amber-600/20 disabled:opacity-50"
+                >
+                  <Sparkles className="w-4 h-4 text-amber-200" />
+                  <span>{bridgeSubmitting ? '연계 생성 중...' : '1차 제안심사 생성 및 즉시 이동'}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

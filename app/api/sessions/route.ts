@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getSessionsAsync, saveSessionAsync, updateSessionAsync, getDefaultCriteria, seedDefaultProposalsForSessionAsync } from '@/lib/store';
+import { getSessionsAsync, saveSessionAsync, updateSessionAsync, getDefaultCriteria, getDefaultStage1Criteria, DEFAULT_STAGE1_JUDGES, seedDefaultProposalsForSessionAsync } from '@/lib/store';
 
 export async function GET() {
   const sessions = await getSessionsAsync();
@@ -9,15 +9,22 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
+    const stage = body.stage || 'STAGE_0';
+    const isStage1 = stage === 'STAGE_1';
+
     const newSession = {
       id: `session-${Date.now()}`,
-      title: body.title || '신규 제안 심사',
+      title: body.title || (isStage1 ? '2026년 하반기 혁신 제안 심사 (1차 평가)' : '2026년 하반기 혁신 제안 심사 (0차 부서평가)'),
       year: body.year || '2026',
       description: body.description || '',
+      stage,
+      judges: isStage1 ? (body.judges || DEFAULT_STAGE1_JUDGES) : undefined,
       status: 'ACTIVE' as const,
       created_at: new Date().toISOString(),
       proposals_count: body.proposals_count || 137,
-      criteria: body.criteria && body.criteria.length > 0 ? body.criteria : getDefaultCriteria()
+      criteria: body.criteria && body.criteria.length > 0
+        ? body.criteria
+        : (isStage1 ? getDefaultStage1Criteria() : getDefaultCriteria())
     };
     await saveSessionAsync(newSession);
 

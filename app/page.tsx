@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Shield, Users, CheckCircle, Award, ChevronRight, KeyRound, Lock, AlertCircle, X, Check, Building2, Network, ZoomIn, Download, ExternalLink } from 'lucide-react';
+import { Shield, Users, CheckCircle, Award, ChevronRight, KeyRound, Lock, AlertCircle, X, Check, Building2, Network, ZoomIn, Download, ExternalLink, ArrowRight } from 'lucide-react';
 import { Department } from '@/lib/types';
 
 export default function Home() {
@@ -323,7 +324,7 @@ export default function Home() {
             {/* Step 1 */}
             <div className="bg-white p-4 rounded-xl border-2 border-[#1768d5]/40 shadow-sm relative overflow-hidden">
               <div className="absolute top-0 right-0 bg-[#1768d5] text-white text-[10px] font-bold px-2 py-0.5 rounded-bl-lg">
-                현재 진행 단계
+                부서 평가 진행
               </div>
               <div className="flex items-center gap-2 mb-1.5">
                 <span className="w-5 h-5 rounded-full bg-blue-100 text-[#1768d5] font-bold text-xs flex items-center justify-center">1</span>
@@ -335,16 +336,25 @@ export default function Home() {
             </div>
 
             {/* Step 2 */}
-            <div className="bg-white/90 p-4 rounded-xl border border-slate-200 text-slate-500 relative">
-              <div className="flex items-center gap-2 mb-1.5">
-                <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-600 font-bold text-xs flex items-center justify-center">2</span>
-                <strong className="text-slate-800 font-bold text-sm">제안 심사(1차 평가)</strong>
-                <span className="text-[10px] px-2 py-0.5 rounded bg-amber-50 text-amber-700 font-semibold border border-amber-200">
-                  향후 예정
-                </span>
+            <div className="bg-white/95 p-4 rounded-xl border-2 border-amber-300 shadow-sm text-slate-700 relative">
+              <div className="flex items-center justify-between mb-1.5">
+                <div className="flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-amber-100 text-amber-800 font-bold text-xs flex items-center justify-center">2</span>
+                  <strong className="text-slate-900 font-bold text-sm">제안 심사(1차 평가)</strong>
+                  <span className="text-[10px] px-2 py-0.5 rounded bg-amber-50 text-amber-800 font-bold border border-amber-200">
+                    11인 다면 채점
+                  </span>
+                </div>
+                <Link
+                  href="/admin/stage1"
+                  className="text-[11px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 hover:underline"
+                >
+                  <span>1차 심사 현황</span>
+                  <ArrowRight className="w-3 h-3" />
+                </Link>
               </div>
-              <p className="text-slate-500 text-[11px] leading-relaxed">
-                <strong>부서 평가(0차 평가)</strong> 취합 결과를 토대로 제안심사위원회를 구성하여 등급 심사 및 우수 제안 포상 심층 심의를 진행합니다.
+              <p className="text-slate-600 text-[11px] leading-relaxed">
+                <strong>부서 평가(0차 평가)</strong> 완결 후 채택 제안을 연계하여 제안심사위원회 11인 심사위원이 창의성·실현성·효과성·전파성(100점 만점)을 다면 평가합니다.
               </p>
             </div>
           </div>

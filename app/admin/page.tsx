@@ -15,7 +15,8 @@ export default function AdminDashboardPage() {
   // 1. 신규 세션 생성 모달 상태
   const [isCreateOpen, setIsCreateOpen] = useState<boolean>(false);
   const [step, setStep] = useState<number>(1);
-  const [title, setTitle] = useState<string>('2026년 하반기 혁신 제안 심사');
+  const [stage, setStage] = useState<'STAGE_0' | 'STAGE_1'>('STAGE_0');
+  const [title, setTitle] = useState<string>('2026년 하반기 혁신 제안 심사 (0차 부서평가)');
   const [year, setYear] = useState<string>('2026');
   const [description, setDescription] = useState<string>('공사 경영개선 및 시민 편익 증진을 위한 부서 평가(0차 평가)');
   const [selectedExcel, setSelectedExcel] = useState<string>('DEFAULT'); // DEFAULT: 137건 샘플
@@ -168,6 +169,7 @@ export default function AdminDashboardPage() {
           title,
           year,
           description,
+          stage,
           proposals_count: selectedExcel === 'DEFAULT' ? 137 : 0,
           criteria: customCriteria
         })
@@ -255,10 +257,17 @@ export default function AdminDashboardPage() {
                             현재 선택된 평가 건
                           </span>
                         )}
-                        <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {s.status === 'ACTIVE' ? '부서 평가(0차 평가) 진행중' : s.status}
-                        </span>
+                        {s.stage === 'STAGE_1' ? (
+                          <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200 flex items-center gap-1">
+                            <Clock className="w-3 h-3 text-amber-600" />
+                            제안 심사(1차 평가) 위원회
+                          </span>
+                        ) : (
+                          <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            {s.status === 'ACTIVE' ? '부서 평가(0차 평가) 진행중' : s.status}
+                          </span>
+                        )}
                       </div>
 
                       <div className="flex items-center gap-2">
@@ -291,8 +300,12 @@ export default function AdminDashboardPage() {
                         <strong className="text-base font-bold text-slate-800">{s.proposals_count}건</strong>
                       </div>
                       <div>
-                        <span className="text-slate-400 block mb-0.5">부서 평가(0차 평가) 항목</span>
-                        <strong className="text-base font-bold text-sky-700">{s.criteria ? s.criteria.length : 2}개 항목</strong>
+                        <span className="text-slate-400 block mb-0.5">
+                          {s.stage === 'STAGE_1' ? '1차 심사 배점 항목' : '부서 평가(0차) 항목'}
+                        </span>
+                        <strong className={`text-base font-bold ${s.stage === 'STAGE_1' ? 'text-amber-700' : 'text-sky-700'}`}>
+                          {s.stage === 'STAGE_1' ? '4대 항목 (100점 만점)' : `${s.criteria ? s.criteria.length : 2}개 항목`}
+                        </strong>
                       </div>
                     </div>
                   </div>
@@ -301,20 +314,31 @@ export default function AdminDashboardPage() {
                     <Link
                       href={`/admin/proposals?session_id=${s.id}`}
                       onClick={() => handleSelectActiveSession(s.id)}
-                      className="flex-1 py-2.5 px-3 text-center rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-700 font-semibold text-xs transition flex items-center justify-center gap-1.5"
+                      className="flex-1 py-2.5 px-3 text-center rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition flex items-center justify-center gap-1.5"
                     >
                       <FileText className="w-4 h-4" />
-                      <span>제안 목록·배정 ({s.proposals_count}건)</span>
+                      <span>제안 목록 ({s.proposals_count}건)</span>
                     </Link>
 
-                    <Link
-                      href={`/admin/reports?session_id=${s.id}`}
-                      onClick={() => handleSelectActiveSession(s.id)}
-                      className="flex-1 py-2.5 px-3 text-center rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs transition flex items-center justify-center gap-1.5"
-                    >
-                      <span>부서 평가(0차 평가) 취합</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </Link>
+                    {s.stage === 'STAGE_1' ? (
+                      <Link
+                        href={`/admin/stage1?session_id=${s.id}`}
+                        onClick={() => handleSelectActiveSession(s.id)}
+                        className="flex-1 py-2.5 px-3 text-center rounded-xl bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white font-semibold text-xs transition flex items-center justify-center gap-1.5 shadow-md shadow-amber-600/20"
+                      >
+                        <span>제안 심사(1차) 다면 채점</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </Link>
+                    ) : (
+                      <Link
+                        href={`/admin/reports?session_id=${s.id}`}
+                        onClick={() => handleSelectActiveSession(s.id)}
+                        className="flex-1 py-2.5 px-3 text-center rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs transition flex items-center justify-center gap-1.5"
+                      >
+                        <span>부서 평가(0차 평가) 취합</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </Link>
+                    )}
                   </div>
                 </div>
               );
@@ -434,6 +458,64 @@ export default function AdminDashboardPage() {
             {/* Step 1: 기본 정보 */}
             {step === 1 && (
               <div className="space-y-4 text-xs">
+                {/* 평가 단계 (Stage) 선택 */}
+                <div>
+                  <label className="block font-semibold text-slate-700 mb-1.5">
+                    평가 단계 (Stage) 구분 <span className="text-red-500">*</span>
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div
+                      onClick={() => {
+                        setStage('STAGE_0');
+                        setTitle('2026년 하반기 혁신 제안 심사 (0차 부서평가)');
+                        setDescription('공사 경영개선 및 시민 편익 증진을 위한 부서 평가(0차 평가)');
+                      }}
+                      className={`p-3.5 rounded-xl border-2 cursor-pointer transition flex flex-col justify-between ${
+                        stage === 'STAGE_0'
+                          ? 'border-sky-600 bg-sky-50/70 shadow-sm'
+                          : 'border-slate-200 hover:border-slate-300 bg-white'
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="font-bold text-slate-900 text-xs flex items-center gap-1.5">
+                            🏢 부서 평가(0차 평가)
+                          </span>
+                          {stage === 'STAGE_0' && <CheckCircle className="w-4 h-4 text-sky-600" />}
+                        </div>
+                        <p className="text-[11px] text-slate-500 leading-relaxed">
+                          제안 소관(실행) 부서 대상 사전 타당성(Yes/No) 및 검토의견 심사
+                        </p>
+                      </div>
+                    </div>
+
+                    <div
+                      onClick={() => {
+                        setStage('STAGE_1');
+                        setTitle('2026년 하반기 혁신 제안 심사 (1차 평가)');
+                        setDescription('제안심사위원회 심사위원 다인 다면 심사(창의성·실현성·효과성·전파성)');
+                      }}
+                      className={`p-3.5 rounded-xl border-2 cursor-pointer transition flex flex-col justify-between ${
+                        stage === 'STAGE_1'
+                          ? 'border-amber-500 bg-amber-50/70 shadow-sm'
+                          : 'border-slate-200 hover:border-slate-300 bg-white'
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="font-bold text-slate-900 text-xs flex items-center gap-1.5">
+                            ⚖️ 제안 심사(1차 평가)
+                          </span>
+                          {stage === 'STAGE_1' && <CheckCircle className="w-4 h-4 text-amber-600" />}
+                        </div>
+                        <p className="text-[11px] text-slate-500 leading-relaxed">
+                          심사위원단(11인) 다면 계량 채점(창의성/실현성/효과성/전파성 100점)
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 <div>
                   <label className="block font-semibold text-slate-700 mb-1">
                     제안평가명 <span className="text-red-500">*</span>
