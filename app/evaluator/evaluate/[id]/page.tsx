@@ -228,7 +228,7 @@ function EvaluateProposalContent() {
         {/* Left Column: 제안 원문 상세 (7 cols) */}
         <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-sm space-y-4 sm:space-y-5">
           <div className="border-b border-slate-100 pb-3 sm:pb-4">
-            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs mb-2">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-[12px] sm:text-xs mb-2">
               <span className="bg-slate-100 text-slate-600 font-mono font-bold px-2 py-0.5 rounded">
                 연번 #{proposal.seq_no}
               </span>
@@ -281,29 +281,29 @@ function EvaluateProposalContent() {
                 <span>실행(평가) 부서 변경 요청 (타 부서 이관)</span>
               </div>
               {proposal.transfer_requested ? (
-                <span className="px-2 py-0.5 rounded-md bg-amber-200 text-amber-900 font-bold text-[10px]">
+                <span className="px-2 py-0.5 rounded-md bg-amber-200 text-amber-900 font-bold text-[11px]">
                   변경 요청 심사 대기중
                 </span>
               ) : !isReadOnly ? (
                 <button
                   type="button"
                   onClick={() => setIsTransferOpen(!isTransferOpen)}
-                  className="px-2.5 py-1 rounded-lg bg-white border border-amber-300 hover:bg-amber-100 text-amber-800 font-semibold text-[11px] transition shadow-xs"
+                  className="px-2.5 py-1 rounded-lg bg-white border border-amber-300 hover:bg-amber-100 text-amber-800 font-semibold text-[12px] transition shadow-xs"
                 >
                   {isTransferOpen ? '닫기' : '부서 변경 요청하기'}
                 </button>
               ) : (
-                <span className="text-[11px] text-amber-700/70 font-medium">조회 전용</span>
+                <span className="text-[12px] text-amber-700/70 font-medium">조회 전용</span>
               )}
             </div>
 
             {proposal.transfer_requested ? (
               <div className="bg-white p-3 rounded-lg border border-amber-200 space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] text-slate-500">희망 이관 부서:</span>
+                  <span className="text-[12px] text-slate-500">희망 이관 부서:</span>
                   <strong className="text-amber-800 font-bold">{proposal.transfer_target_dept}</strong>
                 </div>
-                <div className="text-[11px] text-slate-600">
+                <div className="text-[12px] text-slate-600">
                   <span className="text-slate-400 block mb-0.5">요청 사유:</span>
                   "{proposal.transfer_reason}"
                 </div>
@@ -313,7 +313,7 @@ function EvaluateProposalContent() {
                       type="button"
                       onClick={handleCancelTransfer}
                       disabled={transferSaving}
-                      className="text-[10px] text-red-600 hover:text-red-700 underline font-medium"
+                      className="text-[11px] text-red-600 hover:text-red-700 underline font-medium"
                     >
                       {transferSaving ? '취소 처리 중...' : '변경 요청 취소'}
                     </button>
@@ -322,11 +322,11 @@ function EvaluateProposalContent() {
               </div>
             ) : !isReadOnly && isTransferOpen ? (
               <form onSubmit={handleRequestTransfer} className="bg-white p-3.5 rounded-lg border border-amber-200 space-y-3">
-                <p className="text-[11px] text-slate-600">
+                <p className="text-[12px] text-slate-600">
                   해당 제안이 귀 부서 소관 업무가 아닌 경우, 실제 담당해야 할 타 부서를 지정하여 변경을 요청할 수 있습니다. (총괄 관리자 승인 후 배정 변경)
                 </p>
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                  <label className="block text-[12px] font-semibold text-slate-700 mb-1">
                     희망 이관 부서 선택 <span className="text-red-500">*</span>
                   </label>
                   <select
@@ -342,7 +342,7 @@ function EvaluateProposalContent() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                  <label className="block text-[12px] font-semibold text-slate-700 mb-1">
                     부서 변경 요청 사유 <span className="text-red-500">*</span>
                   </label>
                   <textarea
@@ -357,21 +357,21 @@ function EvaluateProposalContent() {
                   <button
                     type="button"
                     onClick={() => setIsTransferOpen(false)}
-                    className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium text-[11px]"
+                    className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium text-[12px]"
                   >
                     취소
                   </button>
                   <button
                     type="submit"
                     disabled={transferSaving}
-                    className="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-bold text-[11px] shadow-sm transition disabled:opacity-50"
+                    className="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-bold text-[12px] shadow-sm transition disabled:opacity-50"
                   >
                     {transferSaving ? '요청 제출 중...' : '변경 요청 제출'}
                   </button>
                 </div>
               </form>
             ) : (
-              <p className="text-[11px] text-amber-800/80">
+              <p className="text-[12px] text-amber-800/80">
                 본 제안의 소관 부서가 아닐 경우 우측 [부서 변경 요청하기] 버튼을 통해 타 부서로의 이관을 신청할 수 있습니다.
               </p>
             )}
@@ -384,7 +384,7 @@ function EvaluateProposalContent() {
                 <AlertCircle className="w-4 h-4" />
                 기존 제안과 중복 검토 필요
               </strong>
-              <p className="text-[11px] leading-relaxed">
+              <p className="text-[12px] leading-relaxed">
                 중복 제안 이력: <strong>{proposal.duplicate_title}</strong>
               </p>
             </div>
@@ -398,7 +398,7 @@ function EvaluateProposalContent() {
                 <span>제안서 본문 상세 내용</span>
               </h4>
               {(proposal.background || proposal.content || proposal.expected_effect) && (
-                <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-sky-50 text-sky-700 border border-sky-200">
+                <span className="text-[12px] font-semibold px-2.5 py-0.5 rounded-full bg-sky-50 text-sky-700 border border-sky-200">
                   제안서(.xlsx) 원문 자동 연동됨
                 </span>
               )}
@@ -458,7 +458,7 @@ function EvaluateProposalContent() {
                 <p className="text-slate-600 bg-white p-3 rounded-lg border border-slate-200 font-medium">
                   "{proposal.title}"
                 </p>
-                <p className="text-[11px] text-slate-500">
+                <p className="text-[12px] text-slate-500">
                   * 해당 제안이 부서의 실무 여건상 실현 가능한지, 예산 및 인력 배치가 타당한지 종합적으로 검토하여 우측 평가표를 작성해 주시기 바랍니다.
                 </p>
               </div>
@@ -473,7 +473,7 @@ function EvaluateProposalContent() {
                       <span>[추가 시트] {sheet.sheetName}</span>
                     </div>
                     <div className="overflow-x-auto max-h-80">
-                      <table className="w-full text-[11px] border-collapse">
+                      <table className="w-full text-[12px] border-collapse">
                         <tbody className="divide-y divide-slate-100">
                           {sheet.rows.map((row, rIdx) => (
                             <tr key={rIdx} className={rIdx === 0 ? 'bg-slate-50 font-semibold text-slate-800' : 'text-slate-700'}>
@@ -514,7 +514,7 @@ function EvaluateProposalContent() {
                     <a
                       href={att.static_url || `/api/proposals/attachments?id=${encodeURIComponent(att.id)}&download=1`}
                       download={att.name}
-                      className="px-3 py-1.5 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-700 font-semibold text-[11px] flex items-center gap-1 flex-shrink-0 transition"
+                      className="px-3 py-1.5 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-700 font-semibold text-[12px] flex items-center gap-1 flex-shrink-0 transition"
                     >
                       <Download className="w-3 h-3" />
                       <span>다운로드</span>
@@ -531,7 +531,7 @@ function EvaluateProposalContent() {
           <div>
             <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
               <div>
-                <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
                   STAGE 0
                 </span>
                 <h3 className="text-base font-extrabold text-slate-900 mt-1">
@@ -554,7 +554,7 @@ function EvaluateProposalContent() {
               <label className="block text-xs font-bold text-slate-800">
                 1. 부서 검토 결과 (수용 여부) <span className="text-red-500">*</span>
               </label>
-              <p className="text-[11px] text-slate-500 mb-2">
+              <p className="text-[12px] text-slate-500 mb-2">
                 해당 제안을 부서 업무로 수용하여 1차 심사로 상정할지 결정합니다.
               </p>
 
@@ -572,7 +572,7 @@ function EvaluateProposalContent() {
                 >
                   <CheckCircle2 className={`w-6 h-6 ${result === 'Yes' ? 'text-emerald-600' : 'text-slate-400'}`} />
                   <strong className="text-sm font-bold">Yes (수용 / 채택)</strong>
-                  <span className="text-[10px] text-slate-500">1차 심사 상정</span>
+                  <span className="text-[11px] text-slate-500">1차 심사 상정</span>
                 </button>
 
                 {/* No Button */}
@@ -588,7 +588,7 @@ function EvaluateProposalContent() {
                 >
                   <XCircle className={`w-6 h-6 ${result === 'No' ? 'text-red-500' : 'text-slate-400'}`} />
                   <strong className="text-sm font-bold">No (불수용)</strong>
-                  <span className="text-[10px] text-slate-500">수용 불가 (의견 필수)</span>
+                  <span className="text-[11px] text-slate-500">수용 불가 (의견 필수)</span>
                 </button>
               </div>
             </div>
@@ -598,7 +598,7 @@ function EvaluateProposalContent() {
               <label className="block text-xs font-bold text-slate-800">
                 2. 부서 검토 의견 (Opinion) <span className="text-red-500">*</span>
               </label>
-              <p className="text-[11px] text-slate-500">
+              <p className="text-[12px] text-slate-500">
                 {result === 'Yes'
                   ? '수용 사유, 추진 가능 시기, 예상 효과 등을 기재해 주십시오.'
                   : result === 'No'

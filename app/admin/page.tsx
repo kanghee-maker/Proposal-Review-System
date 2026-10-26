@@ -439,7 +439,7 @@ export default function AdminDashboardPage() {
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2">
                         {isCurrentActive && (
-                          <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-sky-600 text-white flex items-center gap-1">
+                          <span className="text-[12px] font-bold px-2 py-0.5 rounded-full bg-sky-600 text-white flex items-center gap-1">
                             <CheckCircle className="w-3 h-3" />
                             현재 선택된 평가 건
                           </span>
@@ -540,7 +540,7 @@ export default function AdminDashboardPage() {
 
                     {/* Flow 강제 연계 버튼 (0차 -> 1차 / 1차 -> 2차) */}
                     {s.stage === 'STAGE_1' ? (
-                      <div className="w-full py-2 px-3 rounded-xl bg-amber-50/80 border border-amber-200/80 text-amber-900 font-semibold text-[11px] flex items-center justify-between">
+                      <div className="w-full py-2 px-3 rounded-xl bg-amber-50/80 border border-amber-200/80 text-amber-900 font-semibold text-[12px] flex items-center justify-between">
                         <span className="flex items-center gap-1.5">
                           <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
                           <span>1차 위원회 심사 단계</span>
@@ -686,10 +686,10 @@ export default function AdminDashboardPage() {
 
             <div className="p-3.5 bg-rose-50/70 border border-rose-200 rounded-xl text-xs space-y-1.5 mb-4 text-slate-700">
               <div>
-                <span className="text-slate-400 block text-[10px]">삭제 대상 회차</span>
+                <span className="text-slate-400 block text-[11px]">삭제 대상 회차</span>
                 <strong className="text-slate-900 text-xs block">{deleteSession.title}</strong>
               </div>
-              <p className="text-[11px] text-rose-800 leading-relaxed">
+              <p className="text-[12px] text-rose-800 leading-relaxed">
                 해당 회차에 배정된 <strong>제안 {deleteSession.proposals_count}건</strong>과 부서 평가 내역, 심사위원 채점 결과가 완전히 삭제됩니다.
               </p>
             </div>
@@ -701,7 +701,7 @@ export default function AdminDashboardPage() {
                     <Lock className="w-3.5 h-3.5 text-slate-500" />
                     <span>관리자 비밀번호 확인</span>
                   </span>
-                  <span className="text-[10px] text-slate-400">* 안전을 위해 재입력</span>
+                  <span className="text-[11px] text-slate-400">* 안전을 위해 재입력</span>
                 </label>
                 <input
                   type="password"
@@ -715,7 +715,7 @@ export default function AdminDashboardPage() {
                   autoFocus
                   className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-rose-500"
                 />
-                <p className="text-[11px] text-slate-400 mt-1">※ 안전한 데이터 보호를 위해 관리자 비밀번호(0423) 확인 후 즉시 삭제됩니다.</p>
+                <p className="text-[12px] text-slate-400 mt-1">※ 안전한 데이터 보호를 위해 관리자 비밀번호(0423) 확인 후 즉시 삭제됩니다.</p>
               </div>
 
               {deleteError && (
@@ -777,11 +777,11 @@ export default function AdminDashboardPage() {
                           <span className="font-bold text-slate-900 text-xs flex items-center gap-1.5">
                             🏢 부서 평가(0차 평가)
                           </span>
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-200 text-sky-800">
+                          <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-sky-200 text-sky-800">
                             필수 시작 단계
                           </span>
                         </div>
-                        <p className="text-[11px] text-slate-600 leading-relaxed mt-1">
+                        <p className="text-[12px] text-slate-600 leading-relaxed mt-1">
                           제안 소관(실행) 부서 대상 사전 타당성(Yes/No) 및 검토의견 심사
                         </p>
                       </div>
@@ -794,11 +794,11 @@ export default function AdminDashboardPage() {
                             <Lock className="w-3.5 h-3.5 text-slate-400" />
                             <span>제안 심사(1차 평가)</span>
                           </span>
-                          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-200 text-slate-600">
+                          <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-slate-200 text-slate-600">
                             직접 생성 불가
                           </span>
                         </div>
-                        <p className="text-[11px] text-slate-400 leading-relaxed mt-1">
+                        <p className="text-[12px] text-slate-400 leading-relaxed mt-1">
                           0차 부서평가 완결 후 [1차 제안심사 연계 생성]을 통해 부서 채택(Yes) 제안을 대상으로 자동 생성됩니다.
                         </p>
                       </div>
@@ -806,7 +806,7 @@ export default function AdminDashboardPage() {
                   </div>
 
                   {/* Flow 안내 배너 */}
-                  <div className="mt-2.5 p-3 rounded-xl bg-amber-50/80 border border-amber-200 text-[11px] text-amber-900 leading-relaxed flex items-start gap-2">
+                  <div className="mt-2.5 p-3 rounded-xl bg-amber-50/80 border border-amber-200 text-[12px] text-amber-900 leading-relaxed flex items-start gap-2">
                     <Sparkles className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
                     <div>
                       <strong className="text-amber-950 font-bold">심사 표준 프로세스 Flow</strong>:
@@ -823,7 +823,7 @@ export default function AdminDashboardPage() {
                           3단계: 2차 최종평가
                         </span>
                       </div>
-                      <p className="text-[10px] text-slate-600 mt-1">
+                      <p className="text-[11px] text-slate-600 mt-1">
                         ※ 신규 제안평가는 0차 부서평가로만 등록할 수 있으며, 이전 단계가 완료되어야 다음 단계로 연계 이관할 수 있습니다.
                       </p>
                     </div>
@@ -899,7 +899,7 @@ export default function AdminDashboardPage() {
                         <FileSpreadsheet className="w-4 h-4 text-sky-600" />
                         <span>표준 제안 엑셀 서식 및 컬럼(Property) 가이드</span>
                       </h5>
-                      <p className="text-[11px] text-sky-800/80 mt-0.5">
+                      <p className="text-[12px] text-sky-800/80 mt-0.5">
                         시스템이 제안을 올바르게 인식하고 담당 부서 평가함으로 자동 배정하기 위해 엑셀 컬럼명이 일치해야 합니다.
                       </p>
                     </div>
@@ -915,12 +915,12 @@ export default function AdminDashboardPage() {
                   </div>
 
                   {/* 컬럼 가이드 미니 표 */}
-                  <div className="bg-white/90 rounded-lg p-3 border border-sky-200/80 text-[11px] space-y-2">
+                  <div className="bg-white/90 rounded-lg p-3 border border-sky-200/80 text-[12px] space-y-2">
                     <div className="font-semibold text-slate-800 flex items-center justify-between">
                       <span>★ 핵심 필수 컬럼 (헤더명)</span>
-                      <span className="text-[10px] text-slate-500">* 오탈자 없이 정확히 일치 권장</span>
+                      <span className="text-[11px] text-slate-500">* 오탈자 없이 정확히 일치 권장</span>
                     </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 text-[10px]">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 text-[11px]">
                       <div className="bg-sky-50/70 p-1.5 rounded border border-sky-100">
                         <span className="text-sky-700 font-bold block">실행(평가)_부</span>
                         <span className="text-slate-500">부서평가함 배정 기준</span>
@@ -938,7 +938,7 @@ export default function AdminDashboardPage() {
                         <span className="text-slate-500">제안자명 및 고유순번</span>
                       </div>
                     </div>
-                    <p className="text-[10px] text-slate-500 leading-relaxed">
+                    <p className="text-[11px] text-slate-500 leading-relaxed">
                       ※ 기타 지원 컬럼: <code className="text-sky-800 bg-sky-50 px-1 py-0.5 rounded">게시판번호</code>, <code className="text-sky-800 bg-sky-50 px-1 py-0.5 rounded">접수일자</code>, <code className="text-sky-800 bg-sky-50 px-1 py-0.5 rounded">직급</code>, <code className="text-sky-800 bg-sky-50 px-1 py-0.5 rounded">제안자_본부/부문</code>, <code className="text-sky-800 bg-sky-50 px-1 py-0.5 rounded">제안자_처/실/단</code>, <code className="text-sky-800 bg-sky-50 px-1 py-0.5 rounded">제안자_부</code>, <code className="text-sky-800 bg-sky-50 px-1 py-0.5 rounded">제안구분</code>, <code className="text-sky-800 bg-sky-50 px-1 py-0.5 rounded">분야</code>, <code className="text-sky-800 bg-sky-50 px-1 py-0.5 rounded">제안내용</code>, <code className="text-sky-800 bg-sky-50 px-1 py-0.5 rounded">중복제안여부</code>
                     </p>
                   </div>
@@ -966,7 +966,7 @@ export default function AdminDashboardPage() {
                         <strong className="text-slate-900 block font-semibold">
                           기본 2026 정제 데이터 (137건) 자동 탑재
                         </strong>
-                        <span className="text-slate-500 text-[11px]">
+                        <span className="text-slate-500 text-[12px]">
                           기존 2026 혁신제안 137건 데이터를 신규 회차의 심사 대상 제안으로 즉시 자동 복제 및 Supabase DB에 연동합니다.
                         </span>
                       </div>
@@ -988,7 +988,7 @@ export default function AdminDashboardPage() {
                         <strong className="text-slate-900 block font-semibold text-xs">
                           신규 엑셀 파일 직접 업로드 (사용자 지정 데이터)
                         </strong>
-                        <span className="text-slate-500 text-[11px] block mt-0.5">
+                        <span className="text-slate-500 text-[12px] block mt-0.5">
                           공사 표준 제안 엑셀 양식에 맞춰 작성된 파일을 첨부하면, 내용을 분석하여 새 회차의 제안 데이터베이스로 즉시 구축합니다.
                         </span>
                       </div>
@@ -1005,7 +1005,7 @@ export default function AdminDashboardPage() {
                           <a
                             href="/api/sample-excel"
                             download="과천도시공사_표준_제안서_양식.xlsx"
-                            className="text-[11px] font-semibold text-sky-700 hover:text-sky-800 flex items-center gap-1 hover:underline"
+                            className="text-[12px] font-semibold text-sky-700 hover:text-sky-800 flex items-center gap-1 hover:underline"
                           >
                             <DownloadCloud className="w-3.5 h-3.5" />
                             <span>표준 양식 다운로드</span>
@@ -1027,7 +1027,7 @@ export default function AdminDashboardPage() {
                               <p className="text-xs font-semibold text-slate-700">
                                 {isParsingExcel ? '엑셀 데이터를 분석 중입니다...' : '클릭하거나 엑셀 파일을 이곳에 드래그하세요'}
                               </p>
-                              <p className="text-[11px] text-slate-400">
+                              <p className="text-[12px] text-slate-400">
                                 '연번', '제안자', '제안제목', '실행(평가)_부' 등의 컬럼이 포함된 파일을 지원합니다.
                               </p>
                             </div>
@@ -1042,16 +1042,16 @@ export default function AdminDashboardPage() {
                                 <div>
                                   <div className="text-xs font-bold text-emerald-900 flex items-center gap-2">
                                     <span>{uploadedFile.name}</span>
-                                    <span className="px-2 py-0.5 rounded-full bg-emerald-200 text-emerald-800 text-[10px]">
+                                    <span className="px-2 py-0.5 rounded-full bg-emerald-200 text-emerald-800 text-[11px]">
                                       총 {uploadedProposals.length}건 인식 완료
                                     </span>
                                   </div>
-                                  <p className="text-[11px] text-emerald-700 mt-0.5">
+                                  <p className="text-[12px] text-emerald-700 mt-0.5">
                                     제안 번호, 제목, 제안자, 실행부서가 정상적으로 분석되었습니다.
                                   </p>
                                 </div>
                               </div>
-                              <label className="px-3 py-1.5 rounded-lg bg-white border border-emerald-300 hover:bg-emerald-100 text-[11px] font-semibold text-emerald-800 cursor-pointer shadow-sm transition">
+                              <label className="px-3 py-1.5 rounded-lg bg-white border border-emerald-300 hover:bg-emerald-100 text-[12px] font-semibold text-emerald-800 cursor-pointer shadow-sm transition">
                                 <span>파일 변경</span>
                                 <input
                                   type="file"
@@ -1064,7 +1064,7 @@ export default function AdminDashboardPage() {
 
                             {/* 미니 미리보기 테이블 (상위 3건) */}
                             {uploadedProposals.length > 0 && (
-                              <div className="bg-white rounded-lg border border-slate-200 overflow-hidden text-[11px]">
+                              <div className="bg-white rounded-lg border border-slate-200 overflow-hidden text-[12px]">
                                 <div className="px-3 py-1.5 bg-slate-50 border-b border-slate-200 font-semibold text-slate-600 flex justify-between">
                                   <span>탑재 대상 제안 데이터 미리보기 (상위 {Math.min(3, uploadedProposals.length)}건)</span>
                                   <span className="text-slate-400">전체 {uploadedProposals.length}건</span>
@@ -1086,7 +1086,7 @@ export default function AdminDashboardPage() {
                                         <span className="w-8 font-mono text-slate-400 font-bold text-center">#{seq}</span>
                                         <span className="w-16 font-semibold text-slate-700 truncate">{proposer}</span>
                                         <span className="flex-1 text-slate-800 font-medium truncate">{title}</span>
-                                        <span className="px-2 py-0.5 rounded bg-sky-50 text-sky-700 text-[10px] font-semibold flex-shrink-0">
+                                        <span className="px-2 py-0.5 rounded bg-sky-50 text-sky-700 text-[11px] font-semibold flex-shrink-0">
                                           {dept}
                                         </span>
                                       </div>
@@ -1099,7 +1099,7 @@ export default function AdminDashboardPage() {
                         )}
 
                         {uploadError && (
-                          <div className="p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-[11px] flex items-center gap-2">
+                          <div className="p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-[12px] flex items-center gap-2">
                             <AlertTriangle className="w-4 h-4 flex-shrink-0" />
                             <span>{uploadError}</span>
                           </div>
@@ -1152,13 +1152,13 @@ export default function AdminDashboardPage() {
                     >
                       <div>
                         <div className="flex items-center gap-2 mb-0.5">
-                          <span className="font-mono text-[10px] text-sky-600 font-bold bg-sky-100 px-1.5 py-0.5 rounded">
+                          <span className="font-mono text-[11px] text-sky-600 font-bold bg-sky-100 px-1.5 py-0.5 rounded">
                             항목 {idx + 1}
                           </span>
                           <strong className="text-slate-800">{c.label}</strong>
-                          <span className="text-[10px] text-slate-400">({c.type})</span>
+                          <span className="text-[11px] text-slate-400">({c.type})</span>
                         </div>
-                        <p className="text-[11px] text-slate-500">{c.description || '옵션: ' + (c.options?.join(', ') || '텍스트 입력')}</p>
+                        <p className="text-[12px] text-slate-500">{c.description || '옵션: ' + (c.options?.join(', ') || '텍스트 입력')}</p>
                       </div>
 
                       {c.key !== 'result' && c.key !== 'opinion' && (
@@ -1280,7 +1280,7 @@ export default function AdminDashboardPage() {
                       <strong className="text-slate-900 block font-semibold">
                         부서 채택(Yes) 제안만 1차 심사로 이관 (권장)
                       </strong>
-                      <span className="text-[11px] text-slate-500">
+                      <span className="text-[12px] text-slate-500">
                         부서 자체 타당성 검토에서 'Yes'를 받은 우수 제안만 제안심사위원회 심사 대상으로 선별 이관합니다.
                       </span>
                     </div>
@@ -1300,7 +1300,7 @@ export default function AdminDashboardPage() {
                       <strong className="text-slate-900 block font-semibold">
                         전체 제안 ({bridgeSourceSession.proposals_count}건) 모두 1차 심사로 이관
                       </strong>
-                      <span className="text-[11px] text-slate-500">
+                      <span className="text-[12px] text-slate-500">
                         부서 채택 여부와 무관하게 모든 제안을 1차 위원회 심사 대상으로 이관합니다.
                       </span>
                     </div>
@@ -1320,7 +1320,7 @@ export default function AdminDashboardPage() {
                 />
               </div>
 
-              <div className="p-3 bg-amber-50/80 rounded-xl border border-amber-200/80 text-[11px] text-amber-950 space-y-1">
+              <div className="p-3 bg-amber-50/80 rounded-xl border border-amber-200/80 text-[12px] text-amber-950 space-y-1">
                 <div className="font-bold flex items-center gap-1.5">
                   <CheckCircle2 className="w-3.5 h-3.5 text-amber-600" />
                   <span>1차 심사위원회 11인 평가단 자동 배정</span>

@@ -162,10 +162,10 @@ function AdminReportsContent() {
           </div>
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-[11px] font-bold text-sky-800 uppercase tracking-wider">
+              <span className="text-[12px] font-bold text-sky-800 uppercase tracking-wider">
                 현재 선택된 제안평가 회차
               </span>
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 flex items-center gap-1">
+              <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 flex items-center gap-1">
                 <Clock className="w-2.5 h-2.5" />
                 {currentSession?.status === 'ACTIVE' ? '진행중' : currentSession?.status}
               </span>
@@ -210,7 +210,7 @@ function AdminReportsContent() {
             <DownloadCloud className="w-5 h-5 text-sky-600 flex-shrink-0" />
             <span>[{currentSession?.title || '제안평가'}] 부서 평가(0차 평가) 취합 및 엑셀 다운로드</span>
           </h2>
-          <p className="text-[11px] sm:text-xs text-slate-500 mt-1">
+          <p className="text-[12px] sm:text-xs text-slate-500 mt-1">
             선택된 평가 회차의 각 부서 심사 결과(Yes/No 및 검토의견)를 실시간 집계하고 보고용 엑셀로 내보냅니다. (부서 평가 완료 후 1차 제안심사 회차로 바로 연계)
           </p>
         </div>
@@ -247,7 +247,7 @@ function AdminReportsContent() {
             <strong className="text-2xl sm:text-3xl font-bold text-slate-900">{totalCount}</strong>
             <span className="text-xs text-slate-500">건</span>
           </div>
-          <div className="mt-2 text-[11px] text-slate-400">100% 배정 완료</div>
+          <div className="mt-2 text-[12px] text-slate-400">100% 배정 완료</div>
         </div>
 
         <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-sm">
@@ -267,7 +267,7 @@ function AdminReportsContent() {
             <strong className="text-2xl sm:text-3xl font-bold text-sky-600">{yesCount}</strong>
             <span className="text-xs text-slate-500">건</span>
           </div>
-          <div className="mt-2 text-[11px] text-sky-600 font-medium">수용/채택 제안</div>
+          <div className="mt-2 text-[12px] text-sky-600 font-medium">수용/채택 제안</div>
         </div>
 
         <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-sm">
@@ -276,7 +276,7 @@ function AdminReportsContent() {
             <strong className="text-2xl sm:text-3xl font-bold text-rose-600">{noCount}</strong>
             <span className="text-xs text-slate-500">건</span>
           </div>
-          <div className="mt-2 text-[11px] text-rose-600 font-medium">불채택 제안</div>
+          <div className="mt-2 text-[12px] text-rose-600 font-medium">불채택 제안</div>
         </div>
       </div>
 
@@ -299,7 +299,7 @@ function AdminReportsContent() {
           <div className="py-16 text-center text-slate-500 text-xs space-y-2">
             <DownloadCloud className="w-8 h-8 text-slate-300 mx-auto" />
             <p className="font-bold text-slate-700">등록된 제안평가 회차가 없습니다.</p>
-            <p className="text-[11px] text-slate-400">관리자 대시보드에서 신규 제안평가를 먼저 생성해주세요.</p>
+            <p className="text-[12px] text-slate-400">관리자 대시보드에서 신규 제안평가를 먼저 생성해주세요.</p>
             <div className="pt-2">
               <Link href="/admin" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-semibold text-xs shadow-sm transition">
                 <span>제안평가 회차 대시보드로 이동</span>
@@ -334,15 +334,15 @@ function AdminReportsContent() {
                       <tr key={p.id} className="hover:bg-slate-50/50 transition">
                         <td className="py-3 px-3 text-center text-slate-400 font-mono">{p.seq_no}</td>
                         <td className="py-3 px-3">
-                          <span className="text-[10px] text-slate-400 block">{p.assigned_division}</span>
+                          <span className="text-[11px] text-slate-400 block">{p.assigned_division}</span>
                           <strong className="text-slate-800">{p.assigned_office} {p.assigned_department}</strong>
                         </td>
                         <td className="py-3 px-4">
                           <div className="font-semibold text-slate-900 line-clamp-1">{p.title}</div>
-                          <div className="text-[11px] text-slate-400 mt-0.5">제안자: {p.proposer_name} ({p.proposer_department})</div>
+                          <div className="text-[12px] text-slate-400 mt-0.5">제안자: {p.proposer_name} ({p.proposer_department})</div>
                         </td>
                         <td className="py-3 px-3 text-center">
-                          <span className={`inline-block px-2.5 py-1 rounded-full text-[11px] font-semibold ${
+                          <span className={`inline-block px-2.5 py-1 rounded-full text-[12px] font-semibold ${
                             p.status === '평가완료'
                               ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                               : 'bg-slate-100 text-slate-500 border border-slate-200'
@@ -369,10 +369,10 @@ function AdminReportsContent() {
                               {opinion}
                             </div>
                           ) : (
-                            <span className="text-slate-400 italic text-[11px]">미작성</span>
+                            <span className="text-slate-400 italic text-[12px]">미작성</span>
                           )}
                         </td>
-                        <td className="py-3 px-3 text-center text-[11px] text-slate-400">
+                        <td className="py-3 px-3 text-center text-[12px] text-slate-400">
                           {ev?.submitted_at ? new Date(ev.submitted_at).toLocaleDateString('ko-KR') : '-'}
                         </td>
                       </tr>
@@ -392,20 +392,20 @@ function AdminReportsContent() {
                 return (
                   <div key={p.id} className="p-3.5 space-y-2 hover:bg-slate-50 transition">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="font-mono font-bold text-[11px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">
+                      <span className="font-mono font-bold text-[12px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">
                         #{p.seq_no}
                       </span>
                       <div className="flex items-center gap-1.5">
                         {result === 'Yes' ? (
-                          <span className="px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 font-bold text-[10px]">
+                          <span className="px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 font-bold text-[11px]">
                             Yes (수용)
                           </span>
                         ) : result === 'No' ? (
-                          <span className="px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 font-bold text-[10px]">
+                          <span className="px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 font-bold text-[11px]">
                             No (불채택)
                           </span>
                         ) : null}
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                        <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${
                           p.status === '평가완료'
                             ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                             : 'bg-slate-100 text-slate-500 border border-slate-200'
@@ -419,17 +419,17 @@ function AdminReportsContent() {
                       {p.title}
                     </h4>
 
-                    <div className="text-[11px] text-slate-500">
+                    <div className="text-[12px] text-slate-500">
                       담당: <strong className="text-sky-700">{p.assigned_department}</strong>
                     </div>
 
                     {opinion ? (
-                      <div className="text-[11px] text-slate-700 bg-slate-50 p-2 rounded-lg border border-slate-100">
+                      <div className="text-[12px] text-slate-700 bg-slate-50 p-2 rounded-lg border border-slate-100">
                         <span className="font-semibold text-slate-500 block mb-0.5">검토의견:</span>
                         {opinion}
                       </div>
                     ) : (
-                      <div className="text-[10px] text-slate-400 italic">검토의견 미작성</div>
+                      <div className="text-[11px] text-slate-400 italic">검토의견 미작성</div>
                     )}
                   </div>
                 );
@@ -467,15 +467,15 @@ function AdminReportsContent() {
                 <strong className="text-sm text-slate-900 block mb-2">{currentSession?.title}</strong>
                 <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-200 text-center">
                   <div className="bg-white p-2 rounded-lg border border-slate-100">
-                    <span className="text-slate-400 block text-[10px]">전체 제안</span>
+                    <span className="text-slate-400 block text-[11px]">전체 제안</span>
                     <strong className="text-slate-800 text-xs">{totalCount}건</strong>
                   </div>
                   <div className="bg-sky-50 p-2 rounded-lg border border-sky-100">
-                    <span className="text-sky-600 block text-[10px]">부서 채택 (Yes)</span>
+                    <span className="text-sky-600 block text-[11px]">부서 채택 (Yes)</span>
                     <strong className="text-sky-700 text-xs">{yesCount}건</strong>
                   </div>
                   <div className="bg-slate-50 p-2 rounded-lg border border-slate-200">
-                    <span className="text-slate-400 block text-[10px]">부서 불채택 (No)</span>
+                    <span className="text-slate-400 block text-[11px]">부서 불채택 (No)</span>
                     <strong className="text-slate-600 text-xs">{noCount}건</strong>
                   </div>
                 </div>
@@ -498,7 +498,7 @@ function AdminReportsContent() {
                       <strong className="text-slate-900 block font-semibold">
                         부서 채택(Yes) 제안만 1차 심사로 이관 (권장)
                       </strong>
-                      <span className="text-[11px] text-slate-500">
+                      <span className="text-[12px] text-slate-500">
                         부서 자체 타당성 검토에서 &apos;Yes&apos;를 받은 우수 제안({yesCount}건)만 제안심사위원회 심사 대상으로 선별 이관합니다.
                       </span>
                     </div>
@@ -518,7 +518,7 @@ function AdminReportsContent() {
                       <strong className="text-slate-900 block font-semibold">
                         전체 제안 ({totalCount}건) 모두 1차 심사로 이관
                       </strong>
-                      <span className="text-[11px] text-slate-500">
+                      <span className="text-[12px] text-slate-500">
                         부서 채택 여부와 무관하게 모든 제안을 1차 위원회 심사 대상으로 이관합니다.
                       </span>
                     </div>
@@ -538,7 +538,7 @@ function AdminReportsContent() {
                 />
               </div>
 
-              <div className="p-3 bg-amber-50/80 rounded-xl border border-amber-200/80 text-[11px] text-amber-950 space-y-1">
+              <div className="p-3 bg-amber-50/80 rounded-xl border border-amber-200/80 text-[12px] text-amber-950 space-y-1">
                 <div className="font-bold flex items-center gap-1.5">
                   <CheckCircle2 className="w-3.5 h-3.5 text-amber-600" />
                   <span>1차 심사위원회 11인 평가단 자동 배정</span>

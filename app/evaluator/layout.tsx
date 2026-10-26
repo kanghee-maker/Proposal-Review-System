@@ -60,11 +60,11 @@ export default function EvaluatorLayout({ children }: { children: React.ReactNod
       {/* 1. GCUC Top Utility Bar (#383a41) */}
       <div className="bg-[#383a41] text-xs text-slate-300 py-1 px-4 sm:px-6 border-b border-[#25262b]">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2 text-[11px]">
+          <div className="flex items-center gap-2 text-[12px]">
             <span className="bg-[#25262b] text-white px-2 py-0.5 rounded font-bold">GCUC</span>
             <span>과천도시공사 제안 평가 시스템 • 부서 평가(0차 평가)</span>
           </div>
-          <div className="flex items-center gap-3 text-[11px] text-slate-400">
+          <div className="flex items-center gap-3 text-[12px] text-slate-400">
             <span>2026년 혁신 제안 심사</span>
             <span className="text-slate-600">|</span>
             <a href="https://www.gcuc.or.kr" target="_blank" rel="noreferrer" className="hover:text-white transition flex items-center gap-0.5">
@@ -86,7 +86,7 @@ export default function EvaluatorLayout({ children }: { children: React.ReactNod
               <h1 className="font-extrabold text-base sm:text-lg leading-tight tracking-tight text-slate-900 line-clamp-1">
                 제안 평가 시스템 <span className="text-[#169268]">부서 심사</span>
               </h1>
-              <p className="text-[10px] sm:text-[11px] text-[#169268] font-semibold tracking-wide">
+              <p className="text-[11px] sm:text-[12px] text-[#169268] font-semibold tracking-wide">
                 부서 평가(0차 평가) 전용
               </p>
             </div>
@@ -129,7 +129,7 @@ export default function EvaluatorLayout({ children }: { children: React.ReactNod
               <span className="text-slate-500">|</span>
               <span className="hover:text-white cursor-pointer">과천도시공사 윤리경영</span>
             </div>
-            <div className="text-[11px] text-slate-400">
+            <div className="text-[12px] text-slate-400">
               과천도시공사 제안 평가 시스템 • 0차 부서 타당성 심사
             </div>
           </div>
@@ -145,7 +145,7 @@ export default function EvaluatorLayout({ children }: { children: React.ReactNod
               <p className="text-xs text-slate-400 mt-1">
                 TEL : 02-504-7300 <span className="mx-2 text-slate-600">|</span> FAX : 02-500-1450
               </p>
-              <p className="text-[11px] text-slate-500 mt-1.5 font-mono">
+              <p className="text-[12px] text-slate-500 mt-1.5 font-mono">
                 Copyright © Gwacheon City Urban Corporation (GCUC) All rights reserved.
               </p>
             </div>

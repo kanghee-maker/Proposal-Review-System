@@ -56,11 +56,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* 1. GCUC Top Utility Bar (#383a41) */}
       <div className="bg-[#383a41] text-xs text-slate-300 py-1 px-4 sm:px-6 border-b border-[#25262b]">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2 text-[11px]">
+          <div className="flex items-center gap-2 text-[12px]">
             <span className="bg-[#25262b] text-white px-2 py-0.5 rounded font-bold">GCUC</span>
             <span>과천도시공사 제안 평가 시스템 • 총괄 관리자 포털</span>
           </div>
-          <div className="flex items-center gap-3 text-[11px] text-slate-400">
+          <div className="flex items-center gap-3 text-[12px] text-slate-400">
             <span>2026년 혁신 제안 심사</span>
             <span className="text-slate-600">|</span>
             <a href="https://www.gcuc.or.kr" target="_blank" rel="noreferrer" className="hover:text-white transition flex items-center gap-0.5">
@@ -83,12 +83,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <h1 className="font-extrabold text-base sm:text-lg leading-tight tracking-tight text-slate-900 line-clamp-1">
                   제안 평가 시스템 <span className="text-[#1768d5]">관리자</span>
                 </h1>
-                <p className="text-[10px] sm:text-[11px] text-[#1768d5] font-semibold tracking-wide hidden xs:block">
+                <p className="text-[11px] sm:text-[12px] text-[#1768d5] font-semibold tracking-wide hidden xs:block">
                   ADMINISTRATION MANAGEMENT
                 </p>
               </div>
             </Link>
-            <span className="hidden sm:inline-flex ml-2 px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-50 text-[#1768d5] border border-blue-200 items-center gap-1">
+            <span className="hidden sm:inline-flex ml-2 px-2.5 py-1 rounded-full text-[12px] font-bold bg-blue-50 text-[#1768d5] border border-blue-200 items-center gap-1">
               <Shield className="w-3 h-3" />
               총괄 관리자
             </span>
@@ -186,7 +186,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               }`}
             >
               <Icon className="w-4 h-4 mb-0.5" />
-              <span className="text-[10px] tracking-tight">{item.label}</span>
+              <span className="text-[11px] tracking-tight">{item.label}</span>
             </Link>
           );
         })}
@@ -204,7 +204,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <span className="text-slate-500">|</span>
               <span className="hover:text-white cursor-pointer">과천도시공사 윤리경영</span>
             </div>
-            <div className="text-[11px] text-slate-400">
+            <div className="text-[12px] text-slate-400">
               과천도시공사 제안 평가 시스템 • 총괄 관리자 포털
             </div>
           </div>
@@ -220,7 +220,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <p className="text-xs text-slate-400 mt-1">
                 TEL : 02-504-7300 <span className="mx-2 text-slate-600">|</span> FAX : 02-500-1450
               </p>
-              <p className="text-[11px] text-slate-500 mt-1.5 font-mono">
+              <p className="text-[12px] text-slate-500 mt-1.5 font-mono">
                 Copyright © Gwacheon City Urban Corporation (GCUC) All rights reserved.
               </p>
             </div>

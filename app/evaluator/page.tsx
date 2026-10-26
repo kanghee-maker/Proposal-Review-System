@@ -197,7 +197,7 @@ function EvaluatorDashboardContent() {
                   </h3>
 
                   {p.is_duplicate === '중복' && (
-                    <div className="text-[11px] text-red-600 bg-red-50 border border-red-200 px-2.5 py-1 rounded-lg inline-block font-medium">
+                    <div className="text-[12px] text-red-600 bg-red-50 border border-red-200 px-2.5 py-1 rounded-lg inline-block font-medium">
                       ⚠️ 중복 제안 이력 있음: {p.duplicate_title}
                     </div>
                   )}
