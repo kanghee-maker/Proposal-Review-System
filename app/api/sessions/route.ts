@@ -42,7 +42,7 @@ export async function POST(req: Request) {
     const hasCustomProposals = Array.isArray(body.proposals) && body.proposals.length > 0;
     const proposalsCount = hasCustomProposals
       ? body.proposals.length
-      : (body.proposals_count !== undefined ? body.proposals_count : 137);
+      : (body.proposals_count !== undefined ? body.proposals_count : 142);
 
     const newSession = {
       id: `session-${Date.now()}`,

@@ -309,7 +309,7 @@ export default function AdminDashboardPage() {
           description,
           stage,
           proposals: selectedExcel === 'NEW' ? uploadedProposals : undefined,
-          proposals_count: selectedExcel === 'NEW' ? uploadedProposals.length : (selectedExcel === 'DEFAULT' ? 137 : 0),
+          proposals_count: selectedExcel === 'NEW' ? uploadedProposals.length : (selectedExcel === 'DEFAULT' ? 142 : 0),
           criteria: customCriteria
         })
       });
@@ -964,10 +964,10 @@ export default function AdminDashboardPage() {
                       />
                       <div>
                         <strong className="text-slate-900 block font-semibold">
-                          기본 2026 정제 데이터 (137건) 자동 탑재
+                          기본 2026 정제 데이터 (142건) 자동 탑재
                         </strong>
                         <span className="text-slate-500 text-[15px]">
-                          기존 2026 혁신제안 137건 데이터를 신규 회차의 심사 대상 제안으로 즉시 자동 복제 및 Supabase DB에 연동합니다.
+                          기존 2026 혁신제안 142건 데이터를 신규 회차의 심사 대상 제안으로 즉시 자동 복제 및 Supabase DB에 연동합니다.
                         </span>
                       </div>
                     </label>

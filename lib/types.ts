@@ -125,6 +125,9 @@ export interface Proposal {
   extra_sheets?: ProposalExtraSheet[];
   is_duplicate: string;
   duplicate_title: string;
+  review_result?: string;
+  comparison_target?: string;
+  review_basis?: string;
   status: '미평가' | '평가작성중' | '평가완료';
   attachments?: ProposalAttachment[];
   transfer_requested?: boolean;

@@ -462,6 +462,9 @@ export async function seedDefaultProposalsForSessionAsync(sessionId: string): Pr
       attachments: attachmentsIndex[id] || defaultAtts,
       is_duplicate: item.is_duplicate || '',
       duplicate_title: item.duplicate_title || '',
+      review_result: item.review_result,
+      comparison_target: item.comparison_target,
+      review_basis: item.review_basis,
       status: '미평가' as const
     };
   });
@@ -605,6 +608,9 @@ export async function saveCustomProposalsForSessionAsync(
       expected_effect: getExcelCol(item, ['expected_effect', '기대효과']),
       is_duplicate: getExcelCol(item, ['is_duplicate', '중복제안여부', '중복제안 여부', '중복여부'], ['중복제안여부', '중복여부']),
       duplicate_title: getExcelCol(item, ['duplicate_title', '중복제안제목', '중복제안 제목', '중복제목'], ['중복제안제목', '중복제목']),
+      review_result: getExcelCol(item, ['review_result', '검토결과', '검토 결과']) || undefined,
+      comparison_target: getExcelCol(item, ['comparison_target', '비교대상', '비교 대상']) || undefined,
+      review_basis: getExcelCol(item, ['review_basis', '판단근거', '판단 근거']) || undefined,
       status: '미평가' as const,
       contribution_rate: 100
     };
@@ -847,8 +853,11 @@ export async function getProposalsAsync(sessionId?: string): Promise<Proposal[]>
           expected_effect: local?.expected_effect || rawMatch?.expected_effect || '',
           attachment_note: local?.attachment_note || rawMatch?.attachment_note || '',
           extra_sheets: local?.extra_sheets || rawMatch?.extra_sheets,
-          is_duplicate: p.is_duplicate,
-          duplicate_title: p.duplicate_title,
+          is_duplicate: p.is_duplicate || rawMatch?.is_duplicate || '',
+          duplicate_title: p.duplicate_title || rawMatch?.duplicate_title || '',
+          review_result: local?.review_result || rawMatch?.review_result,
+          comparison_target: local?.comparison_target || rawMatch?.comparison_target,
+          review_basis: local?.review_basis || rawMatch?.review_basis,
           status: p.status,
           attachments: attachmentsIndex[p.id] || local?.attachments || fallbackDefaultAtts,
           transfer_requested: p.transfer_requested ?? local?.transfer_requested,
@@ -922,6 +931,9 @@ export function getProposals(sessionId?: string): Proposal[] {
         extra_sheets: item.extra_sheets,
         is_duplicate: item.is_duplicate || '',
         duplicate_title: item.duplicate_title || '',
+        review_result: item.review_result,
+        comparison_target: item.comparison_target,
+        review_basis: item.review_basis,
         status
       };
     });
@@ -949,6 +961,9 @@ export function getProposals(sessionId?: string): Proposal[] {
       expected_effect: p.expected_effect || rawMatch?.expected_effect || '',
       attachment_note: p.attachment_note || rawMatch?.attachment_note || '',
       extra_sheets: p.extra_sheets || rawMatch?.extra_sheets,
+      review_result: p.review_result || rawMatch?.review_result,
+      comparison_target: p.comparison_target || rawMatch?.comparison_target,
+      review_basis: p.review_basis || rawMatch?.review_basis,
       attachments: localIndex[p.id] || p.attachments || fallbackDefaultAtts
     };
   });

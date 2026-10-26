@@ -377,16 +377,28 @@ function EvaluateProposalContent() {
             )}
           </div>
 
-          {/* 중복 제안 여부 알림 */}
-          {proposal.is_duplicate === '중복' && (
-            <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 space-y-1">
+          {/* 중복/유사 제안 검토 알림 */}
+          {(proposal.is_duplicate === '중복' || proposal.review_result) && (
+            <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 space-y-1.5">
               <strong className="font-bold flex items-center gap-1.5 text-red-800">
                 <AlertCircle className="w-4 h-4" />
-                기존 제안과 중복 검토 필요
+                기존 제안 중복·유사 여부 검토 안내 {proposal.review_result ? `(${proposal.review_result})` : ''}
               </strong>
-              <p className="text-[15px] leading-relaxed">
-                중복 제안 이력: <strong>{proposal.duplicate_title}</strong>
-              </p>
+              {proposal.duplicate_title && (
+                <p className="text-[15px] leading-relaxed">
+                  중복 제안 이력: <strong>{proposal.duplicate_title}</strong>
+                </p>
+              )}
+              {proposal.comparison_target && (
+                <p className="text-[15px] leading-relaxed">
+                  비교 대상 제안: <strong>{proposal.comparison_target}</strong>
+                </p>
+              )}
+              {proposal.review_basis && (
+                <p className="text-[15px] leading-relaxed text-red-800/90">
+                  판단 근거: {proposal.review_basis}
+                </p>
+              )}
             </div>
           )}
 
