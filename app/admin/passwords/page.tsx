@@ -303,7 +303,7 @@ export default function AdminPasswordsPage() {
             <strong className="text-3xl font-bold text-slate-900">{totalCount}</strong>
             <span className="text-xs text-slate-500">개 부서</span>
           </div>
-          <div className="mt-2 text-[12px] text-slate-400">2026 직제 기준</div>
+          <div className="mt-2 text-[15px] text-slate-400">2026 직제 기준</div>
         </div>
 
         <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
@@ -312,7 +312,7 @@ export default function AdminPasswordsPage() {
             <strong className="text-3xl font-bold text-emerald-600">{savedCount}</strong>
             <span className="text-xs text-slate-500">개 부서</span>
           </div>
-          <div className="mt-2 text-[12px] font-semibold">
+          <div className="mt-2 text-[15px] font-semibold">
             {pendingSaveCount > 0 ? (
               <span className="text-amber-600 font-bold flex items-center gap-1">
                 <Sparkles className="w-3 h-3" />
@@ -332,7 +332,7 @@ export default function AdminPasswordsPage() {
             <strong className="text-3xl font-bold text-amber-600">{unsetCount}</strong>
             <span className="text-xs text-slate-500">개 부서</span>
           </div>
-          <div className="mt-2 text-[12px] text-amber-700">
+          <div className="mt-2 text-[15px] text-amber-700">
             {unsetCount > 0 ? '랜덤 생성 권장' : '전 부서 세팅 완료'}
           </div>
         </div>
@@ -357,7 +357,7 @@ export default function AdminPasswordsPage() {
               <span>CSV 저장</span>
             </button>
           </div>
-          <p className="text-[11px] text-slate-400 mt-2">
+          <p className="text-[14px] text-slate-400 mt-2">
             * 각 부서 담당자에게 안전하게 개별 전달하세요.
           </p>
         </div>
@@ -393,7 +393,7 @@ export default function AdminPasswordsPage() {
         {/* Table */}
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs text-slate-700">
-            <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold uppercase text-[12px]">
+            <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold uppercase text-[15px]">
               <tr>
                 <th className="py-3 px-4 w-12 text-center">No</th>
                 <th className="py-3 px-4 w-40">본부 / 부문</th>
@@ -448,22 +448,22 @@ export default function AdminPasswordsPage() {
                         <strong className="text-slate-900 font-bold text-sm block">
                           {d.department}
                         </strong>
-                        <span className="text-[11px] text-slate-400">{d.name}</span>
+                        <span className="text-[14px] text-slate-400">{d.name}</span>
                       </td>
 
                       <td className="py-3.5 px-4 text-center whitespace-nowrap">
                         {isModified && currentInput ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[12px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[15px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
                             <Sparkles className="w-3 h-3 text-amber-600" />
                             저장대기 (생성됨)
                           </span>
                         ) : isSaved ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[12px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[15px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                             <Check className="w-3 h-3" />
                             발급완료
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[12px] font-bold bg-slate-100 text-slate-500 border border-slate-200">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[15px] font-bold bg-slate-100 text-slate-500 border border-slate-200">
                             <AlertCircle className="w-3 h-3 text-slate-400" />
                             미발급
                           </span>
@@ -510,7 +510,7 @@ export default function AdminPasswordsPage() {
                           <button
                             type="button"
                             onClick={() => handleRandomizeSingle(d.department)}
-                            className="px-2.5 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-[12px] font-semibold flex items-center gap-1 transition"
+                            className="px-2.5 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-[15px] font-semibold flex items-center gap-1 transition"
                             title="4자리 랜덤 숫자 생성"
                           >
                             <Dices className="w-3.5 h-3.5 text-amber-600" />
@@ -521,7 +521,7 @@ export default function AdminPasswordsPage() {
                             type="button"
                             onClick={() => handleSaveSingle(d.department)}
                             disabled={isSaving}
-                            className={`px-3 py-1.5 rounded-lg text-[12px] font-semibold flex items-center gap-1 transition disabled:opacity-50 ${
+                            className={`px-3 py-1.5 rounded-lg text-[15px] font-semibold flex items-center gap-1 transition disabled:opacity-50 ${
                               isModified
                                 ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm ring-2 ring-emerald-500/30'
                                 : 'bg-slate-900 hover:bg-slate-800 text-white'

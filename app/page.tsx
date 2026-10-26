@@ -143,10 +143,10 @@ export default function Home() {
       <div className="bg-[#383a41] text-xs text-slate-300 py-1.5 px-6 border-b border-[#25262b]">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="bg-[#25262b] text-white px-2 py-0.5 rounded text-[12px] font-semibold">GCUC</span>
-            <span className="hidden sm:inline text-slate-300 text-[12px]">과천도시공사 제안 평가 관리 포털</span>
+            <span className="bg-[#25262b] text-white px-2 py-0.5 rounded text-[15px] font-semibold">GCUC</span>
+            <span className="hidden sm:inline text-slate-300 text-[15px]">과천도시공사 제안 평가 관리 포털</span>
           </div>
-          <div className="flex items-center gap-4 text-[12px] text-slate-300">
+          <div className="flex items-center gap-4 text-[15px] text-slate-300">
             <span>2026년 혁신 제안 심사 플랫폼</span>
             <span className="text-slate-500">|</span>
             <a href="https://www.gcuc.or.kr" target="_blank" rel="noreferrer" className="hover:text-white transition">공사 홈페이지</a>
@@ -165,7 +165,7 @@ export default function Home() {
               <h1 className="font-extrabold text-lg sm:text-xl leading-tight tracking-tight text-slate-900">
                 과천도시공사 <span className="text-[#1768d5]">제안 평가 시스템</span>
               </h1>
-              <p className="text-[11px] sm:text-xs text-slate-500 font-medium tracking-wide">
+              <p className="text-[14px] sm:text-xs text-slate-500 font-medium tracking-wide">
                 GWACHEON CITY URBAN CORPORATION PROPOSAL REVIEW PORTAL
               </p>
             </div>
@@ -199,24 +199,24 @@ export default function Home() {
         <div className="max-w-4xl mx-auto w-full mb-8 bg-gradient-to-r from-blue-50/70 via-white to-emerald-50/70 rounded-2xl border border-blue-200/70 p-4 sm:p-5 shadow-sm">
           <div className="flex items-center justify-between gap-2 mb-3">
             <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-full bg-[#1768d5] text-white text-[11px] font-bold">심사 로드맵</span>
+              <span className="px-2.5 py-0.5 rounded-full bg-[#1768d5] text-white text-[14px] font-bold">심사 로드맵</span>
               <span className="text-xs sm:text-sm font-bold text-slate-900">2026 과천도시공사 혁신 제안 심사 절차</span>
             </div>
-            <span className="text-[12px] text-slate-500 hidden sm:inline">
+            <span className="text-[15px] text-slate-500 hidden sm:inline">
               * 부서 평가(0차 평가) 완료 후 제안 심사(1차 평가)가 진행됩니다.
             </span>
           </div>
           <div className="grid sm:grid-cols-2 gap-3 text-xs">
             {/* Step 1 */}
             <div className="bg-white p-4 rounded-xl border-2 border-[#1768d5]/40 shadow-sm relative overflow-hidden">
-              <div className="absolute top-0 right-0 bg-[#1768d5] text-white text-[11px] font-bold px-2 py-0.5 rounded-bl-lg">
+              <div className="absolute top-0 right-0 bg-[#1768d5] text-white text-[14px] font-bold px-2 py-0.5 rounded-bl-lg">
                 부서 평가 진행
               </div>
               <div className="flex items-center gap-2 mb-1.5">
                 <span className="w-5 h-5 rounded-full bg-blue-100 text-[#1768d5] font-bold text-xs flex items-center justify-center">1</span>
                 <strong className="text-slate-900 font-bold text-sm">부서 평가(0차 평가)</strong>
               </div>
-              <p className="text-slate-600 text-[12px] leading-relaxed">
+              <p className="text-slate-600 text-[15px] leading-relaxed">
                 각 담당 부서에서 소관 제안의 실무 타당성(예산, 실현가능성, 파급효과)을 사전 검토하고, 채택(Yes) 또는 불채택(No) 여부 및 검토의견을 작성합니다.
               </p>
             </div>
@@ -226,11 +226,11 @@ export default function Home() {
               <div className="flex items-center gap-2 mb-1.5">
                 <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-600 font-bold text-xs flex items-center justify-center">2</span>
                 <strong className="text-slate-900 font-bold text-sm">제안 심사(1차 평가)</strong>
-                <span className="text-[11px] px-2 py-0.5 rounded bg-amber-50 text-amber-800 font-semibold border border-amber-200">
+                <span className="text-[14px] px-2 py-0.5 rounded bg-amber-50 text-amber-800 font-semibold border border-amber-200">
                   향후 심사 예정 (관리자 전용)
                 </span>
               </div>
-              <p className="text-slate-600 text-[12px] leading-relaxed">
+              <p className="text-slate-600 text-[15px] leading-relaxed">
                 <strong>부서 평가(0차 평가)</strong> 완결 후 채택(Yes) 제안을 연계하여 제안심사위원회 11인 심사위원이 창의성·실현성·효과성·전파성(100점 만점)을 다면 평가합니다. (총괄 관리자 관리)
               </p>
             </div>
@@ -323,7 +323,7 @@ export default function Home() {
 
             {/* 안내 문구 (GCUC 스타일 박스) */}
             <div className="mt-2 p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 leading-relaxed text-left">
-              <p className="text-[12px]">
+              <p className="text-[15px]">
                 ※ 각 부서별 접속 비밀번호는 <strong className="text-orange-600 font-bold">관리자(총무행정부 우세림) - 1192(내선번호)</strong>가 사전에 발급하여 관리합니다. 비밀번호 분실 또는 미발급 시 관리자에게 문의 바랍니다.
               </p>
             </div>
@@ -343,7 +343,7 @@ export default function Home() {
               <span className="text-slate-500">|</span>
               <span className="hover:text-white cursor-pointer">과천도시공사 윤리경영</span>
             </div>
-            <div className="text-[12px] text-slate-400">
+            <div className="text-[15px] text-slate-400">
               과천도시공사 통합 제안 심사 관리 시스템
             </div>
           </div>
@@ -359,7 +359,7 @@ export default function Home() {
               <p className="text-xs text-slate-400 mt-1">
                 TEL : 02-504-7300 <span className="mx-2 text-slate-600">|</span> FAX : 02-500-1450
               </p>
-              <p className="text-[12px] text-slate-500 mt-1.5 font-mono">
+              <p className="text-[15px] text-slate-500 mt-1.5 font-mono">
                 Copyright © Gwacheon City Urban Corporation (GCUC) All rights reserved.
               </p>
             </div>
@@ -496,7 +496,7 @@ export default function Home() {
                 </button>
               </div>
 
-              <div className="mt-3 p-3 rounded-xl bg-slate-50 border border-slate-200 text-[12px] text-slate-600 leading-relaxed">
+              <div className="mt-3 p-3 rounded-xl bg-slate-50 border border-slate-200 text-[15px] text-slate-600 leading-relaxed">
                 * 부서별 비밀번호는 <strong className="text-orange-600 font-bold">관리자(총무행정부 우세림) - 1192(내선번호)</strong>가 사전에 발급한 4자리 숫자를 입력해주세요. (비밀번호 미발급 시 관리자 문의)
               </div>
             </form>

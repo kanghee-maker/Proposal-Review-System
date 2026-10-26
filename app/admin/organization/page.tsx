@@ -125,11 +125,11 @@ export default function OrganizationPage() {
             <div>
               <h2 className="text-lg sm:text-xl font-bold text-slate-900 flex items-center gap-2">
                 2026 조직도 관리
-                <span className="text-[12px] font-semibold px-2 py-0.5 rounded-full bg-sky-100 text-sky-700">
+                <span className="text-[15px] font-semibold px-2 py-0.5 rounded-full bg-sky-100 text-sky-700">
                   {chart.name}
                 </span>
               </h2>
-              <p className="text-[12px] sm:text-xs text-slate-500 line-clamp-1">
+              <p className="text-[15px] sm:text-xs text-slate-500 line-clamp-1">
                 본부/부문 (Division) • 처/실/단 (Office) • 부 (Department) 3단 체계
               </p>
             </div>
@@ -139,7 +139,7 @@ export default function OrganizationPage() {
         {/* View Switcher & Actions */}
         <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           {saveSuccess && (
-            <span className="text-[12px] text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200 flex items-center gap-1 font-medium">
+            <span className="text-[15px] text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200 flex items-center gap-1 font-medium">
               <Check className="w-3 h-3" />
               저장 완료
             </span>
@@ -188,13 +188,13 @@ export default function OrganizationPage() {
           <div className="flex items-center justify-between mb-3 px-1">
             <div>
               <h3 className="font-bold text-slate-800 text-xs sm:text-sm">2026 조직계층구조요약 (고해상도 JPEG)</h3>
-              <p className="text-[12px] text-slate-500">
+              <p className="text-[15px] text-slate-500">
                 모바일에서도 터치하여 원본 크기로 선명하게 확인하실 수 있습니다.
               </p>
             </div>
             <button
               onClick={() => setIsZoomOpen(true)}
-              className="flex items-center gap-1 text-[12px] text-slate-600 hover:text-sky-600 bg-slate-100 hover:bg-slate-200 px-2.5 py-1.5 rounded-lg transition"
+              className="flex items-center gap-1 text-[15px] text-slate-600 hover:text-sky-600 bg-slate-100 hover:bg-slate-200 px-2.5 py-1.5 rounded-lg transition"
             >
               <ZoomIn className="w-3.5 h-3.5" />
               <span>확대</span>
@@ -225,12 +225,12 @@ export default function OrganizationPage() {
           {/* Controls Bar */}
           <div className="p-3 sm:p-5 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-slate-50/50">
             <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-              <span className="text-[12px] font-bold text-slate-500 mr-1 hidden sm:inline">본부/부문:</span>
+              <span className="text-[15px] font-bold text-slate-500 mr-1 hidden sm:inline">본부/부문:</span>
               {divisions.map((div) => (
                 <button
                   key={div}
                   onClick={() => setFilterDivision(div)}
-                  className={`text-[12px] sm:text-xs px-2.5 py-1.5 rounded-lg font-medium transition ${
+                  className={`text-[15px] sm:text-xs px-2.5 py-1.5 rounded-lg font-medium transition ${
                     filterDivision === div
                       ? 'bg-sky-600 text-white font-semibold shadow-sm'
                       : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
@@ -309,19 +309,19 @@ export default function OrganizationPage() {
               <div key={d.code} className="p-3.5 space-y-1.5 flex items-start justify-between gap-3">
                 <div className="space-y-1">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-[11px] font-mono font-bold bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">
+                    <span className="text-[14px] font-mono font-bold bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">
                       #{idx + 1}
                     </span>
-                    <span className="text-[11px] px-2 py-0.5 rounded bg-sky-50 text-sky-700 font-semibold">
+                    <span className="text-[14px] px-2 py-0.5 rounded bg-sky-50 text-sky-700 font-semibold">
                       {d.division}
                     </span>
-                    <span className="text-slate-400 text-[11px] font-mono">{d.code}</span>
+                    <span className="text-slate-400 text-[14px] font-mono">{d.code}</span>
                   </div>
                   <div className="text-sm font-bold text-slate-900">
                     <span className="text-slate-500 font-normal mr-1">{d.office} &gt;</span>
                     {d.department}
                   </div>
-                  <div className="text-[12px] text-slate-500">
+                  <div className="text-[15px] text-slate-500">
                     직책: <strong className="text-slate-700">{d.head_title || '부장'}</strong>
                   </div>
                 </div>
