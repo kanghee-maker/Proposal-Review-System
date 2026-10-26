@@ -44,16 +44,27 @@ function writeJson<T>(filename: string, data: T): void {
 
 // 1. 조직도 관리
 export async function getOrganizationChartAsync(): Promise<OrganizationChart> {
+  const localChart = getOrganizationChart();
+  const orderMap = new Map<string, number>();
+  localChart.departments.forEach((d, idx) => {
+    orderMap.set(d.code, idx);
+    orderMap.set(d.department, idx);
+  });
+
+  const getRank = (d: { code?: string; department?: string }) => {
+    if (d.department === '안전총괄단' || d.code === 'SAFETY') return 9999;
+    if (d.department === '청렴감사단' || d.code === 'AUDIT') return 9998;
+    if (d.code && orderMap.has(d.code)) return orderMap.get(d.code)!;
+    if (d.department && orderMap.has(d.department)) return orderMap.get(d.department)!;
+    return 5000;
+  };
+
   try {
     const { data: chartData } = await supabase.from('organization_charts').select('*').eq('id', 'org-2026').single();
     const { data: deptData } = await supabase.from('departments').select('*');
     if (deptData && deptData.length > 0) {
-      return {
-        name: chartData?.name || '2026_조직도',
-        version: chartData?.version || '2026-v1.0',
-        updated_at: chartData?.updated_at || new Date().toISOString(),
-        description: chartData?.description || '과천도시공사 2026 조직도',
-        departments: deptData.map(d => ({
+      const sortedDepts = deptData
+        .map(d => ({
           code: d.code,
           division: d.division,
           office: d.office,
@@ -61,12 +72,23 @@ export async function getOrganizationChartAsync(): Promise<OrganizationChart> {
           name: d.name,
           head_title: d.head_title
         }))
+        .sort((a, b) => getRank(a) - getRank(b));
+
+      return {
+        name: chartData?.name || '2026_조직도',
+        version: chartData?.version || '2026-v1.0',
+        updated_at: chartData?.updated_at || new Date().toISOString(),
+        description: chartData?.description || '과천도시공사 2026 조직도',
+        departments: sortedDepts
       };
     }
   } catch (err) {
     // Supabase fallback to local
   }
-  return getOrganizationChart();
+  return {
+    ...localChart,
+    departments: [...localChart.departments].sort((a, b) => getRank(a) - getRank(b))
+  };
 }
 
 export function getOrganizationChart(): OrganizationChart {

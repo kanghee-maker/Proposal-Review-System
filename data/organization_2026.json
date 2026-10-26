@@ -1,25 +1,9 @@
 {
   "name": "2026_조직도",
   "version": "2026-v1.0",
-  "updated_at": "2026-10-18T13:20:00Z",
+  "updated_at": "2026-10-26T21:38:00Z",
   "description": "2026년 기준 과천도시공사 기본 조직도 (본부/부문 - 처/실/단 - 부 체계)",
   "departments": [
-    {
-      "code": "AUDIT",
-      "division": "사장 직속",
-      "office": "청렴감사단",
-      "department": "청렴감사단",
-      "name": "청렴감사단",
-      "head_title": "단장"
-    },
-    {
-      "code": "SAFETY",
-      "division": "사장 직속",
-      "office": "안전총괄단",
-      "department": "안전총괄단",
-      "name": "안전총괄단",
-      "head_title": "단장"
-    },
     {
       "code": "DEV_PLAN",
       "division": "개발사업본부",
@@ -187,6 +171,22 @@
       "department": "스마트정보부",
       "name": "미래전략실 스마트정보부",
       "head_title": "부장"
+    },
+    {
+      "code": "AUDIT",
+      "division": "사장 직속",
+      "office": "청렴감사단",
+      "department": "청렴감사단",
+      "name": "청렴감사단",
+      "head_title": "단장"
+    },
+    {
+      "code": "SAFETY",
+      "division": "사장 직속",
+      "office": "안전총괄단",
+      "department": "안전총괄단",
+      "name": "안전총괄단",
+      "head_title": "단장"
     }
   ]
 }
