@@ -333,22 +333,6 @@ export default function Home() {
 
       {/* 4. GCUC Official Style Footer */}
       <footer className="w-full mt-auto">
-        {/* Footer Top Sub-bar (#383a41) */}
-        <div className="bg-[#383a41] border-b border-[#25262b] py-2.5 px-6 text-xs text-slate-300">
-          <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-            <div className="flex items-center gap-4 text-xs font-medium">
-              <span className="text-[#ffd300] font-bold">개인정보 처리방침</span>
-              <span className="text-slate-500">|</span>
-              <span className="hover:text-white cursor-pointer">이메일주소무단수집거부</span>
-              <span className="text-slate-500">|</span>
-              <span className="hover:text-white cursor-pointer">과천도시공사 윤리경영</span>
-            </div>
-            <div className="text-[15px] text-slate-400">
-              과천도시공사 통합 제안 심사 관리 시스템
-            </div>
-          </div>
-        </div>
-
         {/* Footer Bottom Address (#25262b) */}
         <div className="bg-[#25262b] text-[#afafaf] py-5 px-6 text-xs leading-relaxed">
           <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
@@ -357,7 +341,7 @@ export default function Home() {
                 (우 13807) 경기도 과천시 통영로 5 과천도시공사 / 5, Tongyeong-ro, Gwacheon-si, Gyeonggi-do, Korea
               </p>
               <p className="text-xs text-slate-400 mt-1">
-                TEL : 02-504-7300 <span className="mx-2 text-slate-600">|</span> FAX : 02-500-1450
+                TEL : 02-500-1192
               </p>
               <p className="text-[15px] text-slate-500 mt-1.5 font-mono">
                 Copyright © Gwacheon City Urban Corporation (GCUC) All rights reserved.
