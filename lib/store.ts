@@ -802,8 +802,12 @@ export async function getProposalsAsync(sessionId?: string): Promise<Proposal[]>
   const attachmentsIndex = await getAttachmentsIndexAsync();
   const rawProposals = readJson<any[]>('proposals_2026_structured.json', []);
   const rawByNoAndTitle = new Map<string, any>();
+  const rawByBoardNo = new Map<string, any>();
+  const rawByTitle = new Map<string, any>();
   rawProposals.forEach(item => {
     rawByNoAndTitle.set(`${item.no}::${item.title}`, item);
+    if (item.board_no) rawByBoardNo.set(String(item.board_no).trim(), item);
+    if (item.title) rawByTitle.set(String(item.title).trim(), item);
   });
 
   try {
@@ -815,7 +819,10 @@ export async function getProposalsAsync(sessionId?: string): Promise<Proposal[]>
     if (!error && Array.isArray(data) && data.length > 0) {
       return data.map(p => {
         const local = localMap.get(p.id);
-        const rawMatch = rawByNoAndTitle.get(`${p.seq_no}::${p.title}`);
+        const rawMatch =
+          rawByNoAndTitle.get(`${p.seq_no}::${p.title}`) ||
+          (p.board_no ? rawByBoardNo.get(String(p.board_no).trim()) : undefined) ||
+          (p.title ? rawByTitle.get(String(p.title).trim()) : undefined);
         const fallbackDefaultAtts: ProposalAttachment[] =
           rawMatch && Array.isArray(rawMatch.default_attachments)
             ? rawMatch.default_attachments.map((att: any, attIdx: number) => ({
@@ -889,8 +896,12 @@ export function getProposals(sessionId?: string): Proposal[] {
   const localIndex = readJson<Record<string, ProposalAttachment[]>>('proposal_attachments_index.json', {});
   const rawProposals = readJson<any[]>('proposals_2026_structured.json', []);
   const rawByNoAndTitle = new Map<string, any>();
+  const rawByBoardNo = new Map<string, any>();
+  const rawByTitle = new Map<string, any>();
   rawProposals.forEach(item => {
     rawByNoAndTitle.set(`${item.no}::${item.title}`, item);
+    if (item.board_no) rawByBoardNo.set(String(item.board_no).trim(), item);
+    if (item.title) rawByTitle.set(String(item.title).trim(), item);
   });
 
   if (!isSystemInitialized() && proposals.length === 0) {
@@ -941,7 +952,10 @@ export function getProposals(sessionId?: string): Proposal[] {
   }
 
   const enriched = proposals.map(p => {
-    const rawMatch = rawByNoAndTitle.get(`${p.seq_no}::${p.title}`);
+    const rawMatch =
+      rawByNoAndTitle.get(`${p.seq_no}::${p.title}`) ||
+      (p.board_no ? rawByBoardNo.get(String(p.board_no).trim()) : undefined) ||
+      (p.title ? rawByTitle.get(String(p.title).trim()) : undefined);
     const fallbackDefaultAtts: ProposalAttachment[] =
       rawMatch && Array.isArray(rawMatch.default_attachments)
         ? rawMatch.default_attachments.map((att: any, attIdx: number) => ({

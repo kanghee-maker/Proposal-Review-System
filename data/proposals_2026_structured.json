@@ -544,51 +544,6 @@
   },
   {
     "no": 17,
-    "board_no": "23",
-    "proposer": "이동우",
-    "proposer_rank": "체육 5급",
-    "proposer_division": "운영관리본부",
-    "proposer_office": "공원수련관관리처",
-    "proposer_department": "수련관운영부",
-    "proposer_raw_dept": "공원수련관관리처 수련관운영부",
-    "proposal_type": "지정제안",
-    "category": "안전",
-    "assigned_division": "운영관리본부",
-    "assigned_office": "공원수련관관리처",
-    "assigned_department": "수련관운영부",
-    "assigned_raw_dept": "공원수련관관리처 수련관운영부",
-    "submitted_at": "2026-08-03 07:16:00",
-    "title": "[지정제안] 안전취약 지역 비상벨 설치를 통한 안전사고 예방 및 신속 대응체계 구축",
-    "is_duplicate": "중복",
-    "duplicate_title": "",
-    "review_result": "중복 가능성 높음(채택)",
-    "comparison_target": "2025-06-080 화장실 및 탈의실 내 비상벨 설치를 통한 안전사고 예방 시스템 구축\r\n심사결과: 채택 [2025년 제안 총괄 !I71]",
-    "review_basis": "과거 심사결과가 채택인 비교안에 한해 검토함. 기존은 화장실·탈의실에 비상벨을 설치하고 종합상황실과 연동하여 위급상황을 즉시 전달하는 제안임. 이번도 안전취약지역 중 탈의실 우선 설치가 핵심으로 대상·수단·효과가 겹침. 전수조사·위치번호·훈련 추가만으로 차별성이 충분한지 검토 필요.",
-    "background": "○ 체육시설 탈의실의 안전취약지역의 사고 및 범죄 예방 필요\r\n○ 탈의실이라는 장소 특성상 CCTV만으로는 위급상황 시 즉각적인 신고가 어려움\r\n○ 비상벨 설치를 통해 상시 대기 근무자와 즉시 연결되는 안전망 구축",
-    "content": "○ 안전취약지역 전수조사 후 탈의실 우선 설치\r\n○ 위치번호 및 안내표지 설치\r\n○ 정기점검 및 모의훈련 실시",
-    "expected_effect": "○ 범죄 및 안전사고 예방\r\n○ 신속한 초기 대응(골든타임 확보)\r\n○ 시민 안전 체감도 향상\r\n○ 안전 중심의 공공시설 운영환경 조성",
-    "attachment_note": "",
-    "default_attachments": [
-      {
-        "id": "default-att-17-1",
-        "name": "13. 2026년 제안서(이동우).xlsx",
-        "size": 17924,
-        "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        "uploaded_at": "2026-08-03T09:00:00Z",
-        "static_url": "/default-attachments/13.%202026%EB%85%84%20%EC%A0%9C%EC%95%88%EC%84%9C(%EC%9D%B4%EB%8F%99%EC%9A%B0).xlsx"
-      },
-      {
-        "id": "default-att-17-2",
-        "name": "13. 현장설치 자료사진.png",
-        "size": 1725210,
-        "type": "image/png",
-        "uploaded_at": "2026-08-03T09:00:00Z",
-        "static_url": "/default-attachments/13.%20%ED%98%84%EC%9E%A5%EC%84%A4%EC%B9%98%20%EC%9E%90%EB%A3%8C%EC%82%AC%EC%A7%84.png"
-      }
-    ]
-  },
-  {
-    "no": 18,
     "board_no": "24",
     "proposer": "윤지혜",
     "proposer_rank": "체육6급",
@@ -613,7 +568,7 @@
     "default_attachments": []
   },
   {
-    "no": 19,
+    "no": 18,
     "board_no": "25",
     "proposer": "윤지혜",
     "proposer_rank": "체육6급",
@@ -638,7 +593,7 @@
     "default_attachments": []
   },
   {
-    "no": 20,
+    "no": 19,
     "board_no": "26",
     "proposer": "김일권",
     "proposer_rank": "기술6급",
@@ -672,7 +627,7 @@
     ]
   },
   {
-    "no": 21,
+    "no": 20,
     "board_no": "27",
     "proposer": "이승진",
     "proposer_rank": "기술6급",
@@ -706,7 +661,7 @@
     ]
   },
   {
-    "no": 22,
+    "no": 21,
     "board_no": "28",
     "proposer": "권오형",
     "proposer_rank": "체육5급",
@@ -740,7 +695,7 @@
     ]
   },
   {
-    "no": 23,
+    "no": 22,
     "board_no": "29",
     "proposer": "김병철",
     "proposer_rank": "기술5급",
@@ -774,7 +729,7 @@
     ]
   },
   {
-    "no": 24,
+    "no": 23,
     "board_no": "30",
     "proposer": "신상조",
     "proposer_rank": "체육5급",
@@ -808,7 +763,7 @@
     ]
   },
   {
-    "no": 25,
+    "no": 24,
     "board_no": "31",
     "proposer": "박종용",
     "proposer_rank": "기술4급",
@@ -842,7 +797,7 @@
     ]
   },
   {
-    "no": 26,
+    "no": 25,
     "board_no": "33",
     "proposer": "장영수",
     "proposer_rank": "행정4급",
@@ -876,7 +831,7 @@
     ]
   },
   {
-    "no": 27,
+    "no": 26,
     "board_no": "34",
     "proposer": "이성준",
     "proposer_rank": "행정5급",
@@ -910,7 +865,7 @@
     ]
   },
   {
-    "no": 28,
+    "no": 27,
     "board_no": "35",
     "proposer": "김민정",
     "proposer_rank": "체육6급",
@@ -944,44 +899,7 @@
     ]
   },
   {
-    "no": 29,
-    "board_no": "36",
-    "proposer": "박왕권",
-    "proposer_rank": "기술4급",
-    "proposer_division": "운영관리본부",
-    "proposer_office": "시설관리처",
-    "proposer_department": "시설운영부",
-    "proposer_raw_dept": "시설관리처 시설운영부",
-    "proposal_type": "지정제안",
-    "category": "안전",
-    "assigned_division": "운영관리본부",
-    "assigned_office": "시설관리처",
-    "assigned_department": "시설운영부",
-    "assigned_raw_dept": "시설관리처 시설운영부",
-    "submitted_at": "2026-08-10 15:16:00",
-    "title": "선제적 제습관리를 통한 시민회관 결로 예방 및 시설환경 개선",
-    "is_duplicate": "중복",
-    "duplicate_title": "",
-    "review_result": "중복 가능성 높음(채택)",
-    "comparison_target": "2025-07-101 시민회관 지하층 결로 방지 위한 제습기 설치\r\n심사결과: 채택 [2025년 제안 총괄 !I91]",
-    "review_basis": "2025-07-101의 심사결과가 채택임. 시민회관 동일 주요 출입구 5개소의 산업용 제습기 설치·24시간 운전·공조 병행·빙상장 관람창 결로 방지가 일치함. 단가·효과검증·중앙계단 추가는 보완 요소임. 2023-06-012는 채택결과 미확인으로 판단 근거에서 제외함.",
-    "background": "❍ 지하철 역사 및 주차장과 연결된 구조적 특성으로 장마철·여름철 외부 습기 유입이  증가하여\r\n   유리창 결로 및 곰팡이 발생이 반복\r\n❍ 특히 빙상장 관람창에 결로가 발생하여 관람 시야 저하 및 시민 불편·민원이 발생 하고 결로수 제거 등\r\n   반복적인 관리가 필요\r\n❍ 결로 발생 이후 물기 제거 등 사후 대응 방식으로는 습기 발생을 근본적으로  관리하는데 한계가 있어\r\n   습기 자체를 선제적으로 저감 방식 도입",
-    "content": "❍ 습기 유입이 많은 시민회관 복도 주요 출입구 5개소에 산업용 제습기 설치·운영\r\n  ※ 장소: 지하 2층(지하철 역사 입구, 주차장 입구), 지하 1층: 주차장 입구,\r\n          1층(체육관 입구, 수영장 입구)\r\n❍ 24시간 제습기 운전을 통해 외부 습기 유입에 따른 지하층 습도를 지속적으로  관리하고 기존\r\n   공조시스템의 제습기능과 병행 운영\r\n❍ 사업비: 8,500천원(1,700천원 × 5대)\r\n❍ 제습 운영 전·후 습도, 결로 발생 및 물고임 상태를 지속적으로 확인하여 효과를 검증하고 관리방식\r\n   개선에 활용",
-    "expected_effect": "❍ 빙상장 관람창 결로 및 결로수 발생 감소로 관람창 가시성 및 시민 이용환경 개선\r\n❍ 유리창 하부 물고임 및 습기 제거 등 반복적인 관리업무를 매일 → 주 1회  수준으로 감소시켜 \r\n    시설관리 효율성 향상\r\n❍ 지하층 습도 저감을 통한 곰팡이 및 습기로 인한 시설물 훼손을 예방하고 쾌적한 실내환경 조성\r\n❍ 바닥 물고임 및 미끄럼 위험을 사전에 줄여 안전사고 예방 중심의 시설관리 강화\r\n❍ 결로 발생 후 처리하는 사후관리에서 습기 자체를 관리하는 예방적 시설관리  방식으로 전환\r\n❍ 실제 운영을 통해 제습효과가 확인된 산업용 제습기를 제습이 상대적으로 부족한 중앙계단에 추가\r\n   설치하여 습기 저감 효과를 확대하고 지하공간 전반의 결로 및 습기 발생을 효과적으로 예방",
-    "attachment_note": "",
-    "default_attachments": [
-      {
-        "id": "default-att-29-1",
-        "name": "23. 2026년 제안서(박왕권).xlsx",
-        "size": 558087,
-        "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        "uploaded_at": "2026-08-10T09:00:00Z",
-        "static_url": "/default-attachments/23.%202026%EB%85%84%20%EC%A0%9C%EC%95%88%EC%84%9C(%EB%B0%95%EC%99%95%EA%B6%8C).xlsx"
-      }
-    ]
-  },
-  {
-    "no": 30,
+    "no": 28,
     "board_no": "37",
     "proposer": "윤귀환",
     "proposer_rank": "기술6급",
@@ -1015,7 +933,7 @@
     ]
   },
   {
-    "no": 31,
+    "no": 29,
     "board_no": "38",
     "proposer": "윤승현",
     "proposer_rank": "기술5급",
@@ -1049,7 +967,7 @@
     ]
   },
   {
-    "no": 32,
+    "no": 30,
     "board_no": "39",
     "proposer": "최성호",
     "proposer_rank": "기술5급",
@@ -1083,7 +1001,7 @@
     ]
   },
   {
-    "no": 33,
+    "no": 31,
     "board_no": "40",
     "proposer": "김동환",
     "proposer_rank": "기술6급",
@@ -1117,7 +1035,7 @@
     ]
   },
   {
-    "no": 34,
+    "no": 32,
     "board_no": "41",
     "proposer": "황광엽",
     "proposer_rank": "체육5급",
@@ -1142,7 +1060,7 @@
     "default_attachments": []
   },
   {
-    "no": 35,
+    "no": 33,
     "board_no": "42",
     "proposer": "최성호",
     "proposer_rank": "기술5급",
@@ -1167,7 +1085,7 @@
     "default_attachments": []
   },
   {
-    "no": 36,
+    "no": 34,
     "board_no": "43",
     "proposer": "최성호",
     "proposer_rank": "기술5급",
@@ -1195,7 +1113,7 @@
     "default_attachments": []
   },
   {
-    "no": 37,
+    "no": 35,
     "board_no": "44",
     "proposer": "김혜경",
     "proposer_rank": "체육5급",
@@ -1229,7 +1147,7 @@
     ]
   },
   {
-    "no": 38,
+    "no": 36,
     "board_no": "45",
     "proposer": "김혜경",
     "proposer_rank": "체육5급",
@@ -1263,7 +1181,7 @@
     ]
   },
   {
-    "no": 39,
+    "no": 37,
     "board_no": "46",
     "proposer": "이호형",
     "proposer_rank": "체육6급",
@@ -1297,7 +1215,7 @@
     ]
   },
   {
-    "no": 40,
+    "no": 38,
     "board_no": "47",
     "proposer": "박명진",
     "proposer_rank": "행정5급",
@@ -1331,7 +1249,7 @@
     ]
   },
   {
-    "no": 41,
+    "no": 39,
     "board_no": "48",
     "proposer": "이영권",
     "proposer_rank": "기술5급",
@@ -1365,7 +1283,7 @@
     ]
   },
   {
-    "no": 42,
+    "no": 40,
     "board_no": "49",
     "proposer": "이호연",
     "proposer_rank": "행정6급",
@@ -1399,7 +1317,7 @@
     ]
   },
   {
-    "no": 43,
+    "no": 41,
     "board_no": "50",
     "proposer": "박인숙",
     "proposer_rank": "행정4급",
@@ -1433,7 +1351,7 @@
     ]
   },
   {
-    "no": 44,
+    "no": 42,
     "board_no": "51",
     "proposer": "박인숙",
     "proposer_rank": "행정4급",
@@ -1475,7 +1393,7 @@
     ]
   },
   {
-    "no": 45,
+    "no": 43,
     "board_no": "52",
     "proposer": "황광엽",
     "proposer_rank": "체육5급",
@@ -1646,7 +1564,7 @@
     ]
   },
   {
-    "no": 46,
+    "no": 44,
     "board_no": "53",
     "proposer": "성연우",
     "proposer_rank": "행정4급",
@@ -1680,7 +1598,7 @@
     ]
   },
   {
-    "no": 47,
+    "no": 45,
     "board_no": "54",
     "proposer": "정옥환",
     "proposer_rank": "행정6급",
@@ -1777,7 +1695,7 @@
     ]
   },
   {
-    "no": 48,
+    "no": 46,
     "board_no": "55",
     "proposer": "배종윤",
     "proposer_rank": "체육6급",
@@ -1814,7 +1732,7 @@
     ]
   },
   {
-    "no": 49,
+    "no": 47,
     "board_no": "56",
     "proposer": "지하연",
     "proposer_rank": "행정6급",
@@ -1848,7 +1766,7 @@
     ]
   },
   {
-    "no": 50,
+    "no": 48,
     "board_no": "57",
     "proposer": "양다혜",
     "proposer_rank": "행정6급",
@@ -1882,7 +1800,7 @@
     ]
   },
   {
-    "no": 51,
+    "no": 49,
     "board_no": "58",
     "proposer": "최민기",
     "proposer_rank": "업무직",
@@ -1924,7 +1842,7 @@
     ]
   },
   {
-    "no": 52,
+    "no": 50,
     "board_no": "59",
     "proposer": "김민수",
     "proposer_rank": "행정6급",
@@ -1966,7 +1884,7 @@
     ]
   },
   {
-    "no": 53,
+    "no": 51,
     "board_no": "60",
     "proposer": "한진욱",
     "proposer_rank": "행정6급",
@@ -2008,35 +1926,7 @@
     ]
   },
   {
-    "no": 54,
-    "board_no": "62",
-    "proposer": "안경선",
-    "proposer_rank": "행정 4급",
-    "proposer_division": "운영관리본부",
-    "proposer_office": "공원수련관관리처",
-    "proposer_department": "수련관운영부",
-    "proposer_raw_dept": "공원수련관관리처 수련관운영부",
-    "proposal_type": "자유제안",
-    "category": "안전",
-    "assigned_division": "운영관리본부",
-    "assigned_office": "공원수련관관리처",
-    "assigned_department": "시설지원부",
-    "assigned_raw_dept": "공원수련관관리처 시설지원부",
-    "submitted_at": "2026-08-24 15:56:00",
-    "title": "(자유제안) 화장실 위생 개선 및 노로바이러스 감염 예방을 위한 양변기 손잡이 설치",
-    "is_duplicate": "중복",
-    "duplicate_title": "",
-    "review_result": "중복 가능성 높음(채택)",
-    "comparison_target": "2021-04-020 개인위생 강화를 위한 화장실 변기뚜껑 손잡이 설치(코로나19 확산방지)\r\n심사결과: 채택 [2022년 제안!G20]",
-    "review_basis": "2021-04-020은 심사결과 채택으로 확인됨. 변기 뚜껑에 손잡이를 부착하여 직접 접촉을 줄이고 위생을 개선하는 핵심 수단·목적이 이번 제안과 같음. 2024-07-117은 부적합이므로 중복 판단 근거에서 제외함. 항균 소재·안내 스티커 추가의 차별성은 별도 검토 필요.",
-    "background": "",
-    "content": "",
-    "expected_effect": "",
-    "attachment_note": "",
-    "default_attachments": []
-  },
-  {
-    "no": 55,
+    "no": 52,
     "board_no": "63",
     "proposer": "곽용후",
     "proposer_rank": "체육7급",
@@ -2070,7 +1960,7 @@
     ]
   },
   {
-    "no": 56,
+    "no": 53,
     "board_no": "64",
     "proposer": "김동규",
     "proposer_rank": "기술6급",
@@ -2104,7 +1994,7 @@
     ]
   },
   {
-    "no": 57,
+    "no": 54,
     "board_no": "65",
     "proposer": "이정준",
     "proposer_rank": "기술6급",
@@ -2141,7 +2031,7 @@
     ]
   },
   {
-    "no": 58,
+    "no": 55,
     "board_no": "66",
     "proposer": "이정준",
     "proposer_rank": "기술6급",
@@ -2175,7 +2065,7 @@
     ]
   },
   {
-    "no": 59,
+    "no": 56,
     "board_no": "67",
     "proposer": "신동진",
     "proposer_rank": "기술6급",
@@ -2209,7 +2099,7 @@
     ]
   },
   {
-    "no": 60,
+    "no": 57,
     "board_no": "68",
     "proposer": "이민호",
     "proposer_rank": "업무직(사무기술)",
@@ -2246,7 +2136,7 @@
     ]
   },
   {
-    "no": 61,
+    "no": 58,
     "board_no": "69",
     "proposer": "변세진",
     "proposer_rank": "체육6급",
@@ -2280,7 +2170,7 @@
     ]
   },
   {
-    "no": 62,
+    "no": 59,
     "board_no": "71",
     "proposer": "김범석",
     "proposer_rank": "체육4급",
@@ -2314,7 +2204,7 @@
     ]
   },
   {
-    "no": 63,
+    "no": 60,
     "board_no": "72",
     "proposer": "한진숙",
     "proposer_rank": "행정6급",
@@ -2424,7 +2314,7 @@
     ]
   },
   {
-    "no": 64,
+    "no": 61,
     "board_no": "73",
     "proposer": "김민규",
     "proposer_rank": "기술6급",
@@ -2458,7 +2348,7 @@
     ]
   },
   {
-    "no": 65,
+    "no": 62,
     "board_no": "74",
     "proposer": "윤지혜",
     "proposer_rank": "체육6급",
@@ -2492,7 +2382,7 @@
     ]
   },
   {
-    "no": 66,
+    "no": 63,
     "board_no": "75",
     "proposer": "성화진",
     "proposer_rank": "기술 6급",
@@ -2526,7 +2416,7 @@
     ]
   },
   {
-    "no": 67,
+    "no": 64,
     "board_no": "76",
     "proposer": "김다정",
     "proposer_rank": "행정5급",
@@ -2560,7 +2450,7 @@
     ]
   },
   {
-    "no": 68,
+    "no": 65,
     "board_no": "77",
     "proposer": "박선경",
     "proposer_rank": "업무직",
@@ -2585,7 +2475,7 @@
     "default_attachments": []
   },
   {
-    "no": 69,
+    "no": 66,
     "board_no": "78",
     "proposer": "이은석",
     "proposer_rank": "기술4급",
@@ -2619,7 +2509,7 @@
     ]
   },
   {
-    "no": 70,
+    "no": 67,
     "board_no": "79",
     "proposer": "김성희",
     "proposer_rank": "행정6급",
@@ -2653,7 +2543,7 @@
     ]
   },
   {
-    "no": 71,
+    "no": 68,
     "board_no": "80",
     "proposer": "우한솔",
     "proposer_rank": "행정7급",
@@ -2687,7 +2577,7 @@
     ]
   },
   {
-    "no": 72,
+    "no": 69,
     "board_no": "81",
     "proposer": "오세풍",
     "proposer_rank": "체육 5급",
@@ -2724,7 +2614,7 @@
     ]
   },
   {
-    "no": 73,
+    "no": 70,
     "board_no": "82",
     "proposer": "장소희",
     "proposer_rank": "체육4급",
@@ -2758,7 +2648,7 @@
     ]
   },
   {
-    "no": 74,
+    "no": 71,
     "board_no": "83",
     "proposer": "이정민",
     "proposer_rank": "행정4급",
@@ -2792,7 +2682,7 @@
     ]
   },
   {
-    "no": 75,
+    "no": 72,
     "board_no": "84",
     "proposer": "김승현",
     "proposer_rank": "체육7급",
@@ -2829,7 +2719,7 @@
     ]
   },
   {
-    "no": 76,
+    "no": 73,
     "board_no": "85",
     "proposer": "김상현",
     "proposer_rank": "업무직",
@@ -2874,7 +2764,7 @@
     ]
   },
   {
-    "no": 77,
+    "no": 74,
     "board_no": "86",
     "proposer": "김만전",
     "proposer_rank": "기술4급",
@@ -2908,44 +2798,7 @@
     ]
   },
   {
-    "no": 78,
-    "board_no": "87",
-    "proposer": "선우효",
-    "proposer_rank": "업무직",
-    "proposer_division": "운영관리본부",
-    "proposer_office": "시민회관체육운영처",
-    "proposer_department": "빙상부",
-    "proposer_raw_dept": "시민회관체육운영처 빙상부",
-    "proposal_type": "지정제안",
-    "category": "업무개선",
-    "assigned_division": "운영관리본부",
-    "assigned_office": "시민회관체육운영처",
-    "assigned_department": "빙상부",
-    "assigned_raw_dept": "시민회관체육운영처 빙상부",
-    "submitted_at": "2026-08-27 10:16:00",
-    "title": "[지정제안] 링크장 바닥 유도 안내 표시 설치",
-    "is_duplicate": "중복",
-    "duplicate_title": "2025-04-014 빙상장 입구 유도선 부착",
-    "review_result": "중복 가능성 높음(채택)",
-    "comparison_target": "2025-04-014 빙상장 입구 유도선 부착\r\n심사결과: 채택 [2025년 제안 총괄 !I13]",
-    "review_basis": "기존 표시의 비교안 2025-04-014는 채택으로 확인됨. 대여실·링크장 출입구에 색상 바닥 유도선을 설치해 동선을 안내하는 목적·수단이 겹침. 실제 제안서의 안내구간·색상·시공 범위가 같은지 최종 확인 필요.",
-    "background": "링크장 이용객의 대여실·탈의실·링크장 입구 등 주요 시설 간 이동 시 안내표지 및 동선 표시가 부족하여 반복적인 길 찾기 문의가 발생하고 있으며, 특히 초행 이용객은 시설 구조와 이동경로를 파악하는 데 어려움이 있어 혼잡 시간대 이동 동선 혼선에 따른 안전사고 발생 우려가 있음. 이에 주요 이동경로에 바닥 유도 안내 표시를 설치하여 이용객의 이동 편의성을 높이고 동선을 명확히 함으로써 혼잡 및 안전사고를 예방하고 쾌적하고 안전한 시설 이용환경을 조성하고자 함",
-    "content": "현장 이용객의 이동 동선을 분석하여 주요 이동 구간을 선정하고, 대여실·탈의실·링크장 입구 등 주요 목적지별 바닥 유도 표시를 설치하며, 색상 및 방향 표시를 통일하여 이용객이 이동경로를 직관적으로 확인할 수 있도록 안내체계를 구축하고 이동 편의성과 시설 이용 안전성을 향상하고자 함",
-    "expected_effect": "이용객이 목적지와 이동경로를 쉽게 확인할 수 있도록 하여 시설 이용 편의성과 만족도를 높이고, 명확한 동선 안내를 통해 혼잡 및 이용객 간 충돌 등 안전사고를 예방하며, 체계적인 안내환경 구축으로 시설 운영 품질과 서비스 수준을 향상하는 한편, 어린이·고령자·초행 이용객 등 누구나 쉽게 이동할 수 있는 유니버설 디자인 기반의 이용환경을 조성하고자 함",
-    "attachment_note": "",
-    "default_attachments": [
-      {
-        "id": "default-att-78-1",
-        "name": "53. 2026년 제안서( 빙상부 선우효).xlsx",
-        "size": 15625,
-        "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        "uploaded_at": "2026-08-27T09:00:00Z",
-        "static_url": "/default-attachments/53.%202026%EB%85%84%20%EC%A0%9C%EC%95%88%EC%84%9C(%20%EB%B9%99%EC%83%81%EB%B6%80%20%EC%84%A0%EC%9A%B0%ED%9A%A8).xlsx"
-      }
-    ]
-  },
-  {
-    "no": 79,
+    "no": 75,
     "board_no": "88",
     "proposer": "오준영",
     "proposer_rank": "기술7급",
@@ -2979,7 +2832,7 @@
     ]
   },
   {
-    "no": 80,
+    "no": 76,
     "board_no": "89",
     "proposer": "장소희",
     "proposer_rank": "체육4급",
@@ -3013,7 +2866,7 @@
     ]
   },
   {
-    "no": 81,
+    "no": 77,
     "board_no": "90",
     "proposer": "박병진",
     "proposer_rank": "행정7급(기간제)",
@@ -3038,7 +2891,7 @@
     "default_attachments": []
   },
   {
-    "no": 82,
+    "no": 78,
     "board_no": "91",
     "proposer": "안경선",
     "proposer_rank": "행정 4급",
@@ -3072,7 +2925,7 @@
     ]
   },
   {
-    "no": 83,
+    "no": 79,
     "board_no": "92",
     "proposer": "김대호",
     "proposer_rank": "체육5급",
@@ -3106,7 +2959,7 @@
     ]
   },
   {
-    "no": 84,
+    "no": 80,
     "board_no": "93",
     "proposer": "김민정",
     "proposer_rank": "체육6급",
@@ -3140,7 +2993,7 @@
     ]
   },
   {
-    "no": 85,
+    "no": 81,
     "board_no": "94",
     "proposer": "김민정",
     "proposer_rank": "체육6급",
@@ -3174,7 +3027,7 @@
     ]
   },
   {
-    "no": 86,
+    "no": 82,
     "board_no": "95",
     "proposer": "신정련",
     "proposer_rank": "체육5급",
@@ -3208,7 +3061,7 @@
     ]
   },
   {
-    "no": 87,
+    "no": 83,
     "board_no": "96",
     "proposer": "김민정",
     "proposer_rank": "체육6급",
@@ -3242,7 +3095,7 @@
     ]
   },
   {
-    "no": 88,
+    "no": 84,
     "board_no": "97",
     "proposer": "신지인",
     "proposer_rank": "행정6급",
@@ -3284,7 +3137,7 @@
     ]
   },
   {
-    "no": 89,
+    "no": 85,
     "board_no": "98",
     "proposer": "신은미",
     "proposer_rank": "행정6급",
@@ -3318,7 +3171,7 @@
     ]
   },
   {
-    "no": 90,
+    "no": 86,
     "board_no": "99",
     "proposer": "오예림",
     "proposer_rank": "행정6급",
@@ -3441,44 +3294,7 @@
     ]
   },
   {
-    "no": 91,
-    "board_no": "100",
-    "proposer": "김성진",
-    "proposer_rank": "체육6급",
-    "proposer_division": "운영관리본부",
-    "proposer_office": "공원수련관관리처",
-    "proposer_department": "수련관운영부",
-    "proposer_raw_dept": "수련관운영부",
-    "proposal_type": "지정제안",
-    "category": "안전",
-    "assigned_division": "운영관리본부",
-    "assigned_office": "공원수련관관리처",
-    "assigned_department": "시설지원부",
-    "assigned_raw_dept": "공원수련관관리처 시설지원부",
-    "submitted_at": "2026-08-31 08:14:00",
-    "title": "[지정제안] 청소년수련관 주차장 트렌치 덮개 설치를 통한 안전사고 예방",
-    "is_duplicate": "중복",
-    "duplicate_title": "2025-10-134 청소년 수련관 주차장 트렌치 개선",
-    "review_result": "중복 가능성 높음(채택)",
-    "comparison_target": "2025-10-134 청소년 수련관 주차장 트렌치 개선\r\n심사결과: 채택 [2025년 제안 총괄 !I123]",
-    "review_basis": "2025-10-134는 총괄 시트와 일반제안(채택) 시트에서 채택으로 확인됨. 같은 청소년수련관 주차장의 노출 트렌치에 안전형 덮개를 설치하여 발 빠짐을 예방하는 내용으로 핵심 대상·조치가 일치함. 소재·격자와 설치구간 차이는 확인 필요.",
-    "background": "▶청소년수련관 내 일 부 트렌치(배수로)에 덮개가 설치 되어 있지 않아 주차장 이용 고객의 안전사고 발생 우려\r\n▶ 특히 우천 시 트렌치 내부에 빗물이 고여 배수로의 깊이와 위치를 확인하기 어려우며,  주차 후 이동과정에서 이를 인지하지 못하고 잘못 디딜 경우 발이 빠지거나 발목 염좌 등 부상으로 이어질 가능성",
-    "content": "▶청소년수련관 주차장내 트렌치 및 배수로 현황을 전수 조사하여 덮개 미설치 구간 확인\r\n▶보행 및 차령 통행에 적합한 내구성을 갖춘 트렌치 덮개를 설치\r\n▶주차장 및 보행로 내  안전 취약시설에 대한 점검 실시하여 위험 요인 사전 발굴",
-    "expected_effect": "▶개방된 트렌치로 인한 고객의 발 빠짐, 낙상 및 발목 부상 등 안전사고 예방\r\n▶우천 시 빗밀 고임 구각의 위험요인을 개선하여 안전한 주차장 보행환경 조성\r\n▶주차장 시설물에 대한 선제적 안전관리를  통해 고객 불편 및 안전 관련 민원 감소",
-    "attachment_note": "",
-    "default_attachments": [
-      {
-        "id": "default-att-91-1",
-        "name": "72. 2026년 제안서(김성진).xlsx",
-        "size": 104146,
-        "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        "uploaded_at": "2026-08-31T09:00:00Z",
-        "static_url": "/default-attachments/72.%202026%EB%85%84%20%EC%A0%9C%EC%95%88%EC%84%9C(%EA%B9%80%EC%84%B1%EC%A7%84).xlsx"
-      }
-    ]
-  },
-  {
-    "no": 92,
+    "no": 87,
     "board_no": "101",
     "proposer": "박태준",
     "proposer_rank": "기술6급",
@@ -3512,7 +3328,7 @@
     ]
   },
   {
-    "no": 93,
+    "no": 88,
     "board_no": "102",
     "proposer": "박태준",
     "proposer_rank": "기술6급",
@@ -3546,7 +3362,7 @@
     ]
   },
   {
-    "no": 94,
+    "no": 89,
     "board_no": "103",
     "proposer": "장연주",
     "proposer_rank": "기술6급",
@@ -3580,7 +3396,7 @@
     ]
   },
   {
-    "no": 95,
+    "no": 90,
     "board_no": "104",
     "proposer": "심은혜",
     "proposer_rank": "기술 6급",
@@ -3614,7 +3430,7 @@
     ]
   },
   {
-    "no": 96,
+    "no": 91,
     "board_no": "105",
     "proposer": "조성인",
     "proposer_rank": "체육 6급",
@@ -3648,7 +3464,7 @@
     ]
   },
   {
-    "no": 97,
+    "no": 92,
     "board_no": "106",
     "proposer": "박자우",
     "proposer_rank": "행정6급",
@@ -3682,7 +3498,7 @@
     ]
   },
   {
-    "no": 98,
+    "no": 93,
     "board_no": "107",
     "proposer": "이호서",
     "proposer_rank": "행정6급",
@@ -3716,7 +3532,7 @@
     ]
   },
   {
-    "no": 99,
+    "no": 94,
     "board_no": "108",
     "proposer": "김은지",
     "proposer_rank": "행정6급",
@@ -3750,7 +3566,7 @@
     ]
   },
   {
-    "no": 100,
+    "no": 95,
     "board_no": "109",
     "proposer": "김진겸",
     "proposer_rank": "행정5급",
@@ -3784,7 +3600,7 @@
     ]
   },
   {
-    "no": 101,
+    "no": 96,
     "board_no": "110",
     "proposer": "김경민",
     "proposer_rank": "체육6급",
@@ -3821,7 +3637,7 @@
     ]
   },
   {
-    "no": 102,
+    "no": 97,
     "board_no": "111",
     "proposer": "신송식",
     "proposer_rank": "기술4급",
@@ -3855,7 +3671,7 @@
     ]
   },
   {
-    "no": 103,
+    "no": 98,
     "board_no": "112",
     "proposer": "이승호",
     "proposer_rank": "기술6급",
@@ -3889,7 +3705,7 @@
     ]
   },
   {
-    "no": 104,
+    "no": 99,
     "board_no": "113",
     "proposer": "이희진",
     "proposer_rank": "행정6급",
@@ -3947,7 +3763,7 @@
     ]
   },
   {
-    "no": 105,
+    "no": 100,
     "board_no": "114",
     "proposer": "최지연",
     "proposer_rank": "체육5급",
@@ -3981,7 +3797,7 @@
     ]
   },
   {
-    "no": 106,
+    "no": 101,
     "board_no": "115",
     "proposer": "우세림",
     "proposer_rank": "체육6급",
@@ -4018,7 +3834,7 @@
     ]
   },
   {
-    "no": 107,
+    "no": 102,
     "board_no": "116",
     "proposer": "우세림",
     "proposer_rank": "체육6급",
@@ -4052,7 +3868,7 @@
     ]
   },
   {
-    "no": 108,
+    "no": 103,
     "board_no": "117",
     "proposer": "우세림",
     "proposer_rank": "체육6급",
@@ -4086,7 +3902,7 @@
     ]
   },
   {
-    "no": 109,
+    "no": 104,
     "board_no": "118",
     "proposer": "이승호",
     "proposer_rank": "기술6급",
@@ -4120,7 +3936,7 @@
     ]
   },
   {
-    "no": 110,
+    "no": 105,
     "board_no": "119",
     "proposer": "이희진",
     "proposer_rank": "행정6급",
@@ -4170,7 +3986,7 @@
     ]
   },
   {
-    "no": 111,
+    "no": 106,
     "board_no": "120",
     "proposer": "박명진",
     "proposer_rank": "행정5급",
@@ -4204,7 +4020,7 @@
     ]
   },
   {
-    "no": 112,
+    "no": 107,
     "board_no": "121",
     "proposer": "김선호",
     "proposer_rank": "기술6급",
@@ -4241,7 +4057,7 @@
     ]
   },
   {
-    "no": 113,
+    "no": 108,
     "board_no": "122",
     "proposer": "이우익",
     "proposer_rank": "기술6급",
@@ -4275,7 +4091,7 @@
     ]
   },
   {
-    "no": 114,
+    "no": 109,
     "board_no": "123",
     "proposer": "김동환",
     "proposer_rank": "기술6급",
@@ -4309,7 +4125,7 @@
     ]
   },
   {
-    "no": 115,
+    "no": 110,
     "board_no": "124",
     "proposer": "이현",
     "proposer_rank": "체육6급",
@@ -4343,7 +4159,7 @@
     ]
   },
   {
-    "no": 116,
+    "no": 111,
     "board_no": "125",
     "proposer": "임용섭",
     "proposer_rank": "체육5급",
@@ -4377,7 +4193,7 @@
     ]
   },
   {
-    "no": 117,
+    "no": 112,
     "board_no": "126",
     "proposer": "이승진",
     "proposer_rank": "기술6급",
@@ -4419,7 +4235,7 @@
     ]
   },
   {
-    "no": 118,
+    "no": 113,
     "board_no": "127",
     "proposer": "최윤호",
     "proposer_rank": "기술6급",
@@ -4453,7 +4269,7 @@
     ]
   },
   {
-    "no": 119,
+    "no": 114,
     "board_no": "128",
     "proposer": "김효정",
     "proposer_rank": "기술6급",
@@ -4487,52 +4303,7 @@
     ]
   },
   {
-    "no": 120,
-    "board_no": "131",
-    "proposer": "김상철",
-    "proposer_rank": "기술5급",
-    "proposer_division": "경영부문",
-    "proposer_office": "경영지원실",
-    "proposer_department": "재무부",
-    "proposer_raw_dept": "시설운영부",
-    "proposal_type": "지정제안",
-    "category": "시설개선",
-    "assigned_division": "운영관리본부",
-    "assigned_office": "시설관리처",
-    "assigned_department": "시설운영부",
-    "assigned_raw_dept": "시설관리처 시설운영부",
-    "submitted_at": "2026-08-31 16:05:00",
-    "title": "시스템에어컨 실외기 차양막(커버) 설치",
-    "is_duplicate": "중복",
-    "duplicate_title": "",
-    "review_result": "중복 가능성 높음(채택)",
-    "comparison_target": "공영주차장 정산소 에어컨 실외기 커버 설치\r\n심사결과: 채택 [2021년 제안!I55, 연번 52]",
-    "review_basis": "공영주차장 정산소 에어컨 실외기 커버 제안은 2021년 제안 시트 55행에서 채택으로 확인됨. 실외기 상부 햇빛 차단으로 냉방효율·전기료를 개선하는 수단과 효과가 같음. 정산소에서 별관·체육관동 옥상으로 장소가 바뀌고 통풍·반사재 선택을 보완한 점은 별도 검토 필요.",
-    "background": "현재 체육시설 이용자는 수강료, 할인기준, 환불방법, 강습일정 등 다양한 정보를 확인하기 위해 홈페이지 내 여러 메뉴를 직접 찾아야 하며, 원하는 정보를 신속하게 찾기 어려운 불편이 발생하고 있음.\r\n\r\n예를 들면 수강료의 경우 종목, 관내·관외 여부, 할인 대상 등에 따라 금액이 달라질 수 있어 이용자가 본인에게 적용되는 수강료와 할인 혜택을 정확하게 확인하기 어려운 경우가 있음.\r\n\r\n또한 수강료, 환불, 시설 이용방법 등 반복적인 문의가 지속적으로 발생함에 따라 담당 직원의 단순 안내 업무가 증가하고 있으며, 업무시간 외에는 이용자의 문의에 즉시 대응하기 어려운 한계가 있음.\r\n\r\n이에 홈페이지에 24시간 이용 가능한 AI 챗봇을 도입하여 이용자가 필요한 정보를 대화형으로 쉽고 빠르게 확인할 수 있도록 하고, 반복적인 문의를 자동화함으로써 이용자 편의성을 높이는 동시에 행정 및 운영 업무의 효율성을 향상​하고자 함.",
-    "content": "① 수강료 맞춤 조회\r\n- 종목 → 관내/관외 → 할인대상 선택 → 최종 수강료 자동 안내\r\n② 할인혜택 안내\r\n- 다자녀, 노인, 장애인, 국가유공자 등 할인대상 및 적용기준 안내\r\n③ 환불 안내\r\n- 환불 가능 여부, 환불기준, 신청방법, 처리절차 등 단계별 안내\r\n④ 시설 이용 안내\r\n- 운영시간, 휴관일, 이용방법, 준비물, 시설 위치 등 안내\r\n⑤ 자연어 질문 대응\r\n- 이용자가 정해진 메뉴가 아닌 일상적인 문장으로 질문해도 관련 정보 제공\r\n⑥ FAQ 자동응답\r\n- 반복적으로 발생하는 주요 문의를 데이터화하여 신속하게 답변\r\n⑦ 담당자 연결\r\n- 챗봇으로 해결하기 어려운 민원은 담당 부서·전화번호 등으로 연결\r\n⑧ 지속적인 정보 업데이트\r\n- 수강료, 운영시간, 휴관일, 할인정책 등 변경사항을 반영하여 최신 정보 제공",
-    "expected_effect": "① 이용자 편의성 향상\r\n홈페이지에서 필요한 정보를 쉽게 검색\r\n24시간 언제든지 문의 가능\r\n복잡한 수강료 및 할인기준을 대화형으로 확인\r\n\r\n② 민원 응대 효율성 향상\r\n반복적인 전화·방문 문의 감소\r\n단순 안내 업무 자동화\r\n직원은 복잡한 민원 및 핵심 업무에 집중\r\n\r\n③ 정보 접근성 강화\r\n수강료, 할인, 환불 등 주요 정보를 한 곳에서 제공\r\n이용자가 이해하기 쉬운 단계별 안내\r\n정보 탐색에 소요되는 시간 단축\r\n\r\n④ 운영비용 및 업무부담 절감\r\n단순·반복 문의 자동 응대\r\n업무시간 외 문의에도 대응 가능\r\n향후 다양한 체육시설 및 서비스로 확대 가능\r\n\r\n⑤ 데이터 기반 서비스 개선\r\n이용자가 자주 질문하는 내용을 분석\r\n반복 민원 및 이용자 불편사항 파악\r\n분석 결과를 바탕으로 홈페이지 및 서비스 지속 개선",
-    "attachment_note": "",
-    "default_attachments": [
-      {
-        "id": "default-att-120-1",
-        "name": "105. AI 체육시설 홈페이지 맞춤형 챗봇 도입_안건_2026-08-31_16-05.xlsx",
-        "size": 759417,
-        "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        "uploaded_at": "2026-08-31T09:00:00Z",
-        "static_url": "/default-attachments/105.%20AI%20%EC%B2%B4%EC%9C%A1%EC%8B%9C%EC%84%A4%20%ED%99%88%ED%8E%98%EC%9D%B4%EC%A7%80%20%EB%A7%9E%EC%B6%A4%ED%98%95%20%EC%B1%97%EB%B4%87%20%EB%8F%84%EC%9E%85_%EC%95%88%EA%B1%B4_2026-08-31_16-05.xlsx"
-      },
-      {
-        "id": "default-att-120-2",
-        "name": "105. 2026년 제안서(이현) 챗봇 예시 이미지.png",
-        "size": 1475782,
-        "type": "image/png",
-        "uploaded_at": "2026-08-31T09:00:00Z",
-        "static_url": "/default-attachments/105.%202026%EB%85%84%20%EC%A0%9C%EC%95%88%EC%84%9C(%EC%9D%B4%ED%98%84)%20%EC%B1%97%EB%B4%87%20%EC%98%88%EC%8B%9C%20%EC%9D%B4%EB%AF%B8%EC%A7%80.png"
-      }
-    ]
-  },
-  {
-    "no": 121,
+    "no": 115,
     "board_no": "130",
     "proposer": "김효정",
     "proposer_rank": "기술6급",
@@ -4566,60 +4337,7 @@
     ]
   },
   {
-    "no": 122,
-    "board_no": "129",
-    "proposer": "이현",
-    "proposer_rank": "체육6급",
-    "proposer_division": "운영관리본부",
-    "proposer_office": "시설관리처",
-    "proposer_department": "시설운영부",
-    "proposer_raw_dept": "경영지원실 재무부",
-    "proposal_type": "지정제안",
-    "category": "AI혁신",
-    "assigned_division": "경영부문",
-    "assigned_office": "미래전략실",
-    "assigned_department": "스마트정보부",
-    "assigned_raw_dept": "미래전략실 스마트정보부",
-    "submitted_at": "2026-08-31 16:16:00",
-    "title": "[지정제안] AI 체육시설 홈페이지 맞춤형 챗봇 도입",
-    "is_duplicate": "중복",
-    "duplicate_title": "2026-121 카카오톡 챗봇 연계형 보이는 ARS 서비스 구축",
-    "review_result": "중복접수(2026)",
-    "comparison_target": "2026 게시판 121 카카오톡 챗봇 연계형 보이는 ARS 서비스 구축\r\n채택결과 미확인 [Sheet1!M113:N113]\r\n\r\n2024-07-096 디지털 플랫폼 정부구현을 위한 스마트 공공기관 챗봇 도입\r\n심사결과: 불채택 [2024년 제안!I201]\r\n\r\n2025-06-065 도시공사 민원업무 효율화를 위한 AI 자동응답 시스템 도입\r\n심사결과: 과락3명 [2025년 제안 총괄 !I56]",
-    "review_basis": "기존 중복(2026) 표시를 재검토함. 게시판 121번은 평점·과락구분이 비어 있어 채택을 확인할 수 없음. 별도 과거 챗봇 비교안도 각각 불채택·과락3명임. 제목·자동응대 기능만으로 채택된 제안과 중복이라고 할 수 없어 기존 중복 표시는 보류로 수정함. 제공 자료에서 채택 근거가 확인되지 않으므로 채택안과의 중복으로 확정하지 않음.",
-    "background": "○ 지구온난화와 하절기 폭염에 따른 에너지비용의 상승을 해소하고자 에어컨 및 EHP 실외기에\r\n   차양막(커버)를 설치하여 직사광선을 차단해 실외기 과열을 막고 냉방 효율을 높여 전기요금을 \r\n   절약하는데 효과가 있음.",
-    "content": "○ 별관 옥상에 설치되어 있는 실외기에 차양막 설치\r\n   ※ 통풍유지: 사방이 완전히 막히는 커버는 열 배출을 방해해 오히려 역효과가 날 수 있으므로,\r\n                  상단은 햇빛을 가리고 측면과 후면 통풍구는 뚫려 있는 구조를 선택  \r\n○ 체육관동 옥상에 설치되어 있는 실외기에 차양막 설치\r\n   ※ 반사기능: 태양열을 효과적으로 튕겨낼 수 있는 은박 코팅이나 차광 기능이 있는 제품을 선택",
-    "expected_effect": "○ 온도 및 전력 절감: 직사광선을 가려주면 실외기 주변 온도가 낮아져 전력소비를 약 9%~10% 절감\r\n○ 화재예방: 여름철 폭염으로 인한 실외기 과열 및 화재 위험을 예방\r\n○ 장비 수명 연장: 압축기(컴프레서)에 걸리는 부하를 줄여 기기 수명을 연장",
-    "attachment_note": "",
-    "default_attachments": [
-      {
-        "id": "default-att-122-1",
-        "name": "111. 시스템에어컨 실외기 차양막(커버) 설치_김성철_2026-08-31_16-16.xlsx",
-        "size": 2644821,
-        "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        "uploaded_at": "2026-08-31T09:00:00Z",
-        "static_url": "/default-attachments/111.%20%EC%8B%9C%EC%8A%A4%ED%85%9C%EC%97%90%EC%96%B4%EC%BB%A8%20%EC%8B%A4%EC%99%B8%EA%B8%B0%20%EC%B0%A8%EC%96%91%EB%A7%89(%EC%BB%A4%EB%B2%84)%20%EC%84%A4%EC%B9%98_%EA%B9%80%EC%84%B1%EC%B2%A0_2026-08-31_16-16.xlsx"
-      },
-      {
-        "id": "default-att-122-2",
-        "name": "111. 에어컨(EHP) 실외기 차양막 설치 별관옥상 실외기.jpg",
-        "size": 1053231,
-        "type": "image/jpeg",
-        "uploaded_at": "2026-08-31T09:00:00Z",
-        "static_url": "/default-attachments/111.%20%EC%97%90%EC%96%B4%EC%BB%A8(EHP)%20%EC%8B%A4%EC%99%B8%EA%B8%B0%20%EC%B0%A8%EC%96%91%EB%A7%89%20%EC%84%A4%EC%B9%98%20%EB%B3%84%EA%B4%80%EC%98%A5%EC%83%81%20%EC%8B%A4%EC%99%B8%EA%B8%B0.jpg"
-      },
-      {
-        "id": "default-att-122-3",
-        "name": "111. 에어컨(EHP) 실외기 차양막 설치 체육관동옥상 실외기.jpg",
-        "size": 1276028,
-        "type": "image/jpeg",
-        "uploaded_at": "2026-08-31T09:00:00Z",
-        "static_url": "/default-attachments/111.%20%EC%97%90%EC%96%B4%EC%BB%A8(EHP)%20%EC%8B%A4%EC%99%B8%EA%B8%B0%20%EC%B0%A8%EC%96%91%EB%A7%89%20%EC%84%A4%EC%B9%98%20%EC%B2%B4%EC%9C%A1%EA%B4%80%EB%8F%99%EC%98%A5%EC%83%81%20%EC%8B%A4%EC%99%B8%EA%B8%B0.jpg"
-      }
-    ]
-  },
-  {
-    "no": 123,
+    "no": 116,
     "board_no": "132",
     "proposer": "박소원",
     "proposer_rank": "기술6급",
@@ -4653,7 +4371,7 @@
     ]
   },
   {
-    "no": 124,
+    "no": 117,
     "board_no": "133",
     "proposer": "박소원",
     "proposer_rank": "기술6급",
@@ -4687,7 +4405,7 @@
     ]
   },
   {
-    "no": 125,
+    "no": 118,
     "board_no": "134",
     "proposer": "최윤호",
     "proposer_rank": "기술6급",
@@ -4721,7 +4439,7 @@
     ]
   },
   {
-    "no": 126,
+    "no": 119,
     "board_no": "135",
     "proposer": "한효진",
     "proposer_rank": "기술6급",
@@ -4755,7 +4473,7 @@
     ]
   },
   {
-    "no": 127,
+    "no": 120,
     "board_no": "136",
     "proposer": "박태준",
     "proposer_rank": "기술6급",
@@ -4789,7 +4507,7 @@
     ]
   },
   {
-    "no": 128,
+    "no": 121,
     "board_no": "137",
     "proposer": "유창훈",
     "proposer_rank": "기술6급",
@@ -4831,7 +4549,7 @@
     ]
   },
   {
-    "no": 129,
+    "no": 122,
     "board_no": "138",
     "proposer": "안석열",
     "proposer_rank": "체육5급",
@@ -4865,7 +4583,7 @@
     ]
   },
   {
-    "no": 130,
+    "no": 123,
     "board_no": "139",
     "proposer": "정재우",
     "proposer_rank": "업무직",
@@ -4899,7 +4617,7 @@
     ]
   },
   {
-    "no": 131,
+    "no": 124,
     "board_no": "140",
     "proposer": "변정환",
     "proposer_rank": "업무직",
@@ -4933,52 +4651,7 @@
     ]
   },
   {
-    "no": 132,
-    "board_no": "141",
-    "proposer": "조홍원",
-    "proposer_rank": "체육5급",
-    "proposer_division": "운영관리본부",
-    "proposer_office": "시민회관체육운영처",
-    "proposer_department": "여가체육부",
-    "proposer_raw_dept": "시민회관체육운영처 여가체육부",
-    "proposal_type": "지정제안",
-    "category": "안전",
-    "assigned_division": "운영관리본부",
-    "assigned_office": "시민회관체육운영처",
-    "assigned_department": "여가체육부",
-    "assigned_raw_dept": "시민회관체육운영처 여가체육부",
-    "submitted_at": "2026-08-31 18:35:00",
-    "title": "QR코드를 활용한 \"운동 전 자가 안전 확인제\" 도입",
-    "is_duplicate": "중복",
-    "duplicate_title": "2026-75 운동 전 10초! 자가안전확인제 운영",
-    "review_result": "중복접수(2026)",
-    "comparison_target": "2026 게시판 75 운동 전 10초! 자가안전확인제 운영\r\n채택결과 미확인 [Sheet1!M67:N67]",
-    "review_basis": "기존 중복(2026) 표시를 재검토함. 자가확인 증상·QR 안내·운동 자제 방식은 유사하지만 게시판 75번의 평점·과락구분이 비어 있어 채택을 확인할 수 없음. 현재 접수 제안끼리의 유사성과 채택안 중복은 구분해야 하므로 보류로 수정함. 제공 자료에서 채택 근거가 확인되지 않으므로 채택안과의 중복으로 확정하지 않음.",
-    "background": "○ 체육시설 특성상 다양한 연령층이 이용하고 있으며, 건강상태가 좋지 않은 상황에서도 운동에 참여하여 어지럼증,\r\n    실신 등 응급상황으로 이어지는 사례가 발생하고 있음\r\n\r\n○ 반복적·일상적인 체육활동으로 건강상태 확인을 소홀히 하는 등 안전의식이 저하될 수 있어, 운동 전 자가확인을 \r\n   통한 사전 예방 중심의 안전관리 필요",
-    "content": "○공사에서 운영하는 체육시설 주요 장소에 “운동 전 건강상태 자가확인” QR코드 비치\r\n\r\n○ QR코드를 통해 어지럼증, 가슴통증, 호흡곤란, 심한 피로 등 운동 전 주요 이상 증상 자가확인\r\n\r\n○ 이상 증상이 있는 경우 무리한 운동을 자제하고 필요 시 직원에게 알리도록 안내\r\n\r\n○ 개인정보 및 건강정보를 별도로 수집·저장하지 않는 자가확인 방식으로 운영",
-    "expected_effect": "○ 운동 전 건강상태 확인 생활화를 통한 안전의식 향상\r\n○ 무리한 운동으로 인한 응급상황 및 안전사고 사전 예방\r\n○ 이용자 스스로 참여하는 사전 예방 중심의 안전관리 강화",
-    "attachment_note": "",
-    "default_attachments": [
-      {
-        "id": "default-att-132-1",
-        "name": "117. QR코드를 활용한 운동 전 자가 안전 확인제 도입_박정섭_2026-08-31_18-23.xlsx",
-        "size": 13362,
-        "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        "uploaded_at": "2026-08-31T09:00:00Z",
-        "static_url": "/default-attachments/117.%20QR%EC%BD%94%EB%93%9C%EB%A5%BC%20%ED%99%9C%EC%9A%A9%ED%95%9C%20%EC%9A%B4%EB%8F%99%20%EC%A0%84%20%EC%9E%90%EA%B0%80%20%EC%95%88%EC%A0%84%20%ED%99%95%EC%9D%B8%EC%A0%9C%20%EB%8F%84%EC%9E%85_%EB%B0%95%EC%A0%95%EC%84%AD_2026-08-31_18-23.xlsx"
-      },
-      {
-        "id": "default-att-132-2",
-        "name": "117. 2026년 제안서(여가체육부 조홍원)_20260831 운동 전 자가 안전확인제 QR 코드.png",
-        "size": 2042611,
-        "type": "image/png",
-        "uploaded_at": "2026-08-31T09:00:00Z",
-        "static_url": "/default-attachments/117.%202026%EB%85%84%20%EC%A0%9C%EC%95%88%EC%84%9C(%EC%97%AC%EA%B0%80%EC%B2%B4%EC%9C%A1%EB%B6%80%20%EC%A1%B0%ED%99%8D%EC%9B%90)_20260831%20%EC%9A%B4%EB%8F%99%20%EC%A0%84%20%EC%9E%90%EA%B0%80%20%EC%95%88%EC%A0%84%ED%99%95%EC%9D%B8%EC%A0%9C%20QR%20%EC%BD%94%EB%93%9C.png"
-      }
-    ]
-  },
-  {
-    "no": 133,
+    "no": 125,
     "board_no": "142",
     "proposer": "최성훈",
     "proposer_rank": "체육4급",
@@ -5006,7 +4679,7 @@
     "default_attachments": []
   },
   {
-    "no": 134,
+    "no": 126,
     "board_no": "143",
     "proposer": "조은희",
     "proposer_rank": "기술5급",
@@ -5040,7 +4713,7 @@
     ]
   },
   {
-    "no": 135,
+    "no": 127,
     "board_no": "144",
     "proposer": "최성근",
     "proposer_rank": "기술 6급",
@@ -5065,7 +4738,7 @@
     "default_attachments": []
   },
   {
-    "no": 136,
+    "no": 128,
     "board_no": "146",
     "proposer": "김재범",
     "proposer_rank": "체육5급",
@@ -5090,7 +4763,7 @@
     "default_attachments": []
   },
   {
-    "no": 137,
+    "no": 129,
     "board_no": "147",
     "proposer": "성화진",
     "proposer_rank": "기술6급",
@@ -5115,7 +4788,7 @@
     "default_attachments": []
   },
   {
-    "no": 138,
+    "no": 130,
     "board_no": "148",
     "proposer": "조아라",
     "proposer_rank": "체육6급",
@@ -5143,7 +4816,7 @@
     "default_attachments": []
   },
   {
-    "no": 139,
+    "no": 131,
     "board_no": "150",
     "proposer": "김민정",
     "proposer_rank": "체육6급",
@@ -5168,7 +4841,7 @@
     "default_attachments": []
   },
   {
-    "no": 140,
+    "no": 132,
     "board_no": "152",
     "proposer": "이승진",
     "proposer_rank": "기술 6급",
@@ -5196,7 +4869,7 @@
     "default_attachments": []
   },
   {
-    "no": 141,
+    "no": 133,
     "board_no": "153",
     "proposer": "우세림",
     "proposer_rank": "체육6급",
@@ -5221,7 +4894,7 @@
     "default_attachments": []
   },
   {
-    "no": 142,
+    "no": 134,
     "board_no": "154",
     "proposer": "나갑성",
     "proposer_rank": "기술4급",
