@@ -27,7 +27,13 @@ export async function GET(req: Request) {
 
     if (download === '1') {
       if (attachment.static_url) {
-        const filePath = path.join(process.cwd(), 'public', 'default-attachments', attachment.name);
+        const publicRoot = path.resolve(process.cwd(), 'public');
+        const relativePath = decodeURIComponent(attachment.static_url).replace(/^\/+/, '');
+        const filePath = path.resolve(publicRoot, relativePath);
+        const safePath = path.relative(publicRoot, filePath);
+        if (safePath.startsWith('..') || path.isAbsolute(safePath)) {
+          return NextResponse.json({ success: false, error: '잘못된 첨부파일 경로입니다.' }, { status: 400 });
+        }
         if (fs.existsSync(filePath)) {
           const buffer = fs.readFileSync(filePath);
           const encodedName = encodeURIComponent(attachment.name);

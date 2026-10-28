@@ -7,7 +7,7 @@
     "stage": "STAGE_0",
     "status": "ACTIVE",
     "created_at": "2026-10-18T10:48:36.156+00:00",
-    "proposals_count": 9,
+    "proposals_count": 8,
     "criteria": [
       {
         "id": "crit-result",

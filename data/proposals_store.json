@@ -18,10 +18,36 @@
     "assigned_raw_dept": "경영지원실 회계부",
     "submitted_at": "2026-07-28 10:52:00",
     "title": "과천도시공사 경영수지 개선 및 경영효율화 전략 수립",
-    "content": "",
+    "content": "○ 2025년도 원가분석 결과를 토대로 최근 5년간 경영수지 현황을 분석\n○ 주요 문제점에 대한 개선방안 마련\n○ 재무비전과 정성 및 정량 목표 설정 \n○ 수입증대, 비용절감, 과천시 협력 3대 추진방향별 실행과제 12개 도출\n○ 실행과제 및 부서별 단기 중장기 세부 실행방안 마련\n○ 수입 및 비용절감, 이용인원 도전 목표 상향 설정\n○ BSC개편 TF를 통한 KPI신설: 경평 정량지표 반영, 국도비 유치, 자체유지보수 확대\n○ 기본 사업구조 개편 및 운영 방식 전환, 중장기 인력운영계획수립을 통한 자연감소 인력 감축\n○ 과천시 관련 실과와 실무협의체 운영",
     "is_duplicate": "",
     "duplicate_title": "",
-    "status": "미평가"
+    "status": "미평가",
+    "background": "○ 전년도 원가분석 보고회 시 사장 당부사항(2025. 4. 30.)\n   - 수지율 분석을 어떻게 활용할 것인지 고민이 더 중요하다고 생각하며 향후 공사 사업 추진에\n    어떤 스탠스를 취할지 고민이 필요함\n ○ 경영평가 재무관리 지표 반영  \n  - 수익·비용성과 및 구조개선 성과 강화 필요",
+    "expected_effect": "○ 시설대행사업 수지율 도전 목표 상향 설정으로 수지율 45% 달성\n○ 경영평가 정량지표 고득점 획득",
+    "attachment_note": "원본 제안서의 사진·도표와 추가 시트는 첨부된 Excel에서 확인할 수 있습니다.",
+    "extra_sheets": [],
+    "attachments": [
+      {
+        "id": "session-1792320516156-prop-1-att-source-4-1",
+        "name": "004_과천도시공사 경영수지 개선 및 경영효율화 전략 수립_정성학.xlsx",
+        "size": 14045,
+        "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "uploaded_at": "2026-10-28T00:00:00Z",
+        "static_url": "/proposal-sources/18.%20%EA%B2%BD%EC%98%81%EC%A7%80%EC%9B%90%EC%8B%A4%20%ED%9A%8C%EA%B3%84%EB%B6%80/4/004_%EA%B3%BC%EC%B2%9C%EB%8F%84%EC%8B%9C%EA%B3%B5%EC%82%AC%20%EA%B2%BD%EC%98%81%EC%88%98%EC%A7%80%20%EA%B0%9C%EC%84%A0%20%EB%B0%8F%20%EA%B2%BD%EC%98%81%ED%9A%A8%EC%9C%A8%ED%99%94%20%EC%A0%84%EB%9E%B5%20%EC%88%98%EB%A6%BD_%EC%A0%95%EC%84%B1%ED%95%99.xlsx",
+        "sha256": "aa5230f9a27a0783339d626349e319c9946374c0fa315551a8a33b75e3024770",
+        "proposal_id": "session-1792320516156-prop-1"
+      },
+      {
+        "id": "session-1792320516156-prop-1-att-source-4-2",
+        "name": "004_과천도시공사 경영수지 개선 및 경영효율화 전략 수립_정성학_보충자료01.pdf",
+        "size": 2237552,
+        "type": "application/pdf",
+        "uploaded_at": "2026-10-28T00:00:00Z",
+        "static_url": "/proposal-sources/18.%20%EA%B2%BD%EC%98%81%EC%A7%80%EC%9B%90%EC%8B%A4%20%ED%9A%8C%EA%B3%84%EB%B6%80/4/004_%EA%B3%BC%EC%B2%9C%EB%8F%84%EC%8B%9C%EA%B3%B5%EC%82%AC%20%EA%B2%BD%EC%98%81%EC%88%98%EC%A7%80%20%EA%B0%9C%EC%84%A0%20%EB%B0%8F%20%EA%B2%BD%EC%98%81%ED%9A%A8%EC%9C%A8%ED%99%94%20%EC%A0%84%EB%9E%B5%20%EC%88%98%EB%A6%BD_%EC%A0%95%EC%84%B1%ED%95%99_%EB%B3%B4%EC%B6%A9%EC%9E%90%EB%A3%8C01.pdf",
+        "sha256": "f1842f8f3af9d7e8db1deeceac6af4f20c38cbf8c163eecda7a6fa0a3c539ca1",
+        "proposal_id": "session-1792320516156-prop-1"
+      }
+    ]
   },
   {
     "id": "session-1792320516156-prop-3",
@@ -42,10 +68,36 @@
     "assigned_raw_dept": "시민회관체육운영처 빙상부",
     "submitted_at": "2026-08-25 15:55:00",
     "title": "(실행제안) 빙상장 키오스크 관내 1호기, 관외 2호기 요금 운영",
-    "content": "",
+    "content": "무인발권기 2대를 관내·관외 요금으로 구분 운영하여 거주지 확인 및 요금 적용을 간소화하고, 이용객의 발권·입장 대기시간을 단축하는 한편 현장 직원의 반복적인 요금 확인 업무 부담을 줄여 안전관리 및 고객서비스에 집중할 수 있도록 하며, 관내·관외 이용현황 데이터를 체계적으로 확보하여 효율적이고 공정한 시설 운영에 활용하고자 함",
     "is_duplicate": "",
     "duplicate_title": "",
-    "status": "미평가"
+    "status": "미평가",
+    "background": "빙상장 무인발권기는 2025년까지 관내·관외 요금을 동일하게 적용하여 운영하였으나, 2026년 1월부터 관외 이용요금 30% 가산 적용에 따라 관내·관외 요금체계를 구분하여 운영할 필요성이 발생함. 이에 무인발권기 2대를 활용하여 1대는 관내요금, 1대는 관외요금으로 구분 운영함으로써 요금 적용 및 이용절차를 명확히 하고, 안내데스크 및 현장직원의 요금 확인·안내 업무 부담을 줄이는 동시에 이용고객의 발권 및 입장 대기시간을 단축하여 이용 편의성과 운영 효율성을 제고하고자 함.",
+    "expected_effect": "​관내 주민에게는 합리적인 요금 혜택을 제공하고 관외 이용객에게는 적정 요금을 적용하여 공공서비스의 형평성과 시설 운영의 재정 건전성을 확보하는 동시에, 거주지 인증을 통한 부정 이용을 방지하고 요금 적용의 투명성을 높이며, 키오스크·비대면 인증 등 디지털 기반 운영으로 이용 편의성과 행정 효율성을 향상시켜 스마트 공공체육시설의 이미지를 제고할 수 있음",
+    "attachment_note": "원본 제안서의 사진·도표와 추가 시트는 첨부된 Excel에서 확인할 수 있습니다.",
+    "extra_sheets": [],
+    "attachments": [
+      {
+        "id": "session-1792320516156-prop-3-att-source-6-1",
+        "name": "006_빙상장 키오스크 관내 1호기, 관외 2호기 요금 운영_김민규.xlsx",
+        "size": 17330,
+        "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "uploaded_at": "2026-10-28T00:00:00Z",
+        "static_url": "/proposal-sources/11.%20%EC%8B%9C%EB%AF%BC%ED%9A%8C%EA%B4%80%EC%B2%B4%EC%9C%A1%EC%9A%B4%EC%98%81%EC%B2%98%20%EB%B9%99%EC%83%81%EB%B6%80/6/006_%EB%B9%99%EC%83%81%EC%9E%A5%20%ED%82%A4%EC%98%A4%EC%8A%A4%ED%81%AC%20%EA%B4%80%EB%82%B4%201%ED%98%B8%EA%B8%B0%2C%20%EA%B4%80%EC%99%B8%202%ED%98%B8%EA%B8%B0%20%EC%9A%94%EA%B8%88%20%EC%9A%B4%EC%98%81_%EA%B9%80%EB%AF%BC%EA%B7%9C.xlsx",
+        "sha256": "f3cc3ad3fe182469792bacb0d5177c6bd4ceedfec3c1767e6c9eb07c1d2ea241",
+        "proposal_id": "session-1792320516156-prop-3"
+      },
+      {
+        "id": "session-1792320516156-prop-3-att-source-6-2",
+        "name": "006_빙상장 키오스크 관내 1호기, 관외 2호기 요금 운영_김민규_보충자료01.pdf",
+        "size": 191609,
+        "type": "application/pdf",
+        "uploaded_at": "2026-10-28T00:00:00Z",
+        "static_url": "/proposal-sources/11.%20%EC%8B%9C%EB%AF%BC%ED%9A%8C%EA%B4%80%EC%B2%B4%EC%9C%A1%EC%9A%B4%EC%98%81%EC%B2%98%20%EB%B9%99%EC%83%81%EB%B6%80/6/006_%EB%B9%99%EC%83%81%EC%9E%A5%20%ED%82%A4%EC%98%A4%EC%8A%A4%ED%81%AC%20%EA%B4%80%EB%82%B4%201%ED%98%B8%EA%B8%B0%2C%20%EA%B4%80%EC%99%B8%202%ED%98%B8%EA%B8%B0%20%EC%9A%94%EA%B8%88%20%EC%9A%B4%EC%98%81_%EA%B9%80%EB%AF%BC%EA%B7%9C_%EB%B3%B4%EC%B6%A9%EC%9E%90%EB%A3%8C01.pdf",
+        "sha256": "eb4e5b643c9ab60a34bf67dbc5fa45a7d57750c6a5f59fbf5e4976388558421a",
+        "proposal_id": "session-1792320516156-prop-3"
+      }
+    ]
   },
   {
     "id": "session-1792320516156-prop-4",
@@ -66,10 +118,26 @@
     "assigned_raw_dept": "청렴감사단",
     "submitted_at": "2026-07-30 11:52:00",
     "title": "[자유제안] 음주운전 점검방식 개선으로 개인정보 유출 리스크 차단",
-    "content": "",
+    "content": "‣ 추진개요\n   • 「인사규정 시행세칙」 제76조의2에 따른 전 임직원 음주운전 실태점검 방식 개선\n   • 정부24 ‘온라인 발급(제3자 제출)’ 기능을 활용한 제출방식 변경\n ‣ 개선방안\n   [현 행]\n   • 정부24에서 개인별 운전경력증명서 발급 → PDF 저장 → 부서 취합 → 공문 제출\n   • 제출현황표 별도 작성 및 제출\n   [개 선]\n   • 정부24 ‘온라인 발급(제3자 제출)’ 기능 활용\n   • 기관 공용 아이디 생성 후 감사담당자 정보(아이디, 성명, 연락처) 입력하여 직접 제출\n   • 감사담당자가 해당 자료를 열람(감사목적 한정) 후 즉시 폐기\n ‣ 세부절차\n   • 정부24 접속 → 운전경력증명서 신청 → 수령방법 ‘온라인발급(제3자 제출)’ 선택 \n     → 기관 공용 아이디 및 감사담당자 정보 입력 → 제출 → 감사담당자 로그인 후 MyGOV\n     (나의 신청내역 → 제3자 제출 및 기관제출(수신))에서 확인 → 확인 후 즉시 폐기",
     "is_duplicate": "",
     "duplicate_title": "",
-    "status": "미평가"
+    "status": "미평가",
+    "background": "• 운전경력증명서를 개인별 PDF로 취합·제출하는 현행 방식은 교통사고 이력 등 감사목적 외 \n     개인정보가 포함되어 과다수집 및 유출 우려 존재\n   • 부서별 취합 및 공문 제출 과정에서 행정 비효율과 보안 취약 가능성 발생",
+    "expected_effect": "• 개인정보 보호 강화\n     → 감사목적 외 정보 노출 차단 및 파일 취합 등에 따른 유출 위험 최소화\n   • 감사 신뢰성 확보\n     → 제출자료 위·변조 가능성 차단 및 감사담당자 직접 확인으로 객관성 강화\n   • 업무 효율성 제고\n     → 부서 취합 및 공문 제출 절차 생략으로 행정업무 부담 경감\n   • 디지털 행정 및 내부통제 강화\n     → 비대면 제출체계 구축 및 제출·확인 절차 표준화로 업무 통제 강화",
+    "attachment_note": "원본 제안서의 사진·도표와 추가 시트는 첨부된 Excel에서 확인할 수 있습니다.",
+    "extra_sheets": [],
+    "attachments": [
+      {
+        "id": "session-1792320516156-prop-4-att-source-8-1",
+        "name": "008_음주운전 점검방식 개선으로 개인정보 유출 리스크 차단_이정민.xlsx",
+        "size": 16718,
+        "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "uploaded_at": "2026-10-28T00:00:00Z",
+        "static_url": "/proposal-sources/22.%20%EC%B2%AD%EB%A0%B4%EA%B0%90%EC%82%AC%EB%8B%A8/8/008_%EC%9D%8C%EC%A3%BC%EC%9A%B4%EC%A0%84%20%EC%A0%90%EA%B2%80%EB%B0%A9%EC%8B%9D%20%EA%B0%9C%EC%84%A0%EC%9C%BC%EB%A1%9C%20%EA%B0%9C%EC%9D%B8%EC%A0%95%EB%B3%B4%20%EC%9C%A0%EC%B6%9C%20%EB%A6%AC%EC%8A%A4%ED%81%AC%20%EC%B0%A8%EB%8B%A8_%EC%9D%B4%EC%A0%95%EB%AF%BC.xlsx",
+        "sha256": "82593d53fcbac558c41751f7ba85736d6cf21016bc8e99eaf831dfd5a1eb7c7d",
+        "proposal_id": "session-1792320516156-prop-4"
+      }
+    ]
   },
   {
     "id": "session-1792320516156-prop-16",
@@ -90,10 +158,36 @@
     "assigned_raw_dept": "미래전략실 스마트정보부",
     "submitted_at": "2026-08-02 12:50:00",
     "title": "계정등록 신청서 양식 간소화로 업무 간소화",
-    "content": "",
+    "content": "- 이중결재(서명, 전자결재) => 전자결재 통일\n- 기존 계정 등록(변경,삭제) 신청서의 부서장란 삭제",
     "is_duplicate": "",
     "duplicate_title": "",
-    "status": "미평가"
+    "status": "미평가",
+    "background": "신규이용자 계정등록시 각 부서의 장(처장, 단장, 실장)의 서명 결재 후 전자결재를 함으로 이중 결재로 비효율적인 임",
+    "expected_effect": "'- 업무간소화로 업무효율성 증대",
+    "attachment_note": "원본 제안서의 사진·도표와 추가 시트는 첨부된 Excel에서 확인할 수 있습니다.",
+    "extra_sheets": [],
+    "attachments": [
+      {
+        "id": "session-1792320516156-prop-16-att-source-22-1",
+        "name": "022_계정등록 신청서 양식 간소화로 업무 간소화_정명화.xlsx",
+        "size": 54965,
+        "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "uploaded_at": "2026-10-28T00:00:00Z",
+        "static_url": "/proposal-sources/21.%20%EB%AF%B8%EB%9E%98%EC%A0%84%EB%9E%B5%EC%8B%A4%20%EC%8A%A4%EB%A7%88%ED%8A%B8%EC%A0%95%EB%B3%B4%EB%B6%80/22/022_%EA%B3%84%EC%A0%95%EB%93%B1%EB%A1%9D%20%EC%8B%A0%EC%B2%AD%EC%84%9C%20%EC%96%91%EC%8B%9D%20%EA%B0%84%EC%86%8C%ED%99%94%EB%A1%9C%20%EC%97%85%EB%AC%B4%20%EA%B0%84%EC%86%8C%ED%99%94_%EC%A0%95%EB%AA%85%ED%99%94.xlsx",
+        "sha256": "fc3f989c1c6fd23cd49705dc5ca19769d6bd24ffb8b9f5be25435660aec7a13e",
+        "proposal_id": "session-1792320516156-prop-16"
+      },
+      {
+        "id": "session-1792320516156-prop-16-att-source-22-2",
+        "name": "022_계정등록 신청서 양식 간소화로 업무 간소화_정명화_보충자료01.hwp",
+        "size": 74240,
+        "type": "application/haansofthwp",
+        "uploaded_at": "2026-10-28T00:00:00Z",
+        "static_url": "/proposal-sources/21.%20%EB%AF%B8%EB%9E%98%EC%A0%84%EB%9E%B5%EC%8B%A4%20%EC%8A%A4%EB%A7%88%ED%8A%B8%EC%A0%95%EB%B3%B4%EB%B6%80/22/022_%EA%B3%84%EC%A0%95%EB%93%B1%EB%A1%9D%20%EC%8B%A0%EC%B2%AD%EC%84%9C%20%EC%96%91%EC%8B%9D%20%EA%B0%84%EC%86%8C%ED%99%94%EB%A1%9C%20%EC%97%85%EB%AC%B4%20%EA%B0%84%EC%86%8C%ED%99%94_%EC%A0%95%EB%AA%85%ED%99%94_%EB%B3%B4%EC%B6%A9%EC%9E%90%EB%A3%8C01.hwp",
+        "sha256": "417b66c5b4b249b0c9ae1998024619db6420f0c62078aef548fee9ef1c8ea498",
+        "proposal_id": "session-1792320516156-prop-16"
+      }
+    ]
   },
   {
     "id": "session-1792320516156-prop-19",
@@ -114,10 +208,26 @@
     "assigned_raw_dept": "시설관리처 시설기획부",
     "submitted_at": "2026-08-04 11:02:00",
     "title": "[자유제안] 엘리베이터 층별 안내 스티커 부착",
-    "content": "",
+    "content": "건물 내 다양한 시설이 층별로 분산되어 있음에도 불구하고,\n엘리베이터 내부 버튼에는 단순한 층수만 표시되어 있어 방문객 및 이용객이 목적지를 직관적으로 파악하기 어려움.\n특히 처음 방문하는 이용자나 외부 방문객의 경우 층별 시설 위치를 몰라 불편을 겪고 있으며, 안내 데스크 문의 증가 및 이동 동선의 비효율이 발생하고 있음.\n한편, 현재 엘리베이터 내부에는 층별 AED(자동심장충격기) 위치 안내 스티커가 이미 부착되어 있어, 층별 정보를 시각적으로 제공하는 방식이 효과적으로 활용되고 있음.\n이를 시설 안내에도 확장 적용할 필요가 있음.",
     "is_duplicate": "",
     "duplicate_title": "",
-    "status": "미평가"
+    "status": "미평가",
+    "background": "엘리베이터 버튼 패널에 각 층별 주요 시설을 직관적으로 확인할 수 있는 층별 안내 스티커를 부착함.\n기존 AED 안내 스티커와 유사한 방식으로 통일성 있게 디자인 적용\n버튼 옆 또는 버튼 위에 간단한 텍스트 형태로 표기\n한눈에 들어오는 간결한 구성(첨부확인)\n예시: B2층: 빙상장 / 종합상황실, B1층: 골프 / 볼링, 1층: 수영장 / 상상하랑",
+    "expected_effect": "방문객의 시설 접근성 및 편의성 향상\n층별 이동 시 목적지 탐색 시간 단축\n안내 데스크 문의 감소 및 운영 효율성 증대\n기존 AED 안내 체계와의 연계로 정보 전달 일관성 확보",
+    "attachment_note": "원본 제안서의 사진·도표와 추가 시트는 첨부된 Excel에서 확인할 수 있습니다.",
+    "extra_sheets": [],
+    "attachments": [
+      {
+        "id": "session-1792320516156-prop-19-att-source-25-1",
+        "name": "025_엘리베이터 층별 안내 스티커 부착_윤지혜.xlsx",
+        "size": 987243,
+        "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "uploaded_at": "2026-10-28T00:00:00Z",
+        "static_url": "/proposal-sources/6.%20%EC%8B%9C%EC%84%A4%EA%B4%80%EB%A6%AC%EC%B2%98%20%EC%8B%9C%EC%84%A4%EA%B8%B0%ED%9A%8D%EB%B6%80/25/025_%EC%97%98%EB%A6%AC%EB%B2%A0%EC%9D%B4%ED%84%B0%20%EC%B8%B5%EB%B3%84%20%EC%95%88%EB%82%B4%20%EC%8A%A4%ED%8B%B0%EC%BB%A4%20%EB%B6%80%EC%B0%A9_%EC%9C%A4%EC%A7%80%ED%98%9C.xlsx",
+        "sha256": "5ea2a524492c0085e62bb4dacb8883d3b23d3e979372c7c29ff44ba8aa24a439",
+        "proposal_id": "session-1792320516156-prop-19"
+      }
+    ]
   },
   {
     "id": "session-1792320516156-prop-52",
@@ -138,34 +248,36 @@
     "assigned_raw_dept": "경영지원실 재무부",
     "submitted_at": "2026-08-21 17:09:00",
     "title": "[지정제안] 원스톱 상생결제시스템 도입",
-    "content": "",
+    "content": "○ KB증권이 운영하는 원스톱 상생결제시스템 도입\n    - 약정절차: ①KB증권 과천지점에서 공사 명의 CMA계좌 개설\n                   ②KB증권 본사 발행어음운용부와 상생결제 약정 체결\n    - 이용방식: 계약상대자는 추가 계좌 개설 없이, 기존 계좌를 활용하여 상생결제시스템 이용",
     "is_duplicate": "",
     "duplicate_title": "",
-    "status": "미평가"
-  },
-  {
-    "id": "session-1792320516156-prop-54",
-    "session_id": "session-1792320516156",
-    "seq_no": 54,
-    "board_no": "62",
-    "proposer_name": "안경선",
-    "proposer_rank": "행정 4급",
-    "proposer_division": "운영관리본부",
-    "proposer_office": "공원수련관관리처",
-    "proposer_department": "수련관운영부",
-    "proposer_raw_dept": "공원수련관관리처 수련관운영부",
-    "proposal_type": "자유제안",
-    "category": "안전",
-    "assigned_division": "운영관리본부",
-    "assigned_office": "공원수련관관리처",
-    "assigned_department": "시설지원부",
-    "assigned_raw_dept": "공원수련관관리처 시설지원부",
-    "submitted_at": "2026-08-24 15:56:00",
-    "title": "(자유제안) 화장실 위생 개선 및 노로바이러스 감염 예방을 위한 양변기 손잡이 설치",
-    "content": "",
-    "is_duplicate": "",
-    "duplicate_title": "",
-    "status": "미평가"
+    "status": "미평가",
+    "background": "○ 상생결제시스템은 계약대금이 하위 협력기업 및 노무자에게 안전하고 신속하게 지급될 수 있도록\n    지원하는 결제시스템으로, 대금 미지급 위험을 줄이고 자금 유동성 확보에 기여하는 제도임\n○ 상생결제시스템 이용실적은 경영평가 「지역상생·협력」 정량지표 중 0.3점에 해당함\n○ 우리 공사는 현재 농협과 약정을 체결하여 상생결제시스템을 이용하고 있으나, 계약상대자가\n    반드시 농협계좌를 보유해야만 상생결제시스템을 이용할 수 있어, 상생결제 확대에 한계가 있음",
+    "expected_effect": "○ 농협계좌 보유 여부와 관계없이 상생결제를 이용할 수 있도록 하여, \n    하위 협력기업 및 노무자의 안정적 대금 수령 및 자금 유동성 확보 강화\n○ 상생결제시스템 이용실적 확대를 통한 경영평가 「지역상생·협력」 정량지표 0.3점 안정적 확보",
+    "attachment_note": "원본 제안서의 사진·도표와 추가 시트는 첨부된 Excel에서 확인할 수 있습니다.",
+    "extra_sheets": [],
+    "attachments": [
+      {
+        "id": "session-1792320516156-prop-52-att-source-59-1",
+        "name": "059_원스톱 상생결제시스템 도입_김민수.xlsx",
+        "size": 15966,
+        "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "uploaded_at": "2026-10-28T00:00:00Z",
+        "static_url": "/proposal-sources/17.%20%EA%B2%BD%EC%98%81%EC%A7%80%EC%9B%90%EC%8B%A4%20%EC%9E%AC%EB%AC%B4%EB%B6%80/59/059_%EC%9B%90%EC%8A%A4%ED%86%B1%20%EC%83%81%EC%83%9D%EA%B2%B0%EC%A0%9C%EC%8B%9C%EC%8A%A4%ED%85%9C%20%EB%8F%84%EC%9E%85_%EA%B9%80%EB%AF%BC%EC%88%98.xlsx",
+        "sha256": "4a268d5ac99aad21aa515672da7a301808c564e25cd39d9dcffd196a5d0539bd",
+        "proposal_id": "session-1792320516156-prop-52"
+      },
+      {
+        "id": "session-1792320516156-prop-52-att-source-59-2",
+        "name": "059_원스톱 상생결제시스템 도입_김민수_보충자료01.pdf",
+        "size": 499900,
+        "type": "application/pdf",
+        "uploaded_at": "2026-10-28T00:00:00Z",
+        "static_url": "/proposal-sources/17.%20%EA%B2%BD%EC%98%81%EC%A7%80%EC%9B%90%EC%8B%A4%20%EC%9E%AC%EB%AC%B4%EB%B6%80/59/059_%EC%9B%90%EC%8A%A4%ED%86%B1%20%EC%83%81%EC%83%9D%EA%B2%B0%EC%A0%9C%EC%8B%9C%EC%8A%A4%ED%85%9C%20%EB%8F%84%EC%9E%85_%EA%B9%80%EB%AF%BC%EC%88%98_%EB%B3%B4%EC%B6%A9%EC%9E%90%EB%A3%8C01.pdf",
+        "sha256": "8d8542948367a737ce98f115c7e433746941e6c492f7df7c2560a94595550cea",
+        "proposal_id": "session-1792320516156-prop-52"
+      }
+    ]
   },
   {
     "id": "session-1792320516156-prop-134",
@@ -186,10 +298,26 @@
     "assigned_raw_dept": "공원수련관관리처 수련관운영부",
     "submitted_at": "2026-08-31 21:27:00",
     "title": "AI를 활용한 QR코드 및 GPS 기반 셔틀버스 비정규직 근로자 복무관리 자동화",
-    "content": "",
+    "content": "1. AI를 활용한 모바일 QR 기반 복무 관리 시스템 구축\n - 구글 스프레드시트 기반의 실시간 데이터베이스(DB) 및 자동 기록 환경 조성\n - 현장 부착용 QR코드 및 근로자 전용 모바일 웹 체크인 인터페이스 구현\n  * AI를 활용한 QR코드 및 GPS기반 출퇴근 관리 시스템 만들기\n   1) 구글스프레드 시트(데이터 저장소)만들기 2) Apps Script 심기 3) 웹앱으로 배포하기 4) 스마트폰용 \n     웹 페이지 만들기 5) 웹페이지 인터넷에 올리기 및 QR 생성 \n2. GPS 위치 인증을 통한 부정 출근 방지\n - 출·퇴근 시 지정된 근무지 반경(20m 이내)에서만 개인 스마트폰으로 인증 가능하도록 설정\n - 위치 미확인 또는 이탈 시 인증을 원천 차단하여 복무 기강 확립\n3. 개인정보 수집 최소화(실명 대신 고유 사번/연락처 뒷자리 사용 및 수집 동의 절차 마련)\n4. 구글스프레드 시트에 쌓인 매월 출퇴근 자료를 사역부로 활용하여 근무시간 산출 및 급여 지급\nq",
     "is_duplicate": "",
     "duplicate_title": "",
-    "status": "미평가"
+    "status": "미평가",
+    "background": "현재 셔틀버스 근로자는 파견직(운전) 1명 및 일시고용(동승보호자) 직원 3명으로 구성되어 있음.\n비정규직 및 파견직 직원은 기관의 내부 복무 시스템(ERP, e-HR)에서 복무 관리가 연동되지 않아, 그동안 출근기록부와 사역부를 수기로 작성·관리함에 따라 행정력 소모 및 투명성 확보에 한계가 있었음.\n업무 효율성 제고 및 투명한 복무 관리 체계 확립을 위해, 모바일 QR코드 및 GPS 위치 인증을 활용한 셔틀버스 근로자 스마트 복무 관리 시스템을 도입하고자 함.",
+    "expected_effect": "1. 업무 효율성 제고: 수기 출근부 및 사역부 작성·취합 업무를 디지털 자동화하여 담당자의 반복 행정 업무\n   시간 대폭 단축\n2. 복무관리의 투명성 확보: 누락, 오기, 대리 서명등의 문제점 원천 차단 및 GPS 기반 위치 인증으로 \n   근무지 출근 여부를 실시간으로 객관적이고 정확하게 확인 가능\n3. 스마트 행정 구현 및 대민 서비스 질 향상: 모바일 연계 스마트 관리 체계 도입으로 투명하고 합리적인\n   조직 문화를 조성하고, 철저한 근태 관리를 통해 셔틀버스 지연·무정차 등 관련 민원 사전 예방",
+    "attachment_note": "원본 제안서의 사진·도표와 추가 시트는 첨부된 Excel에서 확인할 수 있습니다.",
+    "extra_sheets": [],
+    "attachments": [
+      {
+        "id": "session-1792320516156-prop-134-att-source-143-1",
+        "name": "143_AI를 활용한 모바일 QR 코드 및 GPS 기반 셔틀버스 비정규직 근로자 복무관리 자동화_조은희.xlsx",
+        "size": 88684,
+        "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "uploaded_at": "2026-10-28T00:00:00Z",
+        "static_url": "/proposal-sources/15.%20%EA%B3%B5%EC%9B%90%EC%88%98%EB%A0%A8%EA%B4%80%EA%B4%80%EB%A6%AC%EC%B2%98%20%EC%88%98%EB%A0%A8%EA%B4%80%EC%9A%B4%EC%98%81%EB%B6%80/143/143_AI%EB%A5%BC%20%ED%99%9C%EC%9A%A9%ED%95%9C%20%EB%AA%A8%EB%B0%94%EC%9D%BC%20QR%20%EC%BD%94%EB%93%9C%20%EB%B0%8F%20GPS%20%EA%B8%B0%EB%B0%98%20%EC%85%94%ED%8B%80%EB%B2%84%EC%8A%A4%20%EB%B9%84%EC%A0%95%EA%B7%9C%EC%A7%81%20%EA%B7%BC%EB%A1%9C%EC%9E%90%20%EB%B3%B5%EB%AC%B4%EA%B4%80%EB%A6%AC%20%EC%9E%90%EB%8F%99%ED%99%94_%EC%A1%B0%EC%9D%80%ED%9D%AC.xlsx",
+        "sha256": "f888f237dc2f8202c9a75ab55024be888e2b316e535e792d93887419c1d32a53",
+        "proposal_id": "session-1792320516156-prop-134"
+      }
+    ]
   },
   {
     "id": "session-1792320516156-prop-136",
@@ -210,9 +338,35 @@
     "assigned_raw_dept": "공원수련관관리처 시설지원부",
     "submitted_at": "2026-09-23 16:58:00",
     "title": "장애인 주차구역 스마트단속시스템",
-    "content": "",
+    "content": "* 장애인주차자리 스마트단속시스템설치",
     "is_duplicate": "",
     "duplicate_title": "",
-    "status": "미평가"
+    "status": "미평가",
+    "background": "도시공사 내 장애인주차구역의 스마트단속시스템을 도입하여 장애인주차의 편의를 도모하고 장애인주차구역의 불법주차 및 주차방해 등의 행위를 스마트시스템을 이용한 개도 및 단속으로 올바른 주차 문화와 장애인주차의 편의성을 높이기 위함.",
+    "expected_effect": "* 장애인주차자리의 올바른 확보\n* 불법주차 스마트 단속",
+    "attachment_note": "원본 제안서의 사진·도표와 추가 시트는 첨부된 Excel에서 확인할 수 있습니다.",
+    "extra_sheets": [],
+    "attachments": [
+      {
+        "id": "session-1792320516156-prop-136-att-source-146-1",
+        "name": "146_장애인주차구역 스마트단속시스템_김재범.xlsx",
+        "size": 14743,
+        "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "uploaded_at": "2026-10-28T00:00:00Z",
+        "static_url": "/proposal-sources/14.%20%EA%B3%B5%EC%9B%90%EC%88%98%EB%A0%A8%EA%B4%80%EA%B4%80%EB%A6%AC%EC%B2%98%20%EC%8B%9C%EC%84%A4%EC%A7%80%EC%9B%90%EB%B6%80/146/146_%EC%9E%A5%EC%95%A0%EC%9D%B8%EC%A3%BC%EC%B0%A8%EA%B5%AC%EC%97%AD%20%EC%8A%A4%EB%A7%88%ED%8A%B8%EB%8B%A8%EC%86%8D%EC%8B%9C%EC%8A%A4%ED%85%9C_%EA%B9%80%EC%9E%AC%EB%B2%94.xlsx",
+        "sha256": "fb98196a327b63a6cad5d11f40432d1b591582a38d36926c46e2cf5c57aa756f",
+        "proposal_id": "session-1792320516156-prop-136"
+      },
+      {
+        "id": "session-1792320516156-prop-136-att-source-146-2",
+        "name": "146_장애인주차구역 스마트단속시스템_김재범_보충자료01.jpg",
+        "size": 174300,
+        "type": "image/jpeg",
+        "uploaded_at": "2026-10-28T00:00:00Z",
+        "static_url": "/proposal-sources/14.%20%EA%B3%B5%EC%9B%90%EC%88%98%EB%A0%A8%EA%B4%80%EA%B4%80%EB%A6%AC%EC%B2%98%20%EC%8B%9C%EC%84%A4%EC%A7%80%EC%9B%90%EB%B6%80/146/146_%EC%9E%A5%EC%95%A0%EC%9D%B8%EC%A3%BC%EC%B0%A8%EA%B5%AC%EC%97%AD%20%EC%8A%A4%EB%A7%88%ED%8A%B8%EB%8B%A8%EC%86%8D%EC%8B%9C%EC%8A%A4%ED%85%9C_%EA%B9%80%EC%9E%AC%EB%B2%94_%EB%B3%B4%EC%B6%A9%EC%9E%90%EB%A3%8C01.jpg",
+        "sha256": "fa44cd454705c927a52802e09eb1672ac646134056e56fdf1d5ab088ea8f0110",
+        "proposal_id": "session-1792320516156-prop-136"
+      }
+    ]
   }
 ]

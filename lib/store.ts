@@ -1,3 +1,4 @@
+import { applyProposalSource, isExcludedProposal, findSourceAttachment } from './proposalSources';
 import fs from 'fs';
 import path from 'path';
 import { OrganizationChart, EvaluationSession, Proposal, ProposalAttachment, Evaluation, EvaluationCriteria, Department, CommitteeJudge, CommitteeScore, EvaluationStage } from './types';
@@ -747,6 +748,8 @@ export async function deleteProposalAttachmentAsync(
 }
 
 export async function getAttachmentFileAsync(attachmentId: string): Promise<ProposalAttachment | null> {
+  const correctedSource = findSourceAttachment(attachmentId);
+  if (correctedSource) return correctedSource;
   // 1. Check attachments index for static_url first
   const indexMap = await getAttachmentsIndexAsync();
   for (const list of Object.values(indexMap)) {
@@ -817,7 +820,7 @@ export async function getProposalsAsync(sessionId?: string): Promise<Proposal[]>
     }
     const { data, error } = await query;
     if (!error && Array.isArray(data) && data.length > 0) {
-      return data.map(p => {
+      return data.filter(p => !isExcludedProposal(p)).map(p => {
         const local = localMap.get(p.id);
         const rawMatch =
           rawByNoAndTitle.get(`${p.seq_no}::${p.title}`) ||
@@ -881,14 +884,14 @@ export async function getProposalsAsync(sessionId?: string): Promise<Proposal[]>
           stage1_avg_score: p.stage1_avg_score ?? local?.stage1_avg_score,
           stage1_review_date: p.stage1_review_date ?? local?.stage1_review_date
         };
-      });
+      }).map(applyProposalSource);
     }
   } catch (err) {}
 
-  return localList.map(p => ({
+  return localList.filter(p => !isExcludedProposal(p)).map(p => ({
     ...p,
     attachments: attachmentsIndex[p.id] || p.attachments || []
-  }));
+  })).map(applyProposalSource);
 }
 
 export function getProposals(sessionId?: string): Proposal[] {
@@ -983,10 +986,10 @@ export function getProposals(sessionId?: string): Proposal[] {
   });
 
   if (sessionId) {
-    return enriched.filter(p => p.session_id === sessionId);
+    return enriched.filter(p => p.session_id === sessionId && !isExcludedProposal(p)).map(applyProposalSource);
   }
 
-  return enriched;
+  return enriched.filter(p => !isExcludedProposal(p)).map(applyProposalSource);
 }
 
 export async function updateProposalAsync(updated: Proposal): Promise<void> {
