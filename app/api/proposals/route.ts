@@ -1,3 +1,6 @@
+import { visibleProposals, ownsProposal } from '@/lib/access';
+import { getSessionsAsync } from '@/lib/store';
+import { authorize } from '@/lib/session';
 import { NextResponse } from 'next/server';
 import { getProposalsAsync, updateProposalAsync } from '@/lib/store';
 
@@ -5,6 +8,8 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export async function GET(req: Request) {
+  const { principal, error: authError } = await authorize(req, false);
+  if (authError) return authError;
   const { searchParams } = new URL(req.url);
   const hasSessionParam = searchParams.has('session_id');
   const sessionId = searchParams.get('session_id');
@@ -22,7 +27,7 @@ export async function GET(req: Request) {
   const status = searchParams.get('status');
   const search = searchParams.get('search');
 
-  let list = await getProposalsAsync(sessionId || undefined);
+  let list = await visibleProposals(principal, await getProposalsAsync(sessionId || undefined));
 
   if (proposalId) {
     const single = list.find(p => p.id === proposalId);
@@ -63,13 +68,27 @@ export async function GET(req: Request) {
 }
 
 export async function PUT(req: Request) {
+  const { principal, error: authError } = await authorize(req, false);
+  if (authError) return authError;
   try {
     const body = await req.json();
     if (!body.id) {
       return NextResponse.json({ success: false, error: 'ID is required' }, { status: 400 });
     }
-    await updateProposalAsync(body);
-    return NextResponse.json({ success: true, proposal: body });
+    const existing = (await getProposalsAsync()).find(p => p.id === body.id);
+    if (!existing || !ownsProposal(principal, existing)) return NextResponse.json({ success: false }, { status: 403 });
+    let updated = body;
+    if (principal.role !== 'ADMIN') {
+      const session = (await getSessionsAsync()).find(s => s.id === existing.session_id);
+      if (!session || session.status !== 'ACTIVE' || (session.stage || 'STAGE_0') !== 'STAGE_0' || typeof body.transfer_requested !== 'boolean') return NextResponse.json({ success: false }, { status: 403 });
+      const requested = body.transfer_requested;
+      updated = { ...existing, transfer_requested: requested, transfer_target_dept: requested ? String(body.transfer_target_dept || '').slice(0, 100) : '',
+        transfer_reason: requested ? String(body.transfer_reason || '').trim().slice(0, 5000) : '',
+        transfer_requested_at: requested ? new Date().toISOString() : undefined, transfer_status: requested ? 'PENDING' : undefined };
+      if (requested && (!updated.transfer_reason || !updated.transfer_target_dept)) return NextResponse.json({ success: false }, { status: 400 });
+    }
+    await updateProposalAsync(updated);
+    return NextResponse.json({ success: true, proposal: updated });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }

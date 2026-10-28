@@ -1,7 +1,10 @@
+import { authorize } from '@/lib/session';
 import { NextResponse } from 'next/server';
 import { createStage1SessionFromStage0Async } from '@/lib/store';
 
 export async function POST(req: Request) {
+  const { principal, error: authError } = await authorize(req, true);
+  if (authError) return authError;
   try {
     const body = await req.json();
     if (!body.sourceSessionId) {

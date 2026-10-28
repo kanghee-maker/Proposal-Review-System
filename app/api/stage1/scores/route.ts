@@ -1,8 +1,11 @@
+import { authorize } from '@/lib/session';
 import { NextResponse } from 'next/server';
 import { getCommitteeScoresAsync, saveCommitteeScoreAsync, saveCommitteeScoresBatchAsync, updateProposalAsync, getProposalsAsync } from '@/lib/store';
 import { CommitteeScore } from '@/lib/types';
 
 export async function GET(req: Request) {
+  const { principal, error: authError } = await authorize(req, true);
+  if (authError) return authError;
   try {
     const { searchParams } = new URL(req.url);
     const sessionId = searchParams.get('session_id') || undefined;
@@ -16,6 +19,8 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  const { principal, error: authError } = await authorize(req, true);
+  if (authError) return authError;
   try {
     const body = await req.json();
 

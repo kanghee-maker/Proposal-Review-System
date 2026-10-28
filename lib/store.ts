@@ -4,7 +4,7 @@ import path from 'path';
 import { OrganizationChart, EvaluationSession, Proposal, ProposalAttachment, Evaluation, EvaluationCriteria, Department, CommitteeJudge, CommitteeScore, EvaluationStage } from './types';
 import { supabase } from './supabaseClient';
 
-const DATA_DIR = path.join(process.cwd(), 'data');
+const DATA_DIR = process.env.PROPOSAL_DATA_DIR || path.join(process.cwd(), 'data');
 
 function readJson<T>(filename: string, fallback: T): T {
   try {
@@ -19,27 +19,15 @@ function readJson<T>(filename: string, fallback: T): T {
 }
 
 function writeJson<T>(filename: string, data: T): void {
+  if (process.env.NODE_ENV === 'production') return; // DB is authoritative on Vercel; never write bundled files.
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+  const target = path.join(DATA_DIR, filename);
+  const temp = `${target}.${process.pid}.${require('crypto').randomUUID()}.tmp`;
   try {
-    if (!fs.existsSync(DATA_DIR)) {
-      fs.mkdirSync(DATA_DIR, { recursive: true });
-    }
-    const fullPath = path.join(DATA_DIR, filename);
-    const content = JSON.stringify(data, null, 2);
-    try {
-      fs.writeFileSync(fullPath, content, 'utf8');
-    } catch (writeErr) {
-      // Retry once for Windows file locks
-      try {
-        const tempPath = `${fullPath}.${Date.now()}.tmp`;
-        fs.writeFileSync(tempPath, content, 'utf8');
-        fs.copyFileSync(tempPath, fullPath);
-        fs.unlinkSync(tempPath);
-      } catch (retryErr) {
-        console.error(`Error retry writing ${filename}:`, retryErr);
-      }
-    }
-  } catch (err) {
-    console.error(`Error writing ${filename}:`, err);
+    fs.writeFileSync(temp, JSON.stringify(data, null, 2), { encoding: 'utf8', flag: 'wx' });
+    fs.renameSync(temp, target);
+  } finally {
+    if (fs.existsSync(temp)) fs.unlinkSync(temp);
   }
 }
 
@@ -230,6 +218,10 @@ export async function getSessionsAsync(): Promise<EvaluationSession[]> {
   const localSessions = getSessions();
   try {
     const { data, error } = await supabase.from('evaluation_sessions').select('*');
+    if (process.env.NODE_ENV === 'production') {
+      if (error || !Array.isArray(data)) throw new Error('DB 조회에 실패했습니다.');
+      if (data.length === 0) return [];
+    }
     if (!error && Array.isArray(data)) {
       if (data.length > 0 || isSystemInitialized()) {
         markSystemInitialized();
@@ -261,6 +253,7 @@ export async function getSessionsAsync(): Promise<EvaluationSession[]> {
       }
     }
   } catch (err) {
+    if (process.env.NODE_ENV === 'production') throw err;
     // fallback
   }
   return localSessions;
@@ -819,6 +812,10 @@ export async function getProposalsAsync(sessionId?: string): Promise<Proposal[]>
       query = query.eq('session_id', sessionId);
     }
     const { data, error } = await query;
+    if (process.env.NODE_ENV === 'production') {
+      if (error || !Array.isArray(data)) throw new Error('DB 조회에 실패했습니다.');
+      if (data.length === 0) return [];
+    }
     if (!error && Array.isArray(data) && data.length > 0) {
       return data.filter(p => !isExcludedProposal(p)).map(p => {
         const local = localMap.get(p.id);
@@ -886,7 +883,7 @@ export async function getProposalsAsync(sessionId?: string): Promise<Proposal[]>
         };
       }).map(applyProposalSource);
     }
-  } catch (err) {}
+  } catch (err) { if (process.env.NODE_ENV === 'production') throw err; }
 
   return localList.filter(p => !isExcludedProposal(p)).map(p => ({
     ...p,
@@ -994,7 +991,7 @@ export function getProposals(sessionId?: string): Proposal[] {
 
 export async function updateProposalAsync(updated: Proposal): Promise<void> {
   try {
-    await supabase.from('proposals').update({
+    const { error } = await supabase.from('proposals').update({
       assigned_division: updated.assigned_division,
       assigned_office: updated.assigned_office,
       assigned_department: updated.assigned_department,
@@ -1003,9 +1000,15 @@ export async function updateProposalAsync(updated: Proposal): Promise<void> {
       title: updated.title,
       content: updated.content,
       is_duplicate: updated.is_duplicate,
-      duplicate_title: updated.duplicate_title
+      duplicate_title: updated.duplicate_title,
+      transfer_requested: updated.transfer_requested || false,
+      transfer_target_dept: updated.transfer_target_dept || '',
+      transfer_reason: updated.transfer_reason || '',
+      transfer_requested_at: updated.transfer_requested_at || null,
+      transfer_status: updated.transfer_status || null
     }).eq('id', updated.id);
-  } catch (err) {}
+    if (error) throw new Error('제안 변경을 DB에 저장하지 못했습니다.');
+  } catch (err) { throw err; }
   updateProposal(updated);
 }
 
@@ -1025,7 +1028,11 @@ export async function getEvaluationsAsync(sessionId?: string): Promise<Evaluatio
   try {
     let query = supabase.from('evaluations').select('*');
     if (sessionId) query = query.eq('session_id', sessionId);
-    const { data } = await query;
+    const { data, error } = await query;
+    if (process.env.NODE_ENV === 'production') {
+      if (error || !Array.isArray(data)) throw new Error('DB 조회에 실패했습니다.');
+      if (data.length === 0) return [];
+    }
     if (data && data.length > 0) {
       return data.map(e => ({
         id: e.id,
@@ -1039,7 +1046,7 @@ export async function getEvaluationsAsync(sessionId?: string): Promise<Evaluatio
         updated_at: e.updated_at
       }));
     }
-  } catch (err) {}
+  } catch (err) { if (process.env.NODE_ENV === 'production') throw err; }
   return getEvaluations(sessionId);
 }
 
@@ -1051,24 +1058,10 @@ export function getEvaluations(sessionId?: string): Evaluation[] {
   return evals;
 }
 
-export async function saveEvaluationAsync(evaluation: Evaluation): Promise<void> {
-  try {
-    await supabase.from('evaluations').upsert({
-      id: evaluation.id,
-      proposal_id: evaluation.proposal_id,
-      session_id: evaluation.session_id,
-      department_name: evaluation.department_name,
-      evaluator_name: evaluation.evaluator_name,
-      answers: evaluation.answers,
-      is_submitted: evaluation.is_submitted,
-      submitted_at: evaluation.submitted_at,
-      updated_at: evaluation.updated_at
-    });
-    // 제안 상태 업데이트
-    await supabase.from('proposals').update({
-      status: evaluation.is_submitted ? '평가완료' : '평가작성중'
-    }).eq('id', evaluation.proposal_id);
-  } catch (err) {}
+export async function saveEvaluationAsync(evaluation: Evaluation, allowAdmin = false): Promise<void> {
+  const { error } = await supabase.rpc('save_department_evaluation', { evaluation, allow_admin: allowAdmin });
+  if (error) throw new Error('평가 저장에 실패했습니다. 관리자에게 보안 SQL 적용 및 DB 상태 확인을 요청해주세요.');
+  // DB transaction succeeded; keep the local mirror consistent without truncating files.
   saveEvaluation(evaluation);
 }
 

@@ -1,7 +1,10 @@
+import { authorize } from '@/lib/session';
 import { NextResponse } from 'next/server';
 import * as XLSX from 'xlsx';
 
-export async function GET() {
+export async function GET(req: Request) {
+  const { principal, error: authError } = await authorize(req, true);
+  if (authError) return authError;
   try {
     const sampleRows = [
       {

@@ -1,20 +1,16 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { verifyAdminPassword } from '@/lib/auth';
-
-export async function POST(req: NextRequest) {
+import { NextResponse } from 'next/server';
+import { verifyAdminPassword, verifyDepartmentPassword } from '@/lib/auth';
+import { configurationReady, sameOrigin, takeLoginAttempt, loginResponse } from '@/lib/session';
+export const dynamic = 'force-dynamic';
+export async function POST(req: Request) {
+  if (!configurationReady()) return NextResponse.json({ success: false, message: '서버 인증 설정이 필요합니다.' }, { status: 503 });
+  if (!sameOrigin(req) || !req.headers.get('content-type')?.startsWith('application/json')) return NextResponse.json({ success: false }, { status: 403 });
   try {
-    const { password } = await req.json();
-    if (!password) {
-      return NextResponse.json({ success: false, message: '비밀번호를 입력해주세요.' }, { status: 400 });
-    }
-
-    const isValid = verifyAdminPassword(password);
-    if (isValid) {
-      return NextResponse.json({ success: true, message: '인증되었습니다.' });
-    } else {
-      return NextResponse.json({ success: false, message: '관리자 비밀번호가 일치하지 않습니다.' }, { status: 401 });
-    }
-  } catch (error: any) {
-    return NextResponse.json({ success: false, message: error.message || '인증 오류가 발생했습니다.' }, { status: 500 });
-  }
+    const body = await req.json();
+    if (typeof body.password !== 'string' || !body.password || body.password.length > 256) return NextResponse.json({ success: false, message: '입력 내용을 확인해주세요.' }, { status: 400 });
+    if (!takeLoginAttempt('admin')) return NextResponse.json({ success: false, message: '시도 횟수를 초과했습니다. 15분 후 다시 시도해주세요.' }, { status: 429, headers: { 'Retry-After': '900' } });
+    const valid = verifyAdminPassword(body.password);
+    if (!valid) return NextResponse.json({ success: false, message: '비밀번호가 일치하지 않습니다.' }, { status: 401 });
+    return await loginResponse('ADMIN');
+  } catch { return NextResponse.json({ success: false, message: '인증 처리에 실패했습니다. 서버 설정을 확인해주세요.' }, { status: 503 }); }
 }

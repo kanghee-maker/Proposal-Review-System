@@ -115,9 +115,6 @@ export default function Home() {
       const data = await res.json();
 
       if (data.success) {
-        if (data.isTestMode) {
-          alert(`[관리자 스페셜 인증]\n${selectedDept} 평가함에 관리자 권한으로 입장합니다.`);
-        }
         const name = `${selectedDept} 평가자`;
         if (typeof window !== 'undefined') {
           localStorage.setItem('gcuc_user_role', 'EVALUATOR');

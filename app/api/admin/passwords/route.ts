@@ -1,3 +1,4 @@
+import { authorize } from '@/lib/session';
 import { NextRequest, NextResponse } from 'next/server';
 import { getAllDepartmentPasswordsAsync, setupDepartmentPassword, saveAllDepartmentPasswords } from '@/lib/auth';
 import { getOrganizationChartAsync } from '@/lib/store';
@@ -5,7 +6,9 @@ import { getOrganizationChartAsync } from '@/lib/store';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-export async function GET() {
+export async function GET(req: Request) {
+  const { principal, error: authError } = await authorize(req, true);
+  if (authError) return authError;
   try {
     const orgChart = await getOrganizationChartAsync();
     const departments = orgChart.departments || [];
@@ -16,7 +19,7 @@ export async function GET() {
       const pass = passwords[d.department] || '';
       return {
         ...d,
-        password: pass,
+
         hasPassword: Boolean(pass)
       };
     });
@@ -38,9 +41,19 @@ export async function GET() {
   }
 }
 
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
+  const { principal, error: authError } = await authorize(req, true);
+  if (authError) return authError;
   try {
     const body = await req.json();
+    const org = await getOrganizationChartAsync();
+    const allowed = new Set(org.departments.map(d => d.department));
+    const changes = body.passwords || body.allPasswords || { [body.dept]: body.password || '' };
+    if (!changes || typeof changes !== 'object' || Array.isArray(changes) || !Object.keys(changes).length ||
+        Object.entries(changes).some(([dept, value]) => !allowed.has(dept) || typeof value !== 'string' || value.length > 256)) {
+      return NextResponse.json({ success: false, error: '유효한 부서와 비밀번호를 입력해주세요.' }, { status: 400 });
+    }
+
 
     // 1. 일괄 저장 (Bulk)
     const bulkData = body.passwords || body.allPasswords;

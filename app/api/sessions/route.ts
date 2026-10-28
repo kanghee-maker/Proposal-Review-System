@@ -1,3 +1,4 @@
+import { authorize } from '@/lib/session';
 import { NextResponse } from 'next/server';
 import { 
   getSessionsAsync, 
@@ -14,9 +15,11 @@ import {
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-export async function GET() {
+export async function GET(req: Request) {
+  const { principal, error: authError } = await authorize(req, false);
+  if (authError) return authError;
   const sessions = await getSessionsAsync();
-  return NextResponse.json(sessions, {
+  return NextResponse.json(principal.role === 'ADMIN' ? sessions : sessions.filter(s => (s.stage || 'STAGE_0') === 'STAGE_0' && s.status !== 'DRAFT'), {
     headers: {
       'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
       'Pragma': 'no-cache',
@@ -26,6 +29,8 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  const { principal, error: authError } = await authorize(req, true);
+  if (authError) return authError;
   try {
     const body = await req.json();
     const stage = body.stage || 'STAGE_0';
@@ -74,6 +79,8 @@ export async function POST(req: Request) {
 }
 
 export async function PUT(req: Request) {
+  const { principal, error: authError } = await authorize(req, true);
+  if (authError) return authError;
   try {
     const body = await req.json();
     if (!body.id) {
@@ -92,6 +99,8 @@ export async function PUT(req: Request) {
 }
 
 export async function DELETE(req: Request) {
+  const { principal, error: authError } = await authorize(req, true);
+  if (authError) return authError;
   try {
     const body = await req.json();
     const { id, password } = body;
@@ -100,9 +109,9 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ success: false, error: '삭제할 평가 세션 ID가 필요합니다.' }, { status: 400 });
     }
 
-    // 관리자 비밀번호 검증 (0423 또는 auth_store adminPassword)
+    // 세션 인증과 별도로 현재 관리자 비밀번호 재확인
     const { verifyAdminPassword } = await import('@/lib/auth');
-    if (!verifyAdminPassword(password) && password !== '0423') {
+    if (!verifyAdminPassword(password)) {
       return NextResponse.json({ success: false, error: '관리자 비밀번호가 일치하지 않습니다.' }, { status: 401 });
     }
 

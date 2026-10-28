@@ -1,3 +1,4 @@
+import { authorize } from '@/lib/session';
 import { NextResponse } from 'next/server';
 import { getOrganizationChartAsync, updateOrganizationChartAsync } from '@/lib/store';
 
@@ -7,6 +8,8 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  const { principal, error: authError } = await authorize(req, true);
+  if (authError) return authError;
   try {
     const body = await req.json();
     if (!body.departments || !Array.isArray(body.departments)) {
