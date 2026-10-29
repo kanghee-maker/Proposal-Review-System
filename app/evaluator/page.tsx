@@ -182,7 +182,7 @@ function EvaluatorDashboardContent() {
                     </span>
                     <span className="text-slate-400">•</span>
                     <span className="text-slate-500">
-                      제안자: <strong className="text-slate-700">{p.proposer_name}</strong> ({p.proposer_rank}, {p.proposer_office} {p.proposer_department})
+                      제안자 소속: {p.proposer_office} {p.proposer_department}
                     </span>
 
                     {p.transfer_requested && (
