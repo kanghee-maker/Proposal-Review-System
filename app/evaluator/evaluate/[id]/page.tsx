@@ -250,10 +250,7 @@ function EvaluateProposalContent() {
 
           {/* 제안자 & 소속 정보 메타 카드 */}
           <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 grid sm:grid-cols-2 gap-3 text-xs">
-            <div>
-              <span className="text-slate-400 block mb-0.5">심사 방식</span>
-              <strong className="text-slate-800 text-sm">제안자 이름 비공개</strong>
-            </div>
+            <div />
             <div>
               <span className="text-slate-400 block mb-0.5">제안자 소속 부서</span>
               <strong className="text-slate-800 font-medium">
