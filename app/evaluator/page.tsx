@@ -163,6 +163,10 @@ function EvaluatorDashboardContent() {
             const ev = evalMap.get(p.id);
             const isCompleted = p.status === '평가완료';
             const resultVal = ev?.answers?.result;
+            const isTransferredIn = p.assigned_department === dept && (
+              (p.transfer_status === 'APPROVED' && p.transfer_target_dept === dept) ||
+              p.transfer_history?.some(event => event.action === 'APPROVE' && event.target_department === dept)
+            );
 
             return (
               <div
@@ -185,6 +189,11 @@ function EvaluatorDashboardContent() {
                       제안자 소속: {p.proposer_office} {p.proposer_department}
                     </span>
 
+                    {isTransferredIn && (
+                      <span className="px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 text-xs font-medium">
+                        이관받은 제안
+                      </span>
+                    )}
                     {p.transfer_requested && (
                       <span className="px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 font-bold border border-amber-300 flex items-center gap-1">
                         🔄 실행부서 변경 요청중 ({p.transfer_target_dept})
