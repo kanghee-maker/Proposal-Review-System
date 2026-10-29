@@ -86,9 +86,10 @@ export async function PUT(req: Request) {
       if (action === 'REQUEST' && (typeof body.transfer_target_dept !== 'string' || !body.transfer_target_dept.trim() || typeof body.transfer_reason !== 'string' || !body.transfer_reason.trim() || body.transfer_reason.length > 5000)) {
         return NextResponse.json({ success: false, error: '희망 부서와 이관 사유를 확인해 주세요.' }, { status: 400 });
       }
-      if (['APPROVE', 'REJECT', 'NOTE'].includes(action) && (typeof body.transfer_reviewer !== 'string' || !body.transfer_reviewer.trim() || body.transfer_reviewer.length > 100 || typeof body.transfer_comment !== 'string' || !body.transfer_comment.trim() || body.transfer_comment.length > 5000)) {
-        return NextResponse.json({ success: false, error: '처리자와 검토 의견을 입력해 주세요. (의견 최대 5,000자)' }, { status: 400 });
+      if ((body.transfer_reviewer !== undefined && (typeof body.transfer_reviewer !== 'string' || body.transfer_reviewer.length > 100)) || (body.transfer_comment !== undefined && (typeof body.transfer_comment !== 'string' || body.transfer_comment.length > 5000))) {
+        return NextResponse.json({ success: false, error: '입력 내용을 확인해 주세요.' }, { status: 400 });
       }
+      if (action === 'NOTE' && !body.transfer_comment?.trim()) return NextResponse.json({ success: false, error: '추가할 의견이 없습니다.' }, { status: 400 });
       if (action === 'NOTE' && !current.transfer_status) return NextResponse.json({ success: false, error: '의견을 추가할 이관 기록이 없습니다.' }, { status: 400 });
       if (action !== 'REQUEST' && action !== 'NOTE' && !current.transfer_requested) return NextResponse.json({ success: false, error: '처리할 이관 요청이 없습니다. 새로고침해 주세요.' }, { status: 409 });
       if (action === 'APPROVE') {
@@ -103,8 +104,8 @@ export async function PUT(req: Request) {
         transfer_status: action === 'NOTE' ? current.transfer_status : action === 'REQUEST' ? 'PENDING' as const : action === 'APPROVE' ? 'APPROVED' as const : 'REJECTED' as const
       };
       const event = { id: crypto.randomUUID(), action: action as import('@/lib/types').TransferHistoryEntry['action'], at: new Date(Math.max(Date.now(), Date.parse(current.transfer_history?.slice(-1)[0]?.at || '') + 1 || 0)).toISOString(),
-        actor: ['APPROVE', 'REJECT', 'NOTE'].includes(action) ? body.transfer_reviewer.trim() : current.assigned_department,
-        comment: ['APPROVE', 'REJECT', 'NOTE'].includes(action) ? body.transfer_comment.trim() : '',
+        actor: ['APPROVE', 'REJECT', 'NOTE'].includes(action) ? (body.transfer_reviewer?.trim() || '관리자') : current.assigned_department,
+        comment: ['APPROVE', 'REJECT', 'NOTE'].includes(action) ? (body.transfer_comment?.trim() || '') : '',
         from_department: action === 'REQUEST' ? current.assigned_department : current.transfer_history?.slice().reverse().find(e => e.action === 'REQUEST')?.from_department || current.assigned_department,
         target_department: transfer.transfer_target_dept || '', request_reason: transfer.transfer_reason || '' };
       await saveProposalTransfer(body.id, transfer, event);
