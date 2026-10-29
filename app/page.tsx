@@ -231,7 +231,7 @@ export default function Home() {
                 </span>
               </div>
               <p className="text-slate-600 text-[15px] leading-relaxed">
-                <strong>부서 평가(0차 평가)</strong> 완결 후 채택(Yes) 제안을 연계하여 제안심사위원회 11인 심사위원이 창의성·실현성·효과성·전파성(100점 만점)을 다면 평가합니다. (총괄 관리자 관리)
+                <strong>부서 평가(0차 평가)</strong> 완결 후 채택(Yes) 제안을 연계하여 제안심사위원회 12인 심사위원이 창의성·실현성·효과성·전파성(100점 만점)을 다면 평가합니다. (총괄 관리자 관리)
               </p>
             </div>
           </div>
