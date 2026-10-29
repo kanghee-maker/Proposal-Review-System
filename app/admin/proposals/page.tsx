@@ -1,5 +1,6 @@
 'use client';
 
+import TransferHistory from '@/app/TransferHistory';
 import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -27,6 +28,8 @@ function AdminProposalsContent() {
   const [editOffice, setEditOffice] = useState<string>('');
   const [editDepartment, setEditDepartment] = useState<string>('');
   const [editStatus, setEditStatus] = useState<string>('미평가');
+  const [reviewer, setReviewer] = useState('');
+  const [reviewComment, setReviewComment] = useState('');
   const [saving, setSaving] = useState<boolean>(false);
 
   // 첨부파일 관리 모달
@@ -114,6 +117,7 @@ function AdminProposalsContent() {
 
   const openEditModal = (p: Proposal) => {
     setSelectedProposal(p);
+    setReviewComment('');
     setEditDivision(p.assigned_division);
     setEditOffice(p.assigned_office);
     setEditDepartment(p.assigned_department);
@@ -163,6 +167,7 @@ function AdminProposalsContent() {
 
   const handleApproveTransfer = async () => {
     if (!selectedProposal || !selectedProposal.transfer_target_dept) return;
+    if (!reviewer.trim() || !reviewComment.trim()) { alert('처리자와 검토 의견을 입력해 주세요.'); return; }
     const targetDept = selectedProposal.transfer_target_dept;
     const found = departments.find(d => d.department === targetDept);
 
@@ -186,7 +191,7 @@ function AdminProposalsContent() {
       const res = await fetch('/api/proposals', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...updated, transfer_action: 'APPROVE' })
+        body: JSON.stringify({ ...updated, transfer_action: 'APPROVE', transfer_reviewer: reviewer, transfer_comment: reviewComment })
       });
       const data = await res.json();
       if (data.success) {
@@ -201,6 +206,20 @@ function AdminProposalsContent() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleTransferReview = async (action: 'REJECT' | 'NOTE') => {
+    if (!selectedProposal) return;
+    if (!reviewer.trim() || !reviewComment.trim()) { alert('처리자와 검토 의견을 입력해 주세요.'); return; }
+    setSaving(true);
+    try {
+      const res = await fetch('/api/proposals', { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({id:selectedProposal.id, transfer_action:action, transfer_reviewer:reviewer, transfer_comment:reviewComment}) });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || '처리 기록 저장 실패');
+      setSelectedProposal(data.proposal); setReviewComment(''); fetchProposalsForSession(selectedSessionId);
+      alert(action === 'REJECT' ? '반려 사유와 처리 기록을 저장했습니다.' : '검토 의견을 추가했습니다.');
+    } catch (err) { alert(err instanceof Error ? err.message : '처리 기록 저장 실패'); }
+    finally { setSaving(false); }
   };
 
   const formatFileSize = (bytes: number) => {
@@ -308,6 +327,8 @@ function AdminProposalsContent() {
   const filtered = proposals.filter(p => {
     if (statusFilter === '이관요청') {
       if (!p.transfer_requested) return false;
+    } else if (statusFilter === '이관처리이력') {
+      if (!p.transfer_status && !p.transfer_history?.length) return false;
     } else if (statusFilter !== '전체' && p.status !== statusFilter) {
       return false;
     }
@@ -419,6 +440,7 @@ function AdminProposalsContent() {
               className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-sky-500 text-xs w-full sm:w-auto"
             >
               <option value="전체">전체 상태</option>
+              <option value="이관처리이력">이관 신청·처리 이력 전체</option>
               <option value="미평가">미평가</option>
               <option value="평가작성중">평가작성중</option>
               <option value="평가완료">평가완료</option>
@@ -841,6 +863,13 @@ function AdminProposalsContent() {
                 </div>
               </div>
 
+              <TransferHistory proposal={selectedProposal} />
+              {(selectedProposal.transfer_requested || selectedProposal.transfer_status) && <div className="rounded-xl border border-slate-200 p-3 space-y-2">
+                <label className="block text-sm font-bold">처리자 (직접 입력)<input value={reviewer} onChange={e=>setReviewer(e.target.value)} maxLength={100} placeholder="처리 담당자 이름" className="block w-full border rounded-lg p-2 mt-1" /></label>
+                <label className="block text-sm font-bold">관리자 검토 의견 (필수)<textarea value={reviewComment} onChange={e=>setReviewComment(e.target.value)} maxLength={5000} rows={4} placeholder="승인·반려 판단 근거 또는 추가 의견을 입력하세요." className="block w-full border rounded-lg p-2 mt-1" /></label>
+                <p className="text-xs text-slate-500">저장한 의견은 신청 부서에도 표시됩니다. 기존 처리 건의 추가 의견은 현재 시각으로 기록됩니다.</p>
+                <button type="button" disabled={saving} onClick={()=>handleTransferReview('NOTE')} className="rounded-lg border border-sky-300 px-3 py-2 text-sky-800 disabled:opacity-50">검토 의견 추가 저장</button>
+              </div>}
               {/* 실행부서 변경 요청 알림 박스 (존재 시) */}
               {selectedProposal.transfer_requested && (
                 <div className="bg-amber-50 border border-amber-300 rounded-xl p-3.5 space-y-2">
@@ -878,6 +907,7 @@ function AdminProposalsContent() {
                 </div>
               )}
 
+              {selectedProposal.transfer_requested && <button type="button" disabled={saving} onClick={()=>handleTransferReview('REJECT')} className="w-full rounded-lg bg-rose-700 text-white font-bold py-2 disabled:opacity-50">반려 및 사유 저장 (현재 담당 부서 유지)</button>}
               {/* 담당 부서 빠른 변경 */}
               <div>
                 <label className="block font-semibold text-slate-700 mb-1">

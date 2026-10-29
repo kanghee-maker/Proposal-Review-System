@@ -135,6 +135,7 @@ export interface Proposal {
   transfer_reason?: string;
   transfer_requested_at?: string;
   transfer_status?: 'PENDING' | 'APPROVED' | 'REJECTED';
+  transfer_history?: TransferHistoryEntry[];
   // 0차 부서평가 연계 정보
   stage0_result?: string;
   stage0_opinion?: string;
@@ -163,3 +164,14 @@ export interface Evaluation {
   updated_at: string;
 }
 
+
+export interface TransferHistoryEntry {
+  id: string;
+  action: 'REQUEST' | 'APPROVE' | 'REJECT' | 'CANCEL' | 'NOTE' | 'LEGACY';
+  at: string;
+  actor: string;
+  comment: string;
+  from_department: string;
+  target_department: string;
+  request_reason: string;
+}

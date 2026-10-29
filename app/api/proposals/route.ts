@@ -44,7 +44,8 @@ export async function GET(req: Request) {
     list = list.filter(p => 
       p.assigned_department === department || 
       p.assigned_office === department ||
-      p.assigned_raw_dept.includes(department)
+      p.assigned_raw_dept.includes(department) ||
+      Boolean(p.transfer_history?.some(event => event.from_department === department))
     );
   }
 
@@ -81,23 +82,33 @@ export async function PUT(req: Request) {
     const current = { ...existing, ...transfers[body.id] };
     const action = body.transfer_action || (body.transfer_requested === true && !current.transfer_requested ? 'REQUEST' : '');
     if (action) {
-      if (!['REQUEST', 'CANCEL', 'APPROVE'].includes(action)) return NextResponse.json({ success: false }, { status: 400 });
+      if (!['REQUEST', 'CANCEL', 'APPROVE', 'REJECT', 'NOTE'].includes(action)) return NextResponse.json({ success: false }, { status: 400 });
       if (action === 'REQUEST' && (typeof body.transfer_target_dept !== 'string' || !body.transfer_target_dept.trim() || typeof body.transfer_reason !== 'string' || !body.transfer_reason.trim() || body.transfer_reason.length > 5000)) {
         return NextResponse.json({ success: false, error: '희망 부서와 이관 사유를 확인해 주세요.' }, { status: 400 });
       }
-      if (action !== 'REQUEST' && !current.transfer_requested) return NextResponse.json({ success: false, error: '처리할 이관 요청이 없습니다. 새로고침해 주세요.' }, { status: 409 });
+      if (['APPROVE', 'REJECT', 'NOTE'].includes(action) && (typeof body.transfer_reviewer !== 'string' || !body.transfer_reviewer.trim() || body.transfer_reviewer.length > 100 || typeof body.transfer_comment !== 'string' || !body.transfer_comment.trim() || body.transfer_comment.length > 5000)) {
+        return NextResponse.json({ success: false, error: '처리자와 검토 의견을 입력해 주세요. (의견 최대 5,000자)' }, { status: 400 });
+      }
+      if (action === 'NOTE' && !current.transfer_status) return NextResponse.json({ success: false, error: '의견을 추가할 이관 기록이 없습니다.' }, { status: 400 });
+      if (action !== 'REQUEST' && action !== 'NOTE' && !current.transfer_requested) return NextResponse.json({ success: false, error: '처리할 이관 요청이 없습니다. 새로고침해 주세요.' }, { status: 409 });
       if (action === 'APPROVE') {
         if (body.assigned_department !== current.transfer_target_dept) return NextResponse.json({ success: false }, { status: 400 });
         await updateProposalAsync({ ...current, assigned_division: body.assigned_division, assigned_office: body.assigned_office, assigned_department: current.transfer_target_dept!, assigned_raw_dept: body.assigned_raw_dept });
       }
       const transfer = {
-        transfer_requested: action === 'REQUEST',
+        transfer_requested: action === 'NOTE' ? Boolean(current.transfer_requested) : action === 'REQUEST',
         transfer_target_dept: action === 'REQUEST' ? body.transfer_target_dept.trim() : current.transfer_target_dept,
         transfer_reason: action === 'REQUEST' ? body.transfer_reason.trim() : current.transfer_reason,
         transfer_requested_at: action === 'REQUEST' ? new Date().toISOString() : current.transfer_requested_at,
-        transfer_status: action === 'REQUEST' ? 'PENDING' as const : action === 'APPROVE' ? 'APPROVED' as const : 'REJECTED' as const
+        transfer_status: action === 'NOTE' ? current.transfer_status : action === 'REQUEST' ? 'PENDING' as const : action === 'APPROVE' ? 'APPROVED' as const : 'REJECTED' as const
       };
-      await saveProposalTransfer(body.id, transfer);
+      const event = { id: crypto.randomUUID(), action: action as import('@/lib/types').TransferHistoryEntry['action'], at: new Date(Math.max(Date.now(), Date.parse(current.transfer_history?.slice(-1)[0]?.at || '') + 1 || 0)).toISOString(),
+        actor: ['APPROVE', 'REJECT', 'NOTE'].includes(action) ? body.transfer_reviewer.trim() : current.assigned_department,
+        comment: ['APPROVE', 'REJECT', 'NOTE'].includes(action) ? body.transfer_comment.trim() : '',
+        from_department: action === 'REQUEST' ? current.assigned_department : current.transfer_history?.slice().reverse().find(e => e.action === 'REQUEST')?.from_department || current.assigned_department,
+        target_department: transfer.transfer_target_dept || '', request_reason: transfer.transfer_reason || '' };
+      await saveProposalTransfer(body.id, transfer, event);
+      Object.assign(transfer, { transfer_history: [...(current.transfer_history || []), event] });
       return NextResponse.json({ success: true, proposal: { ...(action === 'APPROVE' ? { ...current, assigned_division: body.assigned_division, assigned_office: body.assigned_office, assigned_department: current.transfer_target_dept!, assigned_raw_dept: body.assigned_raw_dept } : current), ...transfer } });
     }
     await updateProposalAsync({ ...body, transfer_requested: current.transfer_requested, transfer_target_dept: current.transfer_target_dept, transfer_reason: current.transfer_reason, transfer_requested_at: current.transfer_requested_at, transfer_status: current.transfer_status });

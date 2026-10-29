@@ -1,5 +1,6 @@
 'use client';
 
+import TransferHistory from '@/app/TransferHistory';
 import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
@@ -269,6 +270,7 @@ function EvaluateProposalContent() {
             </div>
           </div>
 
+          <TransferHistory proposal={proposal} />
           {/* 실행 부서 변경 요청 (타 부서 이관 신청) 섹션 */}
           <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-4 text-xs space-y-3">
             <div className="flex items-center justify-between">
