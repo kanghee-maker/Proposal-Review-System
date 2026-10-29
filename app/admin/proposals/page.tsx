@@ -186,13 +186,15 @@ function AdminProposalsContent() {
       const res = await fetch('/api/proposals', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updated)
+        body: JSON.stringify({ ...updated, transfer_action: 'APPROVE' })
       });
       const data = await res.json();
       if (data.success) {
         alert(`[${updatedDept}](으)로 부서 변경 및 이관 승인이 완료되었습니다.`);
         setSelectedProposal(null);
         fetchProposalsForSession(selectedSessionId);
+      } else {
+        alert(data.error || '승인 내용을 저장하지 못했습니다. 다시 시도해 주세요.');
       }
     } catch (err) {
       alert('승인 처리 실패');

@@ -994,7 +994,7 @@ export function getProposals(sessionId?: string): Proposal[] {
 
 export async function updateProposalAsync(updated: Proposal): Promise<void> {
   try {
-    await supabase.from('proposals').update({
+    const { data, error } = await supabase.from('proposals').update({
       assigned_division: updated.assigned_division,
       assigned_office: updated.assigned_office,
       assigned_department: updated.assigned_department,
@@ -1004,9 +1004,10 @@ export async function updateProposalAsync(updated: Proposal): Promise<void> {
       content: updated.content,
       is_duplicate: updated.is_duplicate,
       duplicate_title: updated.duplicate_title
-    }).eq('id', updated.id);
-  } catch (err) {}
-  updateProposal(updated);
+    }).eq('id', updated.id).select('id');
+    if (error || !data?.length) throw new Error('제안 변경을 DB에 저장하지 못했습니다. 다시 시도해 주세요.');
+  } catch (err) { throw err; }
+  if (process.env.NODE_ENV !== 'production') updateProposal(updated);
 }
 
 export function updateProposal(updated: Proposal): void {

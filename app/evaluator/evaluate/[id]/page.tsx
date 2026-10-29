@@ -132,15 +132,15 @@ function EvaluateProposalContent() {
       const res = await fetch('/api/proposals', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updated)
+        body: JSON.stringify({ ...updated, transfer_action: updated.transfer_requested ? 'REQUEST' : 'CANCEL' })
       });
       const data = await res.json();
       if (data.success) {
-        setProposal(updated);
+        setProposal(data.proposal);
         setIsTransferOpen(false);
         alert(`[${targetDept}](으)로의 실행 부서 변경 요청이 접수되었습니다.\n총괄 관리자가 확인 후 승인 시 해당 부서로 이관됩니다.`);
       } else {
-        alert('요청 중 오류가 발생했습니다.');
+        alert(data.error || '요청이 저장되지 않았습니다. 다시 시도해 주세요.');
       }
     } catch (err) {
       alert('서버 통신 실패');
@@ -167,11 +167,11 @@ function EvaluateProposalContent() {
       const res = await fetch('/api/proposals', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updated)
+        body: JSON.stringify({ ...updated, transfer_action: updated.transfer_requested ? 'REQUEST' : 'CANCEL' })
       });
       const data = await res.json();
       if (data.success) {
-        setProposal(updated);
+        setProposal(data.proposal);
         alert('실행 부서 변경 요청이 취소되었습니다.');
       }
     } catch (err) {
