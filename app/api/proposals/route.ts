@@ -44,8 +44,7 @@ export async function GET(req: Request) {
     list = list.filter(p => 
       p.assigned_department === department || 
       p.assigned_office === department ||
-      p.assigned_raw_dept.includes(department) ||
-      Boolean(p.transfer_history?.some(event => event.from_department === department))
+      p.assigned_raw_dept.includes(department)
     );
   }
 
