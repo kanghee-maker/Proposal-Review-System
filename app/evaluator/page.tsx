@@ -92,21 +92,21 @@ function EvaluatorDashboardContent() {
   return (
     <div className="space-y-6">
       {/* Banner */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
+      <div className="bg-emerald-50 rounded-2xl border-2 border-emerald-200 border-l-[6px] border-l-emerald-600 p-5 sm:p-6 shadow-sm flex flex-col xl:flex-row xl:items-center justify-between gap-5">
+        <div className="min-w-0 flex-1">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 text-xs font-semibold mb-2 border border-emerald-200">
             <Building2 className="w-3.5 h-3.5 text-emerald-600" />
             <span>{dept} 부서 평가(0차 평가) 심사함</span>
           </div>
-          <h2 className="text-xl font-bold text-slate-900">
-            {dept} 평가 담당 제안 목록
+          <h2 className="text-xl font-bold text-emerald-950">
+            {dept} (부서)평가 담당 제안 목록
           </h2>
           <p className="text-xs text-slate-500 mt-1">
             소관 업무와 관련된 제안의 타당성을 검토하고 채택(Yes) 또는 불채택(No) 여부 및 부서 검토의견을 작성해 주십시오. (타 부서 소관 제안인 경우 상세화면에서 실행 부서 변경을 요청할 수 있습니다.)
           </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 text-xs">
+        <div className="flex shrink-0 flex-col items-start gap-3 text-xs">
           {sessions.length > 1 && (
             <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5">
               <Layers className="w-3.5 h-3.5 text-slate-500" />
@@ -129,7 +129,7 @@ function EvaluatorDashboardContent() {
               </select>
             </div>
           )}
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 whitespace-nowrap">
             <div className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
               배정: <strong className="text-slate-900 font-bold">{proposals.length}건</strong>
             </div>
@@ -144,6 +144,10 @@ function EvaluatorDashboardContent() {
       </div>
 
       {/* Proposals List */}
+      <div className="flex items-center gap-3 px-1" aria-hidden="true">
+        <span className="text-sm font-semibold text-slate-600">담당 제안</span>
+        <div className="h-px flex-1 bg-slate-200" />
+      </div>
       <div className="space-y-3">
         {sessions.length === 0 ? (
           <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center text-slate-500 text-xs">
