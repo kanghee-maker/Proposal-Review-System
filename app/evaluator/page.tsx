@@ -106,7 +106,7 @@ function EvaluatorDashboardContent() {
           </p>
         </div>
 
-        <div className="flex shrink-0 flex-col items-start gap-3 text-xs">
+        <div className="flex min-w-0 max-w-full flex-col items-start gap-3 text-xs">
           {sessions.length > 1 && (
             <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5">
               <Layers className="w-3.5 h-3.5 text-slate-500" />
@@ -119,7 +119,7 @@ function EvaluatorDashboardContent() {
                     localStorage.setItem('gcuc_active_session_id', sId);
                   }
                 }}
-                className="bg-transparent font-bold text-slate-800 text-xs focus:outline-none cursor-pointer"
+                className="min-w-0 max-w-full bg-transparent font-bold text-slate-800 text-xs focus:outline-none cursor-pointer"
               >
                 {sessions.map(s => (
                   <option key={s.id} value={s.id}>
@@ -177,7 +177,7 @@ function EvaluatorDashboardContent() {
                 key={p.id}
                 className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:border-emerald-400 hover:shadow-md transition flex flex-col md:flex-row md:items-center justify-between gap-4"
               >
-                <div className="space-y-2 flex-1">
+                <div className="space-y-2 min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2 text-xs">
                     <span className="font-mono font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
                       #{p.seq_no}

@@ -55,7 +55,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className="min-h-screen bg-[#f8fafc] flex flex-col text-slate-800 pb-16 md:pb-0">
       {/* 1. GCUC Top Utility Bar (#383a41) */}
       <div className="bg-[#383a41] text-xs text-slate-300 py-1 px-4 sm:px-6 border-b border-[#25262b]">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
           <div className="flex items-center gap-2 text-[15px]">
             <span className="bg-[#25262b] text-white px-2 py-0.5 rounded font-bold">GCUC</span>
             <span>과천도시공사 제안 평가 시스템 • 총괄 관리자 포털</span>
@@ -181,12 +181,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center justify-center py-1 px-2 rounded-lg transition min-w-[64px] ${
+              className={`flex flex-col items-center justify-center py-1 px-2 rounded-lg transition min-w-0 flex-1 ${
                 isActive ? 'text-[#1768d5] font-bold' : 'text-slate-500 hover:text-slate-800'
               }`}
             >
               <Icon className="w-4 h-4 mb-0.5" />
-              <span className="text-[14px] tracking-tight">{item.label}</span>
+              <span className="text-[11px] sm:text-[14px] leading-tight tracking-tight text-center">{item.label}</span>
             </Link>
           );
         })}
@@ -196,7 +196,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <footer className="w-full mt-auto hidden md:block">
         {/* Footer Bottom Address (#25262b) */}
         <div className="bg-[#25262b] text-[#afafaf] py-5 px-6 text-xs leading-relaxed">
-          <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
             <div>
               <p className="text-xs">
                 (우 13807) 경기도 과천시 통영로 5 과천도시공사 / 5, Tongyeong-ro, Gwacheon-si, Gyeonggi-do, Korea
