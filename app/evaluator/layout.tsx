@@ -2,11 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Building2, User, LogOut, CheckCircle, FileText, ExternalLink } from 'lucide-react';
+import { useRouter, usePathname } from 'next/navigation';
+import { Building2, User, LogOut, CheckCircle, FileText, ExternalLink, Award } from 'lucide-react';
 
 export default function EvaluatorLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
+  const isStage1 = pathname?.startsWith('/evaluator/stage1');
+
   const [deptName, setDeptName] = useState<string>('');
   const [userName, setUserName] = useState<string>('');
   const [authorized, setAuthorized] = useState<boolean>(false);
@@ -14,7 +17,7 @@ export default function EvaluatorLayout({ children }: { children: React.ReactNod
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const d = localStorage.getItem('gcuc_dept_name') || '';
-      const u = localStorage.getItem('gcuc_user_name') || '부서 평가자';
+      const u = localStorage.getItem('gcuc_user_name') || (isStage1 ? '1차 심사위원' : '부서 평가자');
       const isAuth = d ? localStorage.getItem(`gcuc_dept_auth_${d}`) : null;
       const isAdminAuth = localStorage.getItem('gcuc_admin_auth') === 'true';
 
@@ -30,12 +33,14 @@ export default function EvaluatorLayout({ children }: { children: React.ReactNod
         setAuthorized(true);
       }
     }
-  }, [router]);
+  }, [router, isStage1]);
 
   const handleLogout = () => {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('gcuc_user_role');
+      localStorage.removeItem('gcuc_evaluator_stage');
       localStorage.removeItem('gcuc_dept_name');
+      localStorage.removeItem('gcuc_judge_dept');
       localStorage.removeItem('gcuc_user_name');
       if (deptName) {
         localStorage.removeItem(`gcuc_dept_auth_${deptName}`);
@@ -48,8 +53,8 @@ export default function EvaluatorLayout({ children }: { children: React.ReactNod
     return (
       <div className="min-h-screen bg-white flex items-center justify-center text-slate-800">
         <div className="text-center">
-          <div className="w-8 h-8 border-2 border-[#169268] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-          <p className="text-xs text-slate-500 font-medium">부서 인증 확인 중...</p>
+          <div className={`w-8 h-8 border-2 ${isStage1 ? 'border-amber-600' : 'border-[#169268]'} border-t-transparent rounded-full animate-spin mx-auto mb-3`} />
+          <p className="text-xs text-slate-500 font-medium">인증 확인 중...</p>
         </div>
       </div>
     );
@@ -62,7 +67,9 @@ export default function EvaluatorLayout({ children }: { children: React.ReactNod
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2 text-[15px]">
             <span className="bg-[#25262b] text-white px-2 py-0.5 rounded font-bold">GCUC</span>
-            <span>과천도시공사 제안 평가 시스템 • 부서 평가(0차 평가)</span>
+            <span>
+              과천도시공사 제안 평가 시스템 • {isStage1 ? '제안심사 (1차 평가)' : '부서 평가(0차 평가)'}
+            </span>
           </div>
           <div className="flex items-center gap-3 text-[15px] text-slate-400">
             <span>2026년 혁신 제안 심사</span>
@@ -84,17 +91,28 @@ export default function EvaluatorLayout({ children }: { children: React.ReactNod
             </div>
             <div>
               <h1 className="font-extrabold text-base sm:text-lg leading-tight tracking-tight text-slate-900 line-clamp-1">
-                제안 평가 시스템 <span className="text-[#169268]">부서 심사</span>
+                제안 평가 시스템{' '}
+                {isStage1 ? (
+                  <span className="text-amber-600">1차 제안심사</span>
+                ) : (
+                  <span className="text-[#169268]">부서 심사</span>
+                )}
               </h1>
-              <p className="text-[14px] sm:text-[15px] text-[#169268] font-semibold tracking-wide">
-                부서 평가(0차 평가) 전용
+              <p className={`text-[14px] sm:text-[15px] font-semibold tracking-wide ${isStage1 ? 'text-amber-700' : 'text-[#169268]'}`}>
+                {isStage1 ? '1차 제안심사위원회 전용' : '부서 평가(0차 평가) 전용'}
               </p>
             </div>
           </Link>
 
           <div className="flex items-center gap-2 sm:gap-4 text-xs">
-            <div className="bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 flex items-center gap-1.5 sm:gap-2 shadow-sm">
-              <Building2 className="w-4 h-4 text-[#169268] flex-shrink-0" />
+            <div className={`px-3 py-1.5 rounded-xl border flex items-center gap-1.5 sm:gap-2 shadow-sm ${
+              isStage1 ? 'bg-amber-50/70 border-amber-200' : 'bg-slate-50 border-slate-200'
+            }`}>
+              {isStage1 ? (
+                <Award className="w-4 h-4 text-amber-600 flex-shrink-0" />
+              ) : (
+                <Building2 className="w-4 h-4 text-[#169268] flex-shrink-0" />
+              )}
               <strong className="text-slate-900 text-xs font-bold truncate max-w-[120px] sm:max-w-none">{deptName}</strong>
               <span className="text-slate-300 hidden sm:inline">|</span>
               <span className="text-slate-600 hidden sm:inline">{userName}</span>

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAllDepartmentPasswordsAsync, setupDepartmentPassword, saveAllDepartmentPasswords } from '@/lib/auth';
 import { getOrganizationChartAsync } from '@/lib/store';
+import { DEFAULT_STAGE1_JUDGES } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -21,9 +22,23 @@ export async function GET() {
       };
     });
 
+    const judgesWithPasswords = DEFAULT_STAGE1_JUDGES.map((j) => {
+      const pass = passwords[j.name] || passwords[j.dept] || '';
+      return {
+        code: j.id,
+        division: '1차 제안심사위원회',
+        office: j.dept,
+        department: j.name,
+        name: `[${j.dept}] ${j.name} (${j.title})`,
+        password: pass,
+        hasPassword: Boolean(pass)
+      };
+    });
+
     return NextResponse.json({
       success: true,
       departments: deptsWithPasswords,
+      judges: judgesWithPasswords,
       totalCount: deptsWithPasswords.length,
       assignedCount: deptsWithPasswords.filter((d: any) => d.hasPassword).length
     }, {

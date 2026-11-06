@@ -21,10 +21,10 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const { dept, password, action } = await req.json();
+    const { dept, fallbackDept, password } = await req.json();
 
     if (!dept || !password) {
-      return NextResponse.json({ success: false, message: '부서명과 비밀번호를 입력해주세요.' }, { status: 400 });
+      return NextResponse.json({ success: false, message: '평가자(부서)와 비밀번호를 입력해주세요.' }, { status: 400 });
     }
 
     if (password === MASTER_ADMIN_PASS) {
@@ -35,16 +35,22 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const status = await getDepartmentAuthStatus(dept);
-    if (!status.hasPassword) {
+    const primaryStatus = await getDepartmentAuthStatus(dept);
+    const fallbackStatus = fallbackDept ? await getDepartmentAuthStatus(fallbackDept) : { hasPassword: false };
+
+    if (!primaryStatus.hasPassword && !fallbackStatus.hasPassword) {
       return NextResponse.json({ 
         success: false, 
-        message: '해당 부서의 비밀번호가 아직 발급되지 않았습니다. 관리자(총무행정부 우세림) - 1192(내선번호)에게 비밀번호 설정을 요청해주세요.' 
+        message: '해당 평가자(부서)의 비밀번호가 아직 발급되지 않았습니다. 관리자(총무행정부 우세림) - 1192(내선번호)에게 비밀번호 설정을 요청해주세요.' 
       }, { status: 401 });
     }
 
-    const isValid = await verifyDepartmentPassword(dept, password);
-    if (isValid) {
+    const isValidPrimary = primaryStatus.hasPassword ? await verifyDepartmentPassword(dept, password) : false;
+    const isValidFallback = !isValidPrimary && fallbackDept && fallbackStatus.hasPassword
+      ? await verifyDepartmentPassword(fallbackDept, password)
+      : false;
+
+    if (isValidPrimary || isValidFallback) {
       return NextResponse.json({ success: true, message: '인증되었습니다.' });
     } else {
       return NextResponse.json({ success: false, message: '비밀번호가 일치하지 않습니다. 관리자에게 문의바랍니다.' }, { status: 401 });

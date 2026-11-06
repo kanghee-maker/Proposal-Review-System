@@ -29,7 +29,9 @@ interface DepartmentPasswordItem {
 }
 
 export default function AdminPasswordsPage() {
+  const [activeTab, setActiveTab] = useState<'STAGE_0' | 'STAGE_1'>('STAGE_0');
   const [departments, setDepartments] = useState<DepartmentPasswordItem[]>([]);
+  const [judges, setJudges] = useState<DepartmentPasswordItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>({});
@@ -49,11 +51,17 @@ export default function AdminPasswordsPage() {
     try {
       const res = await fetch(`/api/admin/passwords?_t=${Date.now()}`, { cache: 'no-store' });
       const data = await res.json();
-      if (data.success && data.departments) {
-        setDepartments(data.departments);
+      if (data.success) {
+        const deptList: DepartmentPasswordItem[] = data.departments || [];
+        const judgeList: DepartmentPasswordItem[] = data.judges || [];
+        setDepartments(deptList);
+        setJudges(judgeList);
         const initialInputs: Record<string, string> = {};
-        data.departments.forEach((d: DepartmentPasswordItem) => {
+        deptList.forEach((d: DepartmentPasswordItem) => {
           initialInputs[d.department] = d.password || '';
+        });
+        judgeList.forEach((j: DepartmentPasswordItem) => {
+          initialInputs[j.department] = j.password || '';
         });
         setInputPasswords(initialInputs);
       }
@@ -69,12 +77,14 @@ export default function AdminPasswordsPage() {
     fetchPasswords(true);
   }, []);
 
+  const currentItems = activeTab === 'STAGE_1' ? judges : departments;
+
   // 4자리 랜덤 숫자 생성 (1000 ~ 9999)
   const generateRandom4Digits = (): string => {
     return Math.floor(1000 + Math.random() * 9000).toString();
   };
 
-  // 단일 부서 4자리 랜덤 생성
+  // 단일 부서/위원 4자리 랜덤 생성
   const handleRandomizeSingle = (deptName: string) => {
     const randomPass = generateRandom4Digits();
     setInputPasswords(prev => ({ ...prev, [deptName]: randomPass }));
@@ -82,11 +92,11 @@ export default function AdminPasswordsPage() {
     showToast(`[${deptName}] 4자리 번호(${randomPass}) 생성됨. [저장] 버튼을 누르면 적용됩니다.`);
   };
 
-  // 미발급 부서 일괄 4자리 랜덤 생성
+  // 미발급 부서/위원 일괄 4자리 랜덤 생성
   const handleBulkRandomizeUnset = () => {
     const newInputs = { ...inputPasswords };
     let count = 0;
-    departments.forEach(d => {
+    currentItems.forEach(d => {
       if (!inputPasswords[d.department] || inputPasswords[d.department].trim() === '') {
         newInputs[d.department] = generateRandom4Digits();
         count++;
@@ -94,32 +104,33 @@ export default function AdminPasswordsPage() {
     });
 
     if (count === 0) {
-      showToast('이미 모든 부서의 비밀번호가 설정되어 있습니다.');
+      showToast('이미 모든 대상의 비밀번호가 설정되어 있습니다.');
       return;
     }
 
     setInputPasswords(newInputs);
-    showToast(`미발급 ${count}개 부서에 4자리 랜덤 번호가 채워졌습니다. 상단의 [전체 일괄 저장]을 눌러 저장하세요.`);
+    showToast(`미발급 ${count}건에 4자리 랜덤 번호가 채워졌습니다. 상단의 [전체 일괄 저장]을 눌러 저장하세요.`);
   };
 
-  // 전체 부서 일괄 재발급 (랜덤)
+  // 전체 부서/위원 일괄 재발급 (랜덤)
   const handleBulkRandomizeAll = () => {
-    if (!confirm('정말로 모든 부서의 비밀번호를 새로운 4자리 숫자로 랜덤 재발급하시겠습니까? 기존 설정된 비밀번호도 모두 갱신됩니다.')) {
+    const label = activeTab === 'STAGE_1' ? '1차 심사위원' : '0차 평가 부서';
+    if (!confirm(`정말로 모든 ${label}의 비밀번호를 새로운 4자리 숫자로 랜덤 재발급하시겠습니까? 기존 설정된 비밀번호도 모두 갱신됩니다.`)) {
       return;
     }
-    const newInputs: Record<string, string> = {};
-    departments.forEach(d => {
+    const newInputs: Record<string, string> = { ...inputPasswords };
+    currentItems.forEach(d => {
       newInputs[d.department] = generateRandom4Digits();
     });
     setInputPasswords(newInputs);
-    showToast(`전체 ${departments.length}개 부서에 새 4자리 번호가 생성되었습니다. [전체 일괄 저장]을 눌러 적용하세요.`);
+    showToast(`전체 ${currentItems.length}건에 새 4자리 번호가 생성되었습니다. [전체 일괄 저장]을 눌러 적용하세요.`);
   };
 
-  // 단일 부서 저장
+  // 단일 부서/위원 저장
   const handleSaveSingle = async (deptName: string) => {
     const pass = inputPasswords[deptName]?.trim() || '';
     if (!pass) {
-      if (!confirm(`[${deptName}] 부서의 비밀번호를 공란으로 두면 해당 부서는 미설정 상태가 됩니다. 계속하시겠습니까?`)) {
+      if (!confirm(`[${deptName}]의 비밀번호를 공란으로 두면 미설정 상태가 됩니다. 계속하시겠습니까?`)) {
         return;
       }
     }
@@ -133,12 +144,13 @@ export default function AdminPasswordsPage() {
       });
       const data = await res.json();
       if (data.success) {
-        // 즉시 상태 반영 (낙관적 갱신)
-        setDepartments(prev => prev.map(d => d.department === deptName ? {
+        const updater = (prev: DepartmentPasswordItem[]) => prev.map(d => d.department === deptName ? {
           ...d,
           password: pass,
           hasPassword: Boolean(pass)
-        } : d));
+        } : d);
+        setDepartments(updater);
+        setJudges(updater);
         setInputPasswords(prev => ({ ...prev, [deptName]: pass }));
         showToast(`[${deptName}] 비밀번호가 성공적으로 저장되었습니다.`);
         await fetchPasswords(false);
@@ -163,16 +175,17 @@ export default function AdminPasswordsPage() {
       });
       const data = await res.json();
       if (data.success) {
-        // 즉시 전 부서 발급완료 반영 (낙관적 갱신)
-        setDepartments(prev => prev.map(d => {
+        const updater = (prev: DepartmentPasswordItem[]) => prev.map(d => {
           const p = (inputPasswords[d.department] || '').trim();
           return {
             ...d,
             password: p,
             hasPassword: Boolean(p)
           };
-        }));
-        showToast('전체 부서 비밀번호가 성공적으로 일괄 저장되었습니다.');
+        });
+        setDepartments(updater);
+        setJudges(updater);
+        showToast('비밀번호가 성공적으로 일괄 저장되었습니다.');
         await fetchPasswords(false);
       } else {
         alert(data.error || '일괄 저장 실패');
@@ -198,19 +211,20 @@ export default function AdminPasswordsPage() {
 
   // 전체 명단 텍스트 클립보드 복사
   const handleCopyAllList = () => {
-    const lines = departments.map((d, idx) => {
+    const lines = currentItems.map((d, idx) => {
       const pass = inputPasswords[d.department] || d.password || '(미발급)';
-      return `${idx + 1}. [${d.division} > ${d.department}] 비밀번호: ${pass}`;
+      return `${idx + 1}. [${d.office} > ${d.department}] 비밀번호: ${pass}`;
     });
-    const content = `[과천도시공사 제안평가 부서별 접속 비밀번호 명단]\n\n${lines.join('\n')}\n\n* 관리자 발급일시: ${new Date().toLocaleString()}`;
+    const title = activeTab === 'STAGE_1' ? '1차 제안심사위원(11인) 접속 비밀번호 명단' : '0차 부서별 접속 비밀번호 명단';
+    const content = `[과천도시공사 ${title}]\n\n${lines.join('\n')}\n\n* 관리자 발급일시: ${new Date().toLocaleString()}`;
     navigator.clipboard.writeText(content);
-    showToast('전체 부서 비밀번호 명단이 클립보드에 복사되었습니다.');
+    showToast('비밀번호 명단이 클립보드에 복사되었습니다.');
   };
 
   // CSV 다운로드
   const handleDownloadCSV = () => {
-    const headers = ['연번', '본부/부문', '처/실/단', '부서명', '접속비밀번호(4자리)', '발급상태'];
-    const rows = departments.map((d, idx) => {
+    const headers = ['연번', '구분/본부', '소속부서/처실단', '평가자(부서명)', '접속비밀번호(4자리)', '발급상태'];
+    const rows = currentItems.map((d, idx) => {
       const pass = inputPasswords[d.department] || d.password || '';
       return [
         idx + 1,
@@ -226,13 +240,13 @@ export default function AdminPasswordsPage() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `과천도시공사_부서별_접속비밀번호_${new Date().toISOString().split('T')[0]}.csv`;
+    link.download = `과천도시공사_${activeTab === 'STAGE_1' ? '1차심사위원' : '0차부서별'}_접속비밀번호_${new Date().toISOString().split('T')[0]}.csv`;
     link.click();
     URL.revokeObjectURL(url);
-    showToast('부서별 비밀번호 명단 CSV가 다운로드되었습니다.');
+    showToast('비밀번호 명단 CSV가 다운로드되었습니다.');
   };
 
-  const filtered = departments.filter(d => {
+  const filtered = currentItems.filter(d => {
     const q = search.toLowerCase();
     return (
       d.department.toLowerCase().includes(q) ||
@@ -241,10 +255,10 @@ export default function AdminPasswordsPage() {
     );
   });
 
-  const totalCount = departments.length;
-  const savedCount = departments.filter(d => Boolean(d.password)).length;
-  const pendingSaveCount = departments.filter(d => Boolean(inputPasswords[d.department]) && inputPasswords[d.department] !== d.password).length;
-  const unsetCount = departments.filter(d => !d.password && !inputPasswords[d.department]).length;
+  const totalCount = currentItems.length;
+  const savedCount = currentItems.filter(d => Boolean(d.password)).length;
+  const pendingSaveCount = currentItems.filter(d => Boolean(inputPasswords[d.department]) && inputPasswords[d.department] !== d.password).length;
+  const unsetCount = currentItems.filter(d => !d.password && !inputPasswords[d.department]).length;
 
   return (
     <div className="space-y-6">
@@ -261,12 +275,11 @@ export default function AdminPasswordsPage() {
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/20 text-sky-300 text-xs font-semibold mb-3">
             <KeyRound className="w-3.5 h-3.5" />
-            부서별 보안 인증 관리
+            평가자 보안 인증 관리 (0차 부서 &amp; 1차 심사위원)
           </div>
-          <h2 className="text-2xl font-bold tracking-tight mb-2">부서별 평가 접속 비밀번호 관리</h2>
+          <h2 className="text-2xl font-bold tracking-tight mb-2">평가 접속 비밀번호 관리</h2>
           <p className="text-sm text-slate-300 max-w-xl">
-            각 부서 평가자가 0차 부서평가함에 접속할 때 사용할 4자리 비밀번호를 안전하게 발급하고 관리합니다.
-            평가자가 스스로 설정하지 않고 <strong>관리자가 사전에 발급</strong>하여 안내합니다.
+            0차 부서 평가자 및 1차 제안심사 평가자(11인)가 각 평가함에 접속할 때 사용할 4자리 비밀번호를 안전하게 발급하고 관리합니다.
           </p>
         </div>
 
@@ -274,10 +287,10 @@ export default function AdminPasswordsPage() {
           <button
             onClick={handleBulkRandomizeUnset}
             className="px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold flex items-center gap-1.5 shadow-md shadow-sky-600/25 transition"
-            title="비밀번호가 없는 부서만 4자리 랜덤 숫자로 채웁니다."
+            title="비밀번호가 없는 대상만 4자리 랜덤 숫자로 채웁니다."
           >
             <Dices className="w-4 h-4" />
-            <span>미발급 부서 4자리 랜덤 생성</span>
+            <span>미발급 4자리 랜덤 생성</span>
           </button>
 
           <button
@@ -293,6 +306,34 @@ export default function AdminPasswordsPage() {
             <span>{bulkSaving ? '저장 중...' : pendingSaveCount > 0 ? `전체 일괄 저장 (${pendingSaveCount}건 대기)` : '전체 일괄 저장'}</span>
           </button>
         </div>
+      </div>
+
+      {/* Stage 0 vs Stage 1 Tab Switcher */}
+      <div className="flex flex-wrap items-center gap-2 bg-white p-2 rounded-2xl border border-slate-200 shadow-sm">
+        <button
+          type="button"
+          onClick={() => setActiveTab('STAGE_0')}
+          className={`flex-1 sm:flex-none px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2 ${
+            activeTab === 'STAGE_0'
+              ? 'bg-emerald-600 text-white shadow-sm'
+              : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
+          }`}
+        >
+          <Building2 className="w-4 h-4" />
+          <span>0차 부서 평가자 비밀번호 ({departments.length}개 부서)</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('STAGE_1')}
+          className={`flex-1 sm:flex-none px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2 ${
+            activeTab === 'STAGE_1'
+              ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-sm'
+              : 'bg-amber-50/60 text-amber-900 hover:bg-amber-100/70 border border-amber-200'
+          }`}
+        >
+          <Sparkles className="w-4 h-4" />
+          <span>1차 제안심사 평가자 비밀번호 ({judges.length}명 심사위원)</span>
+        </button>
       </div>
 
       {/* KPI Stats & Tools */}
