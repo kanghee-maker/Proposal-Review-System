@@ -18,12 +18,12 @@ function Stage1EvaluateProposalContent() {
   const [judgeTitle, setJudgeTitle] = useState<string>('제안1차심사자');
   const [loading, setLoading] = useState<boolean>(true);
 
-  // 1차 심사 채점 상태
+  // 1차 심사 채점 상태 (기본값: 각 배점의 중간값 15 / 15 / 15 / 5 = 총점 50점)
   const [scoreId, setScoreId] = useState<string>('');
-  const [creativity, setCreativity] = useState<number>(20);
-  const [feasibility, setFeasibility] = useState<number>(20);
-  const [effectiveness, setEffectiveness] = useState<number>(20);
-  const [dissemination, setDissemination] = useState<number>(10);
+  const [creativity, setCreativity] = useState<number>(15);
+  const [feasibility, setFeasibility] = useState<number>(15);
+  const [effectiveness, setEffectiveness] = useState<number>(15);
+  const [dissemination, setDissemination] = useState<number>(5);
   const [opinion, setOpinion] = useState<string>('');
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [saveToast, setSaveToast] = useState<string>('');
@@ -471,9 +471,9 @@ function Stage1EvaluateProposalContent() {
                     <input
                       type="number"
                       min={0}
-                      max={15}
+                      max={10}
                       value={dissemination}
-                      onChange={(e) => setDissemination(Math.min(15, Math.max(0, Number(e.target.value))))}
+                      onChange={(e) => setDissemination(Math.min(10, Math.max(0, Number(e.target.value))))}
                       className="w-16 text-center bg-white border-2 border-amber-400 rounded-lg py-1 font-extrabold text-sm text-slate-900"
                     />
                     <span className="font-semibold text-slate-600">점</span>

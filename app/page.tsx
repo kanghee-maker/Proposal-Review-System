@@ -278,15 +278,15 @@ export default function Home() {
           </div>
           <div className="grid sm:grid-cols-2 gap-3 text-xs">
             {/* Step 1 */}
-            <div className="bg-white/95 p-4 rounded-xl border-2 border-slate-200 text-slate-700 flex flex-col">
-              <div className="self-start mb-3 border border-emerald-200 bg-emerald-50 text-emerald-800 text-[14px] font-bold px-2 py-1 rounded-md whitespace-nowrap">
-                0차 부서 평가 완료
+            <div className="bg-slate-100/90 p-4 rounded-xl border-2 border-slate-200/90 text-slate-500 flex flex-col">
+              <div className="self-start mb-3 border border-slate-300 bg-slate-200/80 text-slate-600 text-[14px] font-bold px-2 py-1 rounded-md whitespace-nowrap">
+                0차 부서 평가 완료 (마감)
               </div>
               <div className="flex flex-wrap items-center gap-2 mb-2">
-                <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 font-bold text-xs flex items-center justify-center">1</span>
-                <strong className="text-slate-900 font-bold text-sm">부서 평가(0차 평가)</strong>
+                <span className="w-5 h-5 rounded-full bg-slate-200 text-slate-600 font-bold text-xs flex items-center justify-center">1</span>
+                <strong className="text-slate-600 font-bold text-sm">부서 평가(0차 평가)</strong>
               </div>
-              <p className="text-slate-600 text-[15px] leading-relaxed">
+              <p className="text-slate-500 text-[15px] leading-relaxed">
                 각 담당 부서에서 소관 제안의 실무 타당성(예산, 실현가능성, 파급효과)을 사전 검토하고, 채택(Yes) 또는 불채택(No) 여부 및 검토의견을 작성합니다.
               </p>
             </div>
@@ -350,26 +350,31 @@ export default function Home() {
             </button>
           </div>
 
-          {/* 2. 0차 부서 평가자 (Stage 0 Evaluator) 카드 */}
-          <div className="bg-white rounded-2xl border-2 border-slate-200 p-6 sm:p-7 flex flex-col justify-between shadow-lg shadow-slate-100 hover:border-[#169268] transition group">
+          {/* 2. 0차 부서 평가자 (Stage 0 Evaluator) 카드 - 마감 완료 (옅은 회색 톤) */}
+          <div className="bg-slate-100/90 rounded-2xl border-2 border-slate-200 p-6 sm:p-7 flex flex-col justify-between shadow-sm transition group">
             <div>
-              <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-[#169268] flex items-center justify-center mb-5 group-hover:scale-105 transition">
-                <Users className="w-6 h-6" />
+              <div className="flex items-center justify-between mb-5">
+                <div className="w-12 h-12 rounded-2xl bg-slate-200/80 text-slate-500 flex items-center justify-center">
+                  <Users className="w-6 h-6" />
+                </div>
+                <span className="px-2.5 py-1 rounded-full bg-slate-200 text-slate-600 border border-slate-300 text-xs font-bold">
+                  0차 심사 마감
+                </span>
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-2">0차 부서 평가자 로그인</h3>
-              <p className="text-xs sm:text-sm text-slate-600 mb-6 leading-6 md:min-h-[4.5rem]">
+              <h3 className="text-xl font-bold text-slate-600 mb-2">0차 부서 평가자 로그인</h3>
+              <p className="text-xs sm:text-sm text-slate-500 mb-6 leading-6 md:min-h-[4.5rem]">
                 담당 부서(실행부서)를 선택하여 본인 부서에 배정된 제안 목록을 열람하고, 부서 평가(0차 평가)(수용 여부 및 의견)를 진행합니다.
               </p>
 
               <form onSubmit={handleEvaluatorCheck} className="space-y-4 mb-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                    담당 부서 선택 <span className="text-emerald-600">*</span>
+                  <label className="block text-xs font-semibold text-slate-500 mb-1.5">
+                    담당 부서 선택
                   </label>
                   <select
                     value={selectedDept}
                     onChange={(e) => setSelectedDept(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full bg-slate-200/60 border border-slate-300 text-slate-600 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none"
                   >
                     {departments.map((dept) => (
                       <option key={dept.code} value={dept.department}>
@@ -382,19 +387,19 @@ export default function Home() {
                 <button
                   type="submit"
                   disabled={deptLoading}
-                  className="w-full py-3.5 px-4 rounded-xl bg-[#169268] hover:bg-[#127754] font-semibold text-white shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2 transition mt-2 disabled:opacity-50 text-sm"
+                  className="w-full py-3.5 px-4 rounded-xl bg-slate-400 hover:bg-slate-500 font-semibold text-white shadow-sm flex items-center justify-center gap-2 transition mt-2 disabled:opacity-50 text-sm"
                 >
                   <KeyRound className="w-4 h-4" />
-                  <span>{deptLoading ? '부서 확인 중...' : '0차 부서 평가함 입장'}</span>
+                  <span>{deptLoading ? '부서 확인 중...' : '0차 부서 평가함 입장 (종료)'}</span>
                   <ChevronRight className="w-4 h-4 ml-auto" />
                 </button>
               </form>
             </div>
 
             {/* 안내 문구 */}
-            <div className="mt-2 p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 leading-relaxed text-left">
+            <div className="mt-2 p-3 rounded-xl bg-slate-200/50 border border-slate-200 text-xs text-slate-500 leading-relaxed text-left">
               <p className="text-[14px]">
-                ※ 각 부서별 접속 비밀번호는 <strong className="text-orange-600 font-bold">관리자(총무행정부 우세림) - 1192(내선번호)</strong>가 사전에 발급하여 관리합니다.
+                ※ 0차 부서 평가는 마감되었으며, 현재 <strong className="text-slate-600 font-bold">1차 제안심사</strong>가 진행 중입니다.
               </p>
             </div>
           </div>
