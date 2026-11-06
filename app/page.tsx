@@ -10,7 +10,7 @@ export default function Home() {
   const router = useRouter();
   const [departments, setDepartments] = useState<Department[]>([]);
   const [selectedDept, setSelectedDept] = useState<string>('');
-  const [selectedJudge, setSelectedJudge] = useState<string>(DEFAULT_STAGE1_JUDGES[0]?.name || '박민호');
+  const [selectedJudge, setSelectedJudge] = useState<string>(DEFAULT_STAGE1_JUDGES[0]?.name || '박종용');
 
   // Modals state
   const [adminModalOpen, setAdminModalOpen] = useState(false);
@@ -169,13 +169,19 @@ export default function Home() {
     setStage1Loading(true);
     setStage1Error('');
 
+    const mappedOrgDept = selectedJudgeInfo.title
+      .replace(/부장$/, '부')
+      .replace('사업계획부', '사업기획부')
+      .replace('청렴감사단장', '경영감사실')
+      .replace('안전총괄단장', '안전관리부');
+
     try {
       const res = await fetch('/api/auth/department', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           dept: selectedJudgeInfo.name,
-          fallbackDept: selectedJudgeInfo.dept,
+          fallbackDept: mappedOrgDept || selectedJudgeInfo.dept,
           password: stage1Password,
           action: 'login'
         })
@@ -184,9 +190,9 @@ export default function Home() {
 
       if (data.success) {
         if (data.isTestMode) {
-          alert(`[관리자 스페셜 인증]\n[${selectedJudgeInfo.dept}] ${selectedJudgeInfo.name} 1차 심사함에 관리자 권한으로 입장합니다.`);
+          alert(`[관리자 스페셜 인증]\n[${selectedJudgeInfo.dept}] ${selectedJudgeInfo.title} (${selectedJudgeInfo.name}) 1차 심사함에 관리자 권한으로 입장합니다.`);
         }
-        const displayTitle = `${selectedJudgeInfo.name} 위원 (${selectedJudgeInfo.dept})`;
+        const displayTitle = `[${selectedJudgeInfo.dept}] ${selectedJudgeInfo.title} (${selectedJudgeInfo.name})`;
         if (typeof window !== 'undefined') {
           localStorage.setItem('gcuc_user_role', 'EVALUATOR');
           localStorage.setItem('gcuc_evaluator_stage', 'STAGE_1');
@@ -301,7 +307,7 @@ export default function Home() {
                 <strong className="text-slate-900 font-bold text-sm">제안 심사(1차 평가)</strong>
               </div>
               <p className="text-slate-600 text-[15px] leading-relaxed">
-                <strong>부서 평가(0차 평가)</strong> 완결 후 채택(Yes) 제안을 연계하여 제안심사위원회 11인 심사위원이 창의성·실현성·효과성·전파성을 다면 평가합니다.
+                <strong>부서 평가(0차 평가)</strong> 완결 후 채택(Yes) 제안을 연계하여 제안심사위원회 12인 심사위원이 창의성·실현성·효과성·전파성을 다면 평가합니다.
               </p>
             </div>
           </div>
@@ -407,12 +413,12 @@ export default function Home() {
                   <Award className="w-6 h-6" />
                 </div>
                 <span className="px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 border border-amber-300 text-xs font-bold">
-                  1차 심사위원 전용 (11인)
+                  1차 심사위원 전용 (12인)
                 </span>
               </div>
               <h3 className="text-xl font-bold text-slate-900 mb-2">1차 제안심사 평가자 로그인</h3>
               <p className="text-xs sm:text-sm text-slate-600 mb-6 leading-6 md:min-h-[4.5rem]">
-                1차 제안심사위원(11명)을 선택하여 상정된 제안의 부서 검토의견을 확인하고, 항목별 점수(창의성·실현성·효과성·전파성) 및 심사 의견을 입력합니다.
+                1차 제안심사위원(12명)을 선택하여 상정된 제안의 부서 검토의견을 확인하고, 항목별 점수(창의성·실현성·효과성·전파성) 및 심사 의견을 입력합니다.
               </p>
 
               <form onSubmit={handleStage1EvaluatorCheck} className="space-y-4 mb-4">
@@ -427,7 +433,7 @@ export default function Home() {
                   >
                     {DEFAULT_STAGE1_JUDGES.map((judge) => (
                       <option key={judge.id} value={judge.name}>
-                        [{judge.dept}] {judge.name} ({judge.title})
+                        [{judge.dept}] {judge.title} ({judge.name})
                       </option>
                     ))}
                   </select>

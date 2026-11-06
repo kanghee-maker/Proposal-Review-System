@@ -59,11 +59,11 @@ function Stage1EvaluatorDashboardContent() {
   useEffect(() => {
     let jName = searchParams.get('judge') || '';
     if (!jName && typeof window !== 'undefined') {
-      jName = localStorage.getItem('gcuc_dept_name') || DEFAULT_STAGE1_JUDGES[0]?.name || '박민호';
+      jName = localStorage.getItem('gcuc_dept_name') || DEFAULT_STAGE1_JUDGES[0]?.name || '박종용';
     }
     const matched = DEFAULT_STAGE1_JUDGES.find(j => j.name === jName);
     setJudgeName(jName);
-    setJudgeDept(matched?.dept || (typeof window !== 'undefined' ? localStorage.getItem('gcuc_judge_dept') || '' : ''));
+    setJudgeDept(matched ? `${matched.dept} • ${matched.title}` : (typeof window !== 'undefined' ? localStorage.getItem('gcuc_judge_dept') || '' : ''));
 
     if (jName && selectedSessionId) {
       setLoading(true);

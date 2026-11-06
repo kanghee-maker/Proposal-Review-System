@@ -15,6 +15,7 @@ function Stage1EvaluateProposalContent() {
   const [proposal, setProposal] = useState<Proposal | null>(null);
   const [judgeName, setJudgeName] = useState<string>('');
   const [judgeDept, setJudgeDept] = useState<string>('');
+  const [judgeTitle, setJudgeTitle] = useState<string>('제안1차심사자');
   const [loading, setLoading] = useState<boolean>(true);
 
   // 1차 심사 채점 상태
@@ -32,11 +33,12 @@ function Stage1EvaluateProposalContent() {
   useEffect(() => {
     let jName = searchParams.get('judge') || '';
     if (!jName && typeof window !== 'undefined') {
-      jName = localStorage.getItem('gcuc_dept_name') || DEFAULT_STAGE1_JUDGES[0]?.name || '박민호';
+      jName = localStorage.getItem('gcuc_dept_name') || DEFAULT_STAGE1_JUDGES[0]?.name || '박종용';
     }
     const matched = DEFAULT_STAGE1_JUDGES.find(j => j.name === jName);
     setJudgeName(jName);
     setJudgeDept(matched?.dept || (typeof window !== 'undefined' ? localStorage.getItem('gcuc_judge_dept') || '' : ''));
+    setJudgeTitle(matched?.title || '제안1차심사자');
 
     Promise.all([
       fetch(`/api/proposals?id=${encodeURIComponent(proposalId)}`).then(r => r.json()),
@@ -74,7 +76,7 @@ function Stage1EvaluateProposalContent() {
         session_id: proposal.session_id,
         judge_name: judgeName,
         judge_dept: judgeDept,
-        judge_title: '제안1차심사자',
+        judge_title: judgeTitle,
         creativity: Number(creativity || 0),
         feasibility: Number(feasibility || 0),
         effectiveness: Number(effectiveness || 0),

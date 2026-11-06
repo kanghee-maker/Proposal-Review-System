@@ -173,35 +173,23 @@ function AdminStage1Content() {
       const res = await fetch(`/api/stage1/scores?session_id=${encodeURIComponent(selectedSessionId)}&proposal_id=${encodeURIComponent(proposal.id)}`);
       const existingScores: CommitteeScore[] = await res.json();
 
-      const judges: CommitteeJudge[] = currentSession?.judges && currentSession.judges.length > 0 
-        ? currentSession.judges 
-        : DEFAULT_STAGE1_JUDGES;
+      const hasLegacyJudges = currentSession?.judges?.some(j => j.name === '박민호');
+      const judges: CommitteeJudge[] =
+        currentSession?.judges && currentSession.judges.length > 0 && !hasLegacyJudges
+          ? currentSession.judges
+          : DEFAULT_STAGE1_JUDGES;
 
-      // 11명 심사위원과 매핑 (점수가 없으면 기본 폼 채우기)
+      // 12명 심사위원과 매핑
       const mappedScores: CommitteeScore[] = judges.map((judge, idx) => {
         const found = existingScores.find(s => s.judge_name === judge.name);
-        if (found) return found;
+        if (found) {
+          return {
+            ...found,
+            judge_dept: judge.dept,
+            judge_title: judge.title || found.judge_title || '제안1차심사자',
+          };
+        }
 
-        // 초기 기본 예시 점수 (사용자 첨부 이미지 2와 동일한 분포)
-        const defaultSamples = [
-          { c: 15, f: 10, e: 10, d: 5, op: '● 좋은제안입니다' },
-          { c: 9, f: 10, e: 10, d: 6, op: '-' },
-          { c: 15, f: 16, e: 16, d: 6, op: '제안 취지는 타당하나, 어린이 이용 교육실동 교육생 동선 유도 및 운영 방식에 대한 추가 검토가 필요해 보입니다' },
-          { c: 16, f: 18, e: 18, d: 8, op: '좋은 제안입니다.' },
-          { c: 16, f: 16, e: 16, d: 6, op: '좋은 제안입니다' },
-          { c: 18, f: 18, e: 18, d: 6, op: '좋은 제안입니다' },
-          { c: 16, f: 24, e: 24, d: 8, op: '좋은 의견 입니다.' },
-          { c: 16, f: 18, e: 18, d: 8, op: '● 좋은제안이며, 시설 내 유휴공간 활용 사업으로 추후 실무 협의 필요' },
-          { c: 24, f: 24, e: 24, d: 8, op: '좋은 제안입니다.' },
-          { c: 16, f: 18, e: 18, d: 8, op: '좋은제안입니다.' },
-          { c: 24, f: 24, e: 24, d: 8, op: '좋은 제안입니다.' }
-        ];
-
-        const sample = defaultSamples[idx % defaultSamples.length];
-        const c = sample.c;
-        const f = sample.f;
-        const e = sample.e;
-        const d = sample.d;
         return {
           id: `cs-temp-${idx}`,
           proposal_id: proposal.id,
@@ -209,12 +197,12 @@ function AdminStage1Content() {
           judge_name: judge.name,
           judge_dept: judge.dept,
           judge_title: judge.title || '제안1차심사자',
-          creativity: c,
-          feasibility: f,
-          effectiveness: e,
-          dissemination: d,
-          total_score: c + f + e + d,
-          opinion: sample.op
+          creativity: 0,
+          feasibility: 0,
+          effectiveness: 0,
+          dissemination: 0,
+          total_score: 0,
+          opinion: '미채점'
         };
       });
 

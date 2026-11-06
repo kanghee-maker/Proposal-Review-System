@@ -38,17 +38,18 @@ export interface CommitteeJudge {
 }
 
 export const DEFAULT_STAGE1_JUDGES: CommitteeJudge[] = [
-  { id: 'j-1', name: '박민호', dept: '경영감사실', title: '제안1차심사자' },
-  { id: 'j-2', name: '유경모', dept: '미래전략실', title: '제안1차심사자' },
-  { id: 'j-3', name: '배규한', dept: '교육시설부', title: '제안1차심사자' },
-  { id: 'j-4', name: '곽현석', dept: '시설기획부', title: '제안1차심사자' },
-  { id: 'j-5', name: '김동수', dept: '시설기획부', title: '제안1차심사자' },
-  { id: 'j-6', name: '이정문', dept: '시설기획부', title: '제안1차심사자' },
-  { id: 'j-7', name: '박종원', dept: '사업기획부', title: '제안1차심사자' },
-  { id: 'j-8', name: '김수호', dept: '개발1부', title: '제안1차심사자' },
-  { id: 'j-9', name: '최종순', dept: '여가체육부', title: '제안1차심사자' },
-  { id: 'j-10', name: '이기범', dept: '솔빛정원부', title: '제안1차심사자' },
-  { id: 'j-11', name: '오세풍', dept: '안전총괄단', title: '제안1차심사자' }
+  { id: 'j-1', name: '박종용', dept: '사업계획처', title: '사업계획부장' },
+  { id: 'j-2', name: '신송식', dept: '사업개발처', title: '기술지원부장' },
+  { id: 'j-3', name: '김봉수', dept: '시설관리처', title: '시설기획부장' },
+  { id: 'j-4', name: '최성훈', dept: '시민회관체육운영처', title: '여가체육부장' },
+  { id: 'j-5', name: '장소희', dept: '공원수련관관리처', title: '공원운영부장' },
+  { id: 'j-6', name: '장영수', dept: '경영지원실', title: '총무행정부장' },
+  { id: 'j-7', name: '이은석', dept: '미래전략실', title: '스마트정보부장' },
+  { id: 'j-8', name: '박인숙', dept: '청렴감사단', title: '청렴감사단장' },
+  { id: 'j-9', name: '김만전', dept: '안전총괄단', title: '안전총괄단장' },
+  { id: 'j-10', name: '김다정', dept: '직군별 심사자(추첨)', title: '행정' },
+  { id: 'j-11', name: '이재봉', dept: '직군별 심사자(추첨)', title: '기술' },
+  { id: 'j-12', name: '신상조', dept: '직군별 심사자(추첨)', title: '체육' }
 ];
 
 export interface CommitteeScore {

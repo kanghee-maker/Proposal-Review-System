@@ -213,9 +213,9 @@ export default function AdminPasswordsPage() {
   const handleCopyAllList = () => {
     const lines = currentItems.map((d, idx) => {
       const pass = inputPasswords[d.department] || d.password || '(미발급)';
-      return `${idx + 1}. [${d.office} > ${d.department}] 비밀번호: ${pass}`;
+      return `${idx + 1}. [${d.division} > ${d.office} (${d.department})] 비밀번호: ${pass}`;
     });
-    const title = activeTab === 'STAGE_1' ? '1차 제안심사위원(11인) 접속 비밀번호 명단' : '0차 부서별 접속 비밀번호 명단';
+    const title = activeTab === 'STAGE_1' ? '1차 제안심사위원(12인) 접속 비밀번호 명단' : '0차 부서별 접속 비밀번호 명단';
     const content = `[과천도시공사 ${title}]\n\n${lines.join('\n')}\n\n* 관리자 발급일시: ${new Date().toLocaleString()}`;
     navigator.clipboard.writeText(content);
     showToast('비밀번호 명단이 클립보드에 복사되었습니다.');

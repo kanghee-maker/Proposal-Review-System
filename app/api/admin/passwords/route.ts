@@ -23,13 +23,18 @@ export async function GET() {
     });
 
     const judgesWithPasswords = DEFAULT_STAGE1_JUDGES.map((j) => {
-      const pass = passwords[j.name] || passwords[j.dept] || '';
+      const mappedOrgDept = j.title
+        .replace(/부장$/, '부')
+        .replace('사업계획부', '사업기획부')
+        .replace('청렴감사단장', '경영감사실')
+        .replace('안전총괄단장', '안전관리부');
+      const pass = passwords[j.name] || passwords[mappedOrgDept] || passwords[j.dept] || '';
       return {
         code: j.id,
-        division: '1차 제안심사위원회',
-        office: j.dept,
+        division: j.dept,
+        office: j.title,
         department: j.name,
-        name: `[${j.dept}] ${j.name} (${j.title})`,
+        name: `[${j.dept}] ${j.title} (${j.name})`,
         password: pass,
         hasPassword: Boolean(pass)
       };

@@ -571,10 +571,10 @@ function AdminReportsContent() {
               <div className="p-3 bg-amber-50/80 rounded-xl border border-amber-200/80 text-[15px] text-amber-950 space-y-1">
                 <div className="font-bold flex items-center gap-1.5">
                   <CheckCircle2 className="w-3.5 h-3.5 text-amber-600" />
-                  <span>1차 심사위원회 11인 평가단 자동 배정</span>
+                  <span>1차 심사위원회 12인 평가단 자동 배정</span>
                 </div>
                 <p className="text-slate-600 leading-relaxed">
-                  경영감사실, 미래전략실, 시설기획부, 사업기획부, 개발1부, 여가체육부 등 11인의 제안1차심사위원이 자동 배정되며, 0차 부서 검토의견이 1차 심사위원들에게 참고자료로 자동 연계 제공됩니다.
+                  사업계획처(박종용), 사업개발처(신송식), 시설관리처(김봉수), 시민회관체육운영처(최성훈), 공원수련관관리처(장소희), 경영지원실(장영수), 미래전략실(이은석), 청렴감사단(박인숙), 안전총괄단(김만전) 및 직군별 추첨위원(김다정·이재봉·신상조) 등 12인의 제안1차심사위원이 자동 배정되며, 0차 부서 검토의견이 참고자료로 자동 연계 제공됩니다.
                 </p>
               </div>
 
