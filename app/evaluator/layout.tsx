@@ -21,6 +21,12 @@ export default function EvaluatorLayout({ children }: { children: React.ReactNod
       const isAuth = d ? localStorage.getItem(`gcuc_dept_auth_${d}`) : null;
       const isAdminAuth = localStorage.getItem('gcuc_admin_auth') === 'true';
 
+      if (!isStage1 && !isAdminAuth) {
+        alert('0차 심사는 종료 되었습니다.');
+        router.push('/');
+        return;
+      }
+
       if (isAdminAuth && (!d || isAuth !== 'true')) {
         setDeptName('총괄 관리자 (미리보기)');
         setUserName('조회 전용 모드');

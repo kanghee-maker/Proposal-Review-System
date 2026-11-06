@@ -85,15 +85,9 @@ export default function Home() {
     }
   };
 
-  // 2. 0차 부서 평가함 진입 요청
+  // 2. 0차 부서 평가함 진입 요청 -> 종료 안내 팝업 표시 및 진입 차단
   const handleEvaluatorCheck = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedDept) {
-      alert('평가 부서를 선택해 주세요.');
-      return;
-    }
-    setDeptPassword('');
-    setDeptError('');
     setDeptLoginModalOpen(true);
   };
 
@@ -550,70 +544,33 @@ export default function Home() {
         </div>
       )}
 
-      {/* --- 모달 2: 0차 부서 비밀번호 로그인 (Clean White Modal) --- */}
+      {/* --- 모달 2: 0차 심사 종료 안내 팝업 --- */}
       {deptLoginModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white border border-slate-200 w-full max-w-md rounded-2xl shadow-2xl p-6 relative text-slate-800">
+          <div className="bg-white border border-slate-200 w-full max-w-sm rounded-2xl shadow-2xl p-6 relative text-slate-800 text-center">
             <button
               onClick={() => setDeptLoginModalOpen(false)}
               className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-1 rounded-lg"
             >
               <X className="w-5 h-5" />
             </button>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-[#169268] flex items-center justify-center">
-                <KeyRound className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-slate-900">[{selectedDept}] 0차 부서평가 비밀번호 입력</h3>
-                <p className="text-xs text-slate-500">0차 부서 평가함에 접근하려면 비밀번호를 입력해주세요.</p>
-              </div>
+            <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 border border-amber-200 flex items-center justify-center mx-auto mb-4">
+              <AlertCircle className="w-6 h-6" />
             </div>
-
-            <form onSubmit={handleDeptLoginSubmit} className="space-y-4 mt-2">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  부서 비밀번호
-                </label>
-                <input
-                  type="password"
-                  autoFocus
-                  placeholder="부서 비밀번호를 입력하세요"
-                  value={deptPassword}
-                  onChange={(e) => setDeptPassword(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                />
-              </div>
-
-              {deptError && (
-                <div className="flex items-center gap-2 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs">
-                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                  <span>{deptError}</span>
-                </div>
-              )}
-
-              <div className="flex gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setDeptLoginModalOpen(false)}
-                  className="w-1/3 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-slate-700 transition"
-                >
-                  취소
-                </button>
-                <button
-                  type="submit"
-                  disabled={deptLoading}
-                  className="w-2/3 py-2.5 rounded-xl bg-[#169268] hover:bg-[#127754] text-xs font-semibold text-white shadow-lg shadow-emerald-600/20 transition disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  <KeyRound className="w-3.5 h-3.5" />
-                  <span>{deptLoading ? '확인 중...' : '0차 부서 평가함 입장'}</span>
-                </button>
-              </div>
-
-              <div className="mt-3 p-3 rounded-xl bg-slate-50 border border-slate-200 text-[15px] text-slate-600 leading-relaxed">
-                * 부서별 비밀번호는 <strong className="text-orange-600 font-bold">관리자(총무행정부 우세림) - 1192(내선번호)</strong>가 사전에 발급한 4자리 숫자를 입력해주세요. (비밀번호 미발급 시 관리자 문의)
-              </div>
-            </form>
+            <h3 className="text-lg font-extrabold text-slate-900 mb-2">
+              0차 심사는 종료 되었습니다.
+            </h3>
+            <p className="text-xs text-slate-500 leading-relaxed mb-6">
+              2026년도 부서 평가(0차 평가)가 마감되어 현재 1차 제안심사가 진행 중입니다.
+            </p>
+            <button
+              type="button"
+              onClick={() => setDeptLoginModalOpen(false)}
+              autoFocus
+              className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-xs font-bold text-white shadow-sm transition"
+            >
+              확인
+            </button>
           </div>
         </div>
       )}
