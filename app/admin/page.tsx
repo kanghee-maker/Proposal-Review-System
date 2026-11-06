@@ -452,7 +452,7 @@ export default function AdminDashboardPage() {
                         ) : (
                           <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 inline-flex shrink-0 whitespace-nowrap items-center gap-1">
                             <Clock className="w-3 h-3" />
-                            {s.status === 'CLOSED' || (s.year === '2026' && s.title.includes('2026년 제안 부서 심사'))
+                            {s.status === 'CLOSED'
                               ? '부서평가(0차)평가 완료'
                               : s.status === 'ACTIVE' ? '부서 평가(0차 평가) 진행중' : s.status}
                           </span>
