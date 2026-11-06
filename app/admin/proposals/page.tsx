@@ -344,7 +344,7 @@ function AdminProposalsContent() {
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* 1. 제안평가 회차 선행 선택 바 */}
-      <div className="bg-white rounded-2xl border border-sky-200 p-4 sm:p-5 shadow-sm bg-gradient-to-r from-sky-50/70 via-white to-blue-50/40 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white rounded-2xl border border-sky-200 p-4 sm:p-5 shadow-sm bg-gradient-to-r from-sky-50/70 via-white to-blue-50/40 flex flex-col xl:flex-row xl:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
           <div className="w-11 h-11 rounded-2xl bg-sky-600 text-white flex items-center justify-center shadow-md shadow-sky-600/25 flex-shrink-0">
             <Layers className="w-5 h-5" />
@@ -404,7 +404,7 @@ function AdminProposalsContent() {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs shrink-0 whitespace-nowrap">
           <div className="bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-2">
             <span className="text-[14px] text-slate-400 block">전체</span>
             <strong className="text-slate-900 font-bold">{proposals.length}건</strong>
@@ -428,7 +428,7 @@ function AdminProposalsContent() {
       <div className="bg-white rounded-2xl border border-slate-200 p-3.5 sm:p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
         <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 sm:gap-3">
           <div className="flex flex-col sm:flex-row sm:items-center gap-1">
-            <span className="font-semibold text-slate-500 text-[15px]">상태:</span>
+            <span className="font-semibold text-slate-500 text-[15px] whitespace-nowrap">상태:</span>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
@@ -446,7 +446,7 @@ function AdminProposalsContent() {
           </div>
 
           <div className="flex flex-col sm:flex-row sm:items-center gap-1">
-            <span className="font-semibold text-slate-500 text-[15px]">담당부서:</span>
+            <span className="font-semibold text-slate-500 text-[15px] whitespace-nowrap">담당부서:</span>
             <select
               value={deptFilter}
               onChange={(e) => setDeptFilter(e.target.value)}
@@ -462,7 +462,7 @@ function AdminProposalsContent() {
           </div>
         </div>
 
-        <div className="relative w-full md:w-60">
+        <div className="relative w-full md:w-60 md:shrink-0">
           <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
@@ -498,19 +498,19 @@ function AdminProposalsContent() {
           <>
             {/* 1. Desktop Table View (md 이상) */}
             <div className="hidden md:block overflow-x-auto">
-              <table className="w-full text-left border-collapse text-xs">
+              <table className="w-full min-w-[1160px] text-left border-collapse text-xs">
                 <thead>
                   <tr className="bg-slate-100/80 border-b border-slate-200 text-slate-600 font-semibold uppercase tracking-wider">
-                    <th className="py-3 px-3 w-12 text-center">연번</th>
-                    <th className="py-3 px-3 w-14 text-center">게시판</th>
-                    <th className="py-3 px-3">제안자</th>
-                    <th className="py-3 px-3">제안자 소속</th>
-                    <th className="py-3 px-3">분야</th>
-                    <th className="py-3 px-3 font-bold text-sky-900">담당부서 (실행부서)</th>
-                    <th className="py-3 px-4 min-w-[240px]">제안 제목</th>
-                    <th className="py-3 px-3 text-center w-36">첨부파일</th>
-                    <th className="py-3 px-3 text-center">부서 평가(0차)</th>
-                    <th className="py-3 px-3 text-center w-36">관리 / 평가자 화면</th>
+                    <th className="whitespace-nowrap py-3 px-3 w-12 text-center">연번</th>
+                    <th className="whitespace-nowrap py-3 px-3 w-14 text-center">게시판</th>
+                    <th className="whitespace-nowrap py-3 px-3">제안자</th>
+                    <th className="whitespace-nowrap py-3 px-3">제안자 소속</th>
+                    <th className="whitespace-nowrap py-3 px-3">분야</th>
+                    <th className="whitespace-nowrap py-3 px-3 min-w-[160px] font-bold text-sky-900">담당부서 (실행부서)</th>
+                    <th className="whitespace-nowrap py-3 px-4 min-w-[240px]">제안 제목</th>
+                    <th className="whitespace-nowrap py-3 px-3 text-center w-36">첨부파일</th>
+                    <th className="whitespace-nowrap py-3 px-3 text-center">부서 평가(0차)</th>
+                    <th className="whitespace-nowrap py-3 px-3 text-center w-36">관리 / 평가자 화면</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">

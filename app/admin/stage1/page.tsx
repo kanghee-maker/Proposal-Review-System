@@ -494,23 +494,23 @@ function AdminStage1Content() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
+            <table className="w-full min-w-[920px] text-left text-xs border-collapse">
               <thead>
                 <tr className="bg-slate-100/80 border-b border-slate-200 text-slate-600 text-[15px] font-semibold whitespace-nowrap text-center">
-                  <th className="py-2.5 px-3 w-12">번호</th>
-                  <th className="py-2.5 px-3 w-28">제안번호</th>
-                  <th className="py-2.5 px-3 w-20">접수구분</th>
-                  <th className="py-2.5 px-3 w-24">분야</th>
-                  <th className="py-2.5 px-4 text-left">제목</th>
-                  <th className="py-2.5 px-3 w-28">부서</th>
-                  <th className="py-2.5 px-3 w-20">제안자</th>
-                  <th className="py-2.5 px-3 w-24">접수일자</th>
-                  <th className="py-2.5 px-3 w-28 bg-amber-50 text-amber-900 border-x border-amber-200">
+                  <th className="whitespace-nowrap py-2.5 px-3 w-12">번호</th>
+                  <th className="whitespace-nowrap py-2.5 px-3 w-28">제안번호</th>
+                  <th className="whitespace-nowrap py-2.5 px-3 w-20">접수구분</th>
+                  <th className="whitespace-nowrap py-2.5 px-3 w-24">분야</th>
+                  <th className="whitespace-nowrap py-2.5 px-4 text-left">제목</th>
+                  <th className="whitespace-nowrap py-2.5 px-3 w-28">부서</th>
+                  <th className="whitespace-nowrap py-2.5 px-3 w-20">제안자</th>
+                  <th className="whitespace-nowrap py-2.5 px-3 w-24">접수일자</th>
+                  <th className="whitespace-nowrap py-2.5 px-3 w-28 bg-amber-50 text-amber-900 border-x border-amber-200">
                     심사내역보기
                   </th>
-                  <th className="py-2.5 px-3 w-24">심사일자</th>
-                  <th className="py-2.5 px-3 w-20">진행상태</th>
-                  <th className="py-2.5 px-3 w-20">심사결과</th>
+                  <th className="whitespace-nowrap py-2.5 px-3 w-24">심사일자</th>
+                  <th className="whitespace-nowrap py-2.5 px-3 w-20">진행상태</th>
+                  <th className="whitespace-nowrap py-2.5 px-3 w-20">심사결과</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-[15px]">
@@ -709,19 +709,19 @@ function AdminStage1Content() {
             {/* 심사위원별 다면 평가 테이블 (첨부 이미지 2 하단 테이블 완벽 복원) */}
             <div className="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
               <div className="max-h-80 overflow-y-auto">
-                <table className="w-full text-left text-xs border-collapse">
+                <table className="w-full min-w-[920px] text-left text-xs border-collapse">
                   <thead className="sticky top-0 bg-sky-900 text-white text-[15px] font-semibold text-center z-10">
                     <tr>
-                      <th className="py-2 px-2 w-10">번호</th>
-                      <th className="py-2 px-2 w-24">심사구분</th>
-                      <th className="py-2 px-3 w-28">부서</th>
-                      <th className="py-2 px-2 w-20">심사자</th>
-                      <th className="py-2 px-2 w-16 bg-sky-800">창의성</th>
-                      <th className="py-2 px-2 w-16 bg-sky-800">실현성</th>
-                      <th className="py-2 px-2 w-16 bg-sky-800">효과성</th>
-                      <th className="py-2 px-2 w-16 bg-sky-800">전파성</th>
-                      <th className="py-2 px-2 w-16 bg-amber-600 font-bold">총점</th>
-                      <th className="py-2 px-4 text-left">의견</th>
+                      <th className="whitespace-nowrap py-2 px-2 w-10">번호</th>
+                      <th className="whitespace-nowrap py-2 px-2 w-24">심사구분</th>
+                      <th className="whitespace-nowrap py-2 px-3 w-28">부서</th>
+                      <th className="whitespace-nowrap py-2 px-2 w-20">심사자</th>
+                      <th className="whitespace-nowrap py-2 px-2 w-16 bg-sky-800">창의성</th>
+                      <th className="whitespace-nowrap py-2 px-2 w-16 bg-sky-800">실현성</th>
+                      <th className="whitespace-nowrap py-2 px-2 w-16 bg-sky-800">효과성</th>
+                      <th className="whitespace-nowrap py-2 px-2 w-16 bg-sky-800">전파성</th>
+                      <th className="whitespace-nowrap py-2 px-2 w-16 bg-amber-600 font-bold">총점</th>
+                      <th className="whitespace-nowrap py-2 px-4 text-left">의견</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-[15px]">

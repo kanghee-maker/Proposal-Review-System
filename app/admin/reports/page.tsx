@@ -312,16 +312,16 @@ function AdminReportsContent() {
           <>
             {/* Desktop Table View */}
             <div className="hidden md:block overflow-x-auto">
-              <table className="w-full text-left border-collapse text-xs">
+              <table className="w-full min-w-[920px] text-left border-collapse text-xs">
                 <thead>
                   <tr className="bg-slate-100/80 border-b border-slate-200 text-slate-600 font-semibold">
-                    <th className="py-3 px-3 w-12 text-center">연번</th>
-                    <th className="py-3 px-3 font-bold text-slate-800">실행(평가)부서</th>
-                    <th className="py-3 px-4 min-w-[240px]">제안 제목</th>
-                    <th className="py-3 px-3 text-center">심사 상태</th>
-                    <th className="py-3 px-3 text-center font-bold text-slate-900">검토 결과(Result)</th>
-                    <th className="py-3 px-4 min-w-[260px]">부서 검토의견 (Opinion)</th>
-                    <th className="py-3 px-3 text-center text-slate-400">제출일시</th>
+                    <th className="whitespace-nowrap py-3 px-3 w-12 text-center">연번</th>
+                    <th className="whitespace-nowrap py-3 px-3 font-bold text-slate-800">실행(평가)부서</th>
+                    <th className="whitespace-nowrap py-3 px-4 min-w-[240px]">제안 제목</th>
+                    <th className="whitespace-nowrap py-3 px-3 text-center">심사 상태</th>
+                    <th className="whitespace-nowrap py-3 px-3 text-center font-bold text-slate-900">검토 결과(Result)</th>
+                    <th className="whitespace-nowrap py-3 px-4 min-w-[260px]">부서 검토의견 (Opinion)</th>
+                    <th className="whitespace-nowrap py-3 px-3 text-center text-slate-400">제출일시</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
