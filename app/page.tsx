@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Shield, Users, CheckCircle, Award, ChevronRight, KeyRound, Lock, AlertCircle, X, Check, Building2, ExternalLink, ArrowRight } from 'lucide-react';
+import { Shield, Users, CheckCircle, Award, ChevronRight, KeyRound, Lock, AlertCircle, X, Check, Building2, ExternalLink, ArrowRight, BarChart3, Sparkles } from 'lucide-react';
 import { Department, DEFAULT_STAGE1_JUDGES } from '@/lib/types';
 
 export default function Home() {
@@ -279,8 +279,20 @@ export default function Home() {
           <div className="grid sm:grid-cols-2 gap-3 text-xs">
             {/* Step 1 */}
             <div className="bg-slate-100/90 p-4 rounded-xl border-2 border-slate-200/90 text-slate-500 flex flex-col">
-              <div className="self-start mb-3 border border-slate-300 bg-slate-200/80 text-slate-600 text-[14px] font-bold px-2 py-1 rounded-md whitespace-nowrap">
-                0차 부서 평가 완료 (마감)
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                <div className="border border-slate-300 bg-slate-200/80 text-slate-600 text-[14px] font-bold px-2.5 py-1 rounded-md whitespace-nowrap">
+                  0차 부서 평가 완료 (마감)
+                </div>
+                <Link
+                  href="/stage0-stats"
+                  className="relative inline-flex p-[2px] rounded-lg bg-gradient-to-r from-yellow-300 via-amber-500 to-yellow-400 shadow-md shadow-amber-500/30 hover:shadow-lg hover:shadow-amber-500/50 hover:-translate-y-0.5 transition-all duration-200 group/stat"
+                >
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-[6px] bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-amber-300 group-hover/stat:text-yellow-200 text-[13px] font-extrabold whitespace-nowrap">
+                    <BarChart3 className="w-3.5 h-3.5 text-yellow-400" />
+                    <span>0차 부서 평가 통계 조회</span>
+                    <ChevronRight className="w-3.5 h-3.5 text-amber-400 group-hover/stat:translate-x-0.5 transition-transform" />
+                  </span>
+                </Link>
               </div>
               <div className="flex flex-wrap items-center gap-2 mb-2">
                 <span className="w-5 h-5 rounded-full bg-slate-200 text-slate-600 font-bold text-xs flex items-center justify-center">1</span>
