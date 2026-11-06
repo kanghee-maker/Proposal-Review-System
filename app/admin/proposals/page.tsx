@@ -1,11 +1,11 @@
 'use client';
 
 import TransferHistory from '@/app/TransferHistory';
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FileText, Search, Building2, User, ChevronRight, Edit, Check, Layers, Clock, AlertCircle, Paperclip, Upload, Download, Trash2, X, Eye } from 'lucide-react';
-import { Proposal, ProposalAttachment, Department, EvaluationSession } from '@/lib/types';
+import { Proposal, ProposalAttachment, Department, Evaluation, EvaluationSession } from '@/lib/types';
 
 function AdminProposalsContent() {
   const router = useRouter();
@@ -14,12 +14,16 @@ function AdminProposalsContent() {
   const [sessions, setSessions] = useState<EvaluationSession[]>([]);
   const [selectedSessionId, setSelectedSessionId] = useState<string>('');
   const [proposals, setProposals] = useState<Proposal[]>([]);
+  const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
+  const [evaluationLoadError, setEvaluationLoadError] = useState(false);
+  const sessionRequest = useRef<AbortController | null>(null);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   // 필터 및 검색
   const [search, setSearch] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('전체');
+  const [resultFilter, setResultFilter] = useState('전체');
   const [deptFilter, setDeptFilter] = useState<string>('전체');
 
   // 편집 모달
@@ -84,17 +88,27 @@ function AdminProposalsContent() {
       setLoading(false);
       return;
     }
+    sessionRequest.current?.abort();
+    const request = new AbortController();
+    sessionRequest.current = request;
     setLoading(true);
-    fetch(`/api/proposals?session_id=${encodeURIComponent(sessionId)}&_t=${Date.now()}`, { cache: 'no-store' })
-      .then(res => res.json())
-      .then(data => {
-        setProposals(Array.isArray(data) ? data : []);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error(err);
-        setLoading(false);
-      });
+    setEvaluationLoadError(false);
+    const query = `session_id=${encodeURIComponent(sessionId)}&_t=${Date.now()}`;
+    const load = async (endpoint: string) => {
+      const response = await fetch(`/api/${endpoint}?${query}`, { cache: 'no-store', signal: request.signal });
+      if (!response.ok) throw new Error(`Failed to load ${endpoint}`);
+      return response.json();
+    };
+    Promise.allSettled([load('proposals'), load('evaluations')]).then(([proposalData, evaluationData]) => {
+      if (request.signal.aborted) return;
+      setProposals(proposalData.status === 'fulfilled' && Array.isArray(proposalData.value) ? proposalData.value : []);
+      const results = evaluationData.status === 'fulfilled' && Array.isArray(evaluationData.value)
+        ? evaluationData.value
+        : null;
+      setEvaluations(results ?? []);
+      setEvaluationLoadError(results === null);
+      setLoading(false);
+    });
   };
 
   useEffect(() => {
@@ -319,7 +333,18 @@ function AdminProposalsContent() {
 
   const transferCount = proposals.filter(p => p.transfer_requested).length;
 
+  const resultByProposal = new Map(
+    evaluations.filter(e => e.is_submitted).map(e => [e.proposal_id, e.answers?.result])
+  );
+  const renderReviewResult = (proposalId: string) => {
+    const result = resultByProposal.get(proposalId);
+    if (result === 'Yes') return <span className="block text-[14px] font-semibold text-emerald-700">수용</span>;
+    if (result === 'No') return <span className="block text-[14px] font-semibold text-rose-700">불채택</span>;
+    return null;
+  };
+
   const filtered = proposals.filter(p => {
+    if (!evaluationLoadError && resultFilter !== '전체' && resultByProposal.get(p.id) !== resultFilter) return false;
     if (statusFilter === '이관요청') {
       if (!p.transfer_requested) return false;
     } else if (statusFilter === '이관처리이력') {
@@ -425,7 +450,7 @@ function AdminProposalsContent() {
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-3.5 sm:p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
+      <div className="bg-white rounded-2xl border border-slate-200 p-3.5 sm:p-4 shadow-sm flex flex-col md:flex-row md:flex-wrap md:items-center justify-between gap-3 text-xs">
         <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 sm:gap-3">
           <div className="flex flex-col sm:flex-row sm:items-center gap-1">
             <span className="font-semibold text-slate-500 text-[15px] whitespace-nowrap">상태:</span>
@@ -462,6 +487,20 @@ function AdminProposalsContent() {
           </div>
         </div>
 
+        <label className="flex items-center gap-2 font-semibold text-slate-500 text-[15px]">
+          <span className="whitespace-nowrap">검토결과</span>
+          <select
+            value={resultFilter}
+            onChange={e => setResultFilter(e.target.value)}
+            disabled={loading || evaluationLoadError}
+            className="min-w-0 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 font-normal text-slate-800 disabled:opacity-50"
+          >
+            <option value="전체">전체 결과</option>
+            <option value="Yes">수용</option>
+            <option value="No">불채택</option>
+          </select>
+        </label>
+
         <div className="relative w-full md:w-60 md:shrink-0">
           <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
@@ -473,6 +512,8 @@ function AdminProposalsContent() {
           />
         </div>
       </div>
+
+      {evaluationLoadError && <p role="alert" className="text-sm text-rose-700">검토결과를 불러오지 못했습니다. 페이지를 새로고침해 주세요.</p>}
 
       {/* Proposals Container */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
@@ -602,6 +643,7 @@ function AdminProposalsContent() {
                           }`}>
                             {p.status}
                           </span>
+                          {renderReviewResult(p.id)}
                         </td>
                         <td className="py-3 px-2 text-center">
                           <div className="flex flex-col items-center justify-center gap-1.5">
@@ -656,6 +698,7 @@ function AdminProposalsContent() {
                       }`}>
                         {p.status}
                       </span>
+                      {renderReviewResult(p.id)}
                     </div>
 
                     <h4 className="text-sm font-bold text-slate-900 leading-snug">
