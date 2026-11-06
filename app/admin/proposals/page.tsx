@@ -505,12 +505,12 @@ function AdminProposalsContent() {
                     <th className="whitespace-nowrap py-3 px-3 w-14 text-center">게시판</th>
                     <th className="whitespace-nowrap py-3 px-3">제안자</th>
                     <th className="whitespace-nowrap py-3 px-3">제안자 소속</th>
-                    <th className="whitespace-nowrap py-3 px-3">분야</th>
+                    <th className="whitespace-nowrap py-3 px-3 min-w-[136px]">분야</th>
                     <th className="whitespace-nowrap py-3 px-3 min-w-[160px] font-bold text-sky-900">담당부서 (실행부서)</th>
                     <th className="whitespace-nowrap py-3 px-4 min-w-[240px]">제안 제목</th>
                     <th className="whitespace-nowrap py-3 px-3 text-center w-36">첨부파일</th>
                     <th className="whitespace-nowrap py-3 px-3 text-center">부서 평가(0차)</th>
-                    <th className="whitespace-nowrap py-3 px-3 text-center w-36">관리 / 평가자 화면</th>
+                    <th className="whitespace-nowrap py-3 px-3 text-center min-w-[156px]">관리 / 평가자 화면</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -530,7 +530,7 @@ function AdminProposalsContent() {
                             : (`${p.proposer_office || ''} ${p.proposer_department || ''}`.trim() || p.proposer_raw_dept || '-')}
                         </td>
                         <td className="py-3 px-3">
-                          <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[15px] font-medium">
+                          <span className="inline-block break-keep px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[15px] font-medium">
                             {p.category}
                           </span>
                         </td>
@@ -609,8 +609,8 @@ function AdminProposalsContent() {
                               className="inline-flex items-center justify-center gap-1 text-[15px] bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-lg font-semibold transition w-full"
                               title="평가자가 보는 제안 상세 및 평가 화면을 조회 전용으로 확인합니다"
                             >
-                              <Eye className="w-3.5 h-3.5" />
-                              <span>평가자 화면</span>
+                              <Eye className="w-3.5 h-3.5 shrink-0" />
+                              <span className="whitespace-nowrap">평가자 화면</span>
                             </Link>
                             <button
                               onClick={() => openEditModal(p)}
@@ -678,7 +678,7 @@ function AdminProposalsContent() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-1.5">
+                    <div className="grid grid-cols-2 gap-1.5 min-[420px]:grid-cols-3">
                       <button
                         type="button"
                         onClick={() => setAttachModalProposal(p)}
@@ -689,10 +689,10 @@ function AdminProposalsContent() {
                       </button>
                       <Link
                         href={`/evaluator/evaluate/${encodeURIComponent(p.id)}?readonly=1`}
-                        className="w-full py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-semibold text-[15px] flex items-center justify-center gap-1 transition"
+                        className="col-span-2 row-start-2 min-[420px]:col-span-1 min-[420px]:row-start-1 w-full py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-semibold text-[15px] flex items-center justify-center gap-1 transition"
                       >
-                        <Eye className="w-3.5 h-3.5" />
-                        <span>평가자 화면</span>
+                        <Eye className="w-3.5 h-3.5 shrink-0" />
+                        <span className="whitespace-nowrap">평가자 화면</span>
                       </Link>
                       <button
                         onClick={() => openEditModal(p)}

@@ -225,9 +225,9 @@ function EvaluateProposalContent() {
       </div>
 
       {/* Main 2-Column Grid (모바일 1열 스택, PC 2열) */}
-      <div className="grid lg:grid-cols-12 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 sm:gap-6">
         {/* Left Column: 제안 원문 상세 (7 cols) */}
-        <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-sm space-y-4 sm:space-y-5">
+        <div className="min-w-0 break-words xl:col-span-7 bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-sm space-y-4 sm:space-y-5">
           <div className="border-b border-slate-100 pb-3 sm:pb-4">
             <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-[15px] sm:text-xs mb-2">
               <span className="bg-slate-100 text-slate-600 font-mono font-bold px-2 py-0.5 rounded">
@@ -537,7 +537,7 @@ function EvaluateProposalContent() {
         </div>
 
         {/* Right Column: 부서 평가(0차 평가)표 (5 cols) */}
-        <div className="lg:col-span-5 bg-white rounded-2xl border-2 border-emerald-500/30 p-4 sm:p-6 shadow-md flex flex-col justify-between space-y-4 sm:space-y-6">
+        <div className="min-w-0 break-words xl:col-span-5 bg-white rounded-2xl border-2 border-emerald-500/30 p-4 sm:p-6 shadow-md flex flex-col justify-between space-y-4 sm:space-y-6">
           <div>
             <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
               <div>
