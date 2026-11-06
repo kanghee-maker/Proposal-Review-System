@@ -1252,25 +1252,6 @@ export async function createStage1SessionFromStage0Async(params: {
     }
   } catch (err) {}
 
-  // 6) 첫 번째 제안에 대해 사용자 첨부 이미지 2와 100% 동일한 11인 심사위원 실전 채점 데이터 시딩!
-  if (clonedProposals.length > 0) {
-    const firstProp = clonedProposals[0];
-    const initialScores: CommitteeScore[] = [
-      { id: `cs-${Date.now()}-1`, proposal_id: firstProp.id, session_id: newSessionId, judge_name: '박민호', judge_dept: '경영감사실', judge_title: '제안1차심사자', creativity: 15, feasibility: 10, effectiveness: 10, dissemination: 5, total_score: 40, opinion: '● 좋은제안입니다' },
-      { id: `cs-${Date.now()}-2`, proposal_id: firstProp.id, session_id: newSessionId, judge_name: '유경모', judge_dept: '미래전략실', judge_title: '제안1차심사자', creativity: 9, feasibility: 10, effectiveness: 10, dissemination: 6, total_score: 35, opinion: '-' },
-      { id: `cs-${Date.now()}-3`, proposal_id: firstProp.id, session_id: newSessionId, judge_name: '배규한', judge_dept: '교육시설부', judge_title: '제안1차심사자', creativity: 15, feasibility: 16, effectiveness: 16, dissemination: 6, total_score: 53, opinion: '제안 취지는 타당하나, 어린이 이용 교육실동 교육생 동선 유도 및 운영 방식에 대한 추가 검토가 필요해 보입니다' },
-      { id: `cs-${Date.now()}-4`, proposal_id: firstProp.id, session_id: newSessionId, judge_name: '곽현석', judge_dept: '시설기획부', judge_title: '제안1차심사자', creativity: 16, feasibility: 18, effectiveness: 18, dissemination: 8, total_score: 60, opinion: '좋은 제안입니다.' },
-      { id: `cs-${Date.now()}-5`, proposal_id: firstProp.id, session_id: newSessionId, judge_name: '김동수', judge_dept: '시설기획부', judge_title: '제안1차심사자', creativity: 16, feasibility: 16, effectiveness: 16, dissemination: 6, total_score: 54, opinion: '좋은 제안입니다' },
-      { id: `cs-${Date.now()}-6`, proposal_id: firstProp.id, session_id: newSessionId, judge_name: '이정문', judge_dept: '시설기획부', judge_title: '제안1차심사자', creativity: 18, feasibility: 18, effectiveness: 18, dissemination: 6, total_score: 60, opinion: '좋은 제안입니다' },
-      { id: `cs-${Date.now()}-7`, proposal_id: firstProp.id, session_id: newSessionId, judge_name: '박종원', judge_dept: '사업기획부', judge_title: '제안1차심사자', creativity: 16, feasibility: 24, effectiveness: 24, dissemination: 8, total_score: 72, opinion: '좋은 의견 입니다.' },
-      { id: `cs-${Date.now()}-8`, proposal_id: firstProp.id, session_id: newSessionId, judge_name: '김수호', judge_dept: '개발1부', judge_title: '제안1차심사자', creativity: 16, feasibility: 18, effectiveness: 18, dissemination: 8, total_score: 60, opinion: '● 좋은제안이며, 관악체육공원 내 실내체육관 홀 등에서 진행하는 사업으로 추후 협의가 필요' },
-      { id: `cs-${Date.now()}-9`, proposal_id: firstProp.id, session_id: newSessionId, judge_name: '최종순', judge_dept: '여가체육부', judge_title: '제안1차심사자', creativity: 24, feasibility: 24, effectiveness: 24, dissemination: 8, total_score: 80, opinion: '좋은 제안입니다.' },
-      { id: `cs-${Date.now()}-10`, proposal_id: firstProp.id, session_id: newSessionId, judge_name: '이기범', judge_dept: '솔빛정원부', judge_title: '제안1차심사자', creativity: 16, feasibility: 18, effectiveness: 18, dissemination: 8, total_score: 60, opinion: '좋은제안입니다.' },
-      { id: `cs-${Date.now()}-11`, proposal_id: firstProp.id, session_id: newSessionId, judge_name: '오세풍', judge_dept: '안전총괄단', judge_title: '제안1차심사자', creativity: 24, feasibility: 24, effectiveness: 24, dissemination: 8, total_score: 80, opinion: '좋은 제안입니다.' }
-    ];
-    await saveCommitteeScoresBatchAsync(initialScores);
-  }
-
   return { session: newSession, proposalsCount: clonedProposals.length };
 }
 
