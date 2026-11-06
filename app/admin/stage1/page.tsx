@@ -23,7 +23,9 @@ import {
   Calendar,
   User,
   HelpCircle,
-  FileSpreadsheet
+  FileSpreadsheet,
+  ArrowDownToLine,
+  DownloadCloud
 } from 'lucide-react';
 import { Proposal, EvaluationSession, CommitteeScore, CommitteeJudge, DEFAULT_STAGE1_JUDGES } from '@/lib/types';
 
@@ -279,6 +281,11 @@ function AdminStage1Content() {
     }
   };
 
+  const handleDownloadExcel = () => {
+    if (!selectedSessionId) return;
+    window.location.href = `/api/export?session_id=${encodeURIComponent(selectedSessionId)}&stage=STAGE_1`;
+  };
+
   return (
     <div className="space-y-4 sm:space-y-5">
       {/* 1. 상단 회차 선택 및 네비게이션 */}
@@ -327,11 +334,35 @@ function AdminStage1Content() {
             <span>회차 대시보드</span>
           </Link>
           <Link
-            href={`/admin/reports${selectedSessionId ? `?session_id=${encodeURIComponent(selectedSessionId)}` : ''}`}
+            href={`/admin/reports${currentSession?.source_session_id ? `?session_id=${encodeURIComponent(currentSession.source_session_id)}` : ''}`}
             className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition flex items-center gap-1.5"
           >
             <span>0차 부서평가 취합 보기</span>
           </Link>
+        </div>
+      </div>
+
+      {/* 1-2. 1차 제안심사 취합 및 종합 결과 엑셀 다운로드 헤더 (0차 페이지와 동일한 GUI 버튼) */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-lg sm:text-xl font-bold text-slate-900 flex items-center gap-2">
+            <DownloadCloud className="w-5 h-5 text-amber-600 flex-shrink-0" />
+            <span>[{currentSession?.title || '1차 제안심사'}] 제안 심사(1차 평가) 취합 및 엑셀 다운로드</span>
+          </h2>
+          <p className="text-[15px] sm:text-xs text-slate-500 mt-1">
+            선택된 1차 심사 회차의 12인 심사위원 채점 결과(창의성·실현성·효과성·전파성·총점·의견), 평균 총점 및 부서이동 이력을 보고용 엑셀로 내보냅니다.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <button
+            onClick={handleDownloadExcel}
+            disabled={!selectedSessionId}
+            className="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs sm:text-sm shadow-md shadow-emerald-600/25 transition whitespace-nowrap disabled:opacity-50"
+          >
+            <ArrowDownToLine className="w-4 h-4" />
+            <span>종합 결과 엑셀 다운로드</span>
+          </button>
         </div>
       </div>
 

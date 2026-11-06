@@ -1,7 +1,7 @@
 import { applyProposalSource, isExcludedProposal, findSourceAttachment } from './proposalSources';
 import fs from 'fs';
 import path from 'path';
-import { OrganizationChart, EvaluationSession, Proposal, ProposalAttachment, Evaluation, EvaluationCriteria, Department, CommitteeJudge, CommitteeScore, EvaluationStage } from './types';
+import { OrganizationChart, EvaluationSession, Proposal, ProposalAttachment, Evaluation, EvaluationCriteria, Department, CommitteeJudge, CommitteeScore, EvaluationStage, DEFAULT_STAGE1_JUDGES } from './types';
 import { supabase } from './supabaseClient';
 
 const DATA_DIR = path.join(process.cwd(), 'data');
@@ -159,20 +159,8 @@ export function getDefaultCriteria(): EvaluationCriteria[] {
   ]);
 }
 
-// 2-2. 1차 심사위원 기본 목록 (과천도시공사 1차 심사위원단 11명)
-export const DEFAULT_STAGE1_JUDGES: CommitteeJudge[] = [
-  { id: 'j-1', name: '박민호', dept: '경영감사실', title: '제안1차심사자' },
-  { id: 'j-2', name: '유경모', dept: '미래전략실', title: '제안1차심사자' },
-  { id: 'j-3', name: '배규한', dept: '교육시설부', title: '제안1차심사자' },
-  { id: 'j-4', name: '곽현석', dept: '시설기획부', title: '제안1차심사자' },
-  { id: 'j-5', name: '김동수', dept: '시설기획부', title: '제안1차심사자' },
-  { id: 'j-6', name: '이정문', dept: '시설기획부', title: '제안1차심사자' },
-  { id: 'j-7', name: '박종원', dept: '사업기획부', title: '제안1차심사자' },
-  { id: 'j-8', name: '김수호', dept: '개발1부', title: '제안1차심사자' },
-  { id: 'j-9', name: '최종순', dept: '여가체육부', title: '제안1차심사자' },
-  { id: 'j-10', name: '이기범', dept: '솔빛정원부', title: '제안1차심사자' },
-  { id: 'j-11', name: '오세풍', dept: '안전총괄단', title: '제안1차심사자' }
-];
+// 2-2. 1차 심사위원 기본 목록 (과천도시공사 1차 심사위원단 12명)
+export { DEFAULT_STAGE1_JUDGES };
 
 export function getDefaultStage1Criteria(): EvaluationCriteria[] {
   return [
