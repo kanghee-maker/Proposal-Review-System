@@ -211,7 +211,7 @@ function AdminReportsContent() {
             <span>[{currentSession?.title || '제안평가'}] 부서 평가(0차 평가) 취합 및 엑셀 다운로드</span>
           </h2>
           <p className="text-[15px] sm:text-xs text-slate-500 mt-1">
-            선택된 평가 회차의 각 부서 심사 결과(Yes/No 및 검토의견)를 실시간 집계하고 보고용 엑셀로 내보냅니다. (부서 평가 완료 후 1차 제안심사 회차로 바로 연계)
+            선택된 평가 회차의 각 부서 심사 결과(Yes/No 및 검토의견)와 부서이동(이관) 상세 이력을 실시간 집계하고 보고용 엑셀로 내보냅니다. (부서 평가 완료 후 1차 제안심사 회차로 바로 연계)
           </p>
         </div>
 
@@ -329,6 +329,8 @@ function AdminReportsContent() {
                     const ev = evalMap.get(p.id);
                     const result = ev?.answers?.result;
                     const opinion = ev?.answers?.opinion;
+                    const history = p.transfer_history || [];
+                    const firstFromDept = history.find(h => h.from_department && h.from_department !== '기록 없음')?.from_department;
 
                     return (
                       <tr key={p.id} className="hover:bg-slate-50/50 transition">
@@ -336,6 +338,23 @@ function AdminReportsContent() {
                         <td className="py-3 px-3">
                           <span className="text-[14px] text-slate-400 block">{p.assigned_division}</span>
                           <strong className="text-slate-800">{p.assigned_office} {p.assigned_department}</strong>
+                          {(p.transfer_requested || p.transfer_status || history.length > 0) && (
+                            <div className="mt-1 flex flex-wrap items-center gap-1">
+                              <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-semibold border ${
+                                p.transfer_requested
+                                  ? 'bg-amber-50 text-amber-800 border-amber-200'
+                                  : p.transfer_status === 'APPROVED'
+                                    ? 'bg-sky-50 text-sky-800 border-sky-200'
+                                    : 'bg-slate-100 text-slate-600 border-slate-200'
+                              }`}>
+                                {p.transfer_requested
+                                  ? `이관요청 → ${p.transfer_target_dept || ''}`
+                                  : p.transfer_status === 'APPROVED'
+                                    ? `이관완료 (${firstFromDept || '이전부서'} → ${p.assigned_department})`
+                                    : `이관이력 ${history.length}건`}
+                              </span>
+                            </div>
+                          )}
                         </td>
                         <td className="py-3 px-4">
                           <div className="font-semibold text-slate-900 line-clamp-1">{p.title}</div>
@@ -388,6 +407,8 @@ function AdminReportsContent() {
                 const ev = evalMap.get(p.id);
                 const result = ev?.answers?.result;
                 const opinion = ev?.answers?.opinion;
+                const history = p.transfer_history || [];
+                const firstFromDept = history.find(h => h.from_department && h.from_department !== '기록 없음')?.from_department;
 
                 return (
                   <div key={p.id} className="p-3.5 space-y-2 hover:bg-slate-50 transition">
@@ -419,8 +440,17 @@ function AdminReportsContent() {
                       {p.title}
                     </h4>
 
-                    <div className="text-[15px] text-slate-500">
-                      담당: <strong className="text-sky-700">{p.assigned_department}</strong>
+                    <div className="text-[15px] text-slate-500 flex flex-wrap items-center gap-1.5">
+                      <span>담당: <strong className="text-sky-700">{p.assigned_department}</strong></span>
+                      {(p.transfer_requested || p.transfer_status || history.length > 0) && (
+                        <span className="px-1.5 py-0.5 rounded text-[11px] font-semibold bg-sky-50 text-sky-800 border border-sky-200">
+                          {p.transfer_requested
+                            ? `이관요청 → ${p.transfer_target_dept || ''}`
+                            : p.transfer_status === 'APPROVED'
+                              ? `이관완료 (${firstFromDept || '이전부서'} → ${p.assigned_department})`
+                              : `이관이력 ${history.length}건`}
+                        </span>
+                      )}
                     </div>
 
                     {opinion ? (
