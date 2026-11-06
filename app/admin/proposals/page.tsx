@@ -497,20 +497,20 @@ function AdminProposalsContent() {
         ) : (
           <>
             {/* 1. Desktop Table View (md 이상) */}
-            <div className="hidden md:block overflow-x-auto">
-              <table className="w-full min-w-[1160px] text-left border-collapse text-xs">
+            <div className="hidden lg:block">
+              <table className="w-full table-fixed break-keep [overflow-wrap:anywhere] text-left border-collapse text-xs">
                 <thead>
                   <tr className="bg-slate-100/80 border-b border-slate-200 text-slate-600 font-semibold uppercase tracking-wider">
-                    <th className="whitespace-nowrap py-3 px-3 w-12 text-center">연번</th>
-                    <th className="whitespace-nowrap py-3 px-3 w-14 text-center">게시판</th>
-                    <th className="whitespace-nowrap py-3 px-3">제안자</th>
-                    <th className="whitespace-nowrap py-3 px-3">제안자 소속</th>
-                    <th className="whitespace-nowrap py-3 px-3 min-w-[136px]">분야</th>
-                    <th className="whitespace-nowrap py-3 px-3 min-w-[160px] font-bold text-sky-900">담당부서 (실행부서)</th>
-                    <th className="whitespace-nowrap py-3 px-4 min-w-[240px]">제안 제목</th>
-                    <th className="whitespace-nowrap py-3 px-3 text-center w-36">첨부파일</th>
-                    <th className="whitespace-nowrap py-3 px-3 text-center">부서 평가(0차)</th>
-                    <th className="whitespace-nowrap py-3 px-3 text-center min-w-[156px]">관리 / 평가자 화면</th>
+                    <th className="whitespace-nowrap py-3 px-2 w-[44px] text-center">연번</th>
+                    <th className="whitespace-nowrap py-3 px-2 w-[56px] text-center">게시판</th>
+                    <th className="whitespace-nowrap py-3 px-2 w-[90px]">제안자</th>
+                    <th className="whitespace-nowrap py-3 px-2 w-[104px]">제안자 소속</th>
+                    <th className="whitespace-nowrap py-3 px-2 w-[104px]">분야</th>
+                    <th className="whitespace-nowrap py-3 px-2 w-[132px] font-bold text-sky-900">담당부서 (실행부서)</th>
+                    <th className="whitespace-nowrap py-3 px-2">제안 제목</th>
+                    <th className="whitespace-nowrap py-3 px-2 text-center w-[112px]">첨부파일</th>
+                    <th className="whitespace-nowrap py-3 px-2 text-center w-[100px]">부서 평가(0차)</th>
+                    <th className="whitespace-nowrap py-3 px-2 text-center w-[116px]">관리</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -518,23 +518,24 @@ function AdminProposalsContent() {
                     const attList = p.attachments || [];
                     return (
                       <tr key={p.id} className="hover:bg-sky-50/30 transition">
-                        <td className="py-3 px-3 text-center text-slate-400 font-mono font-medium">{p.seq_no}</td>
-                        <td className="py-3 px-3 text-center font-mono text-slate-500">{p.board_no}</td>
-                        <td className="py-3 px-3 font-semibold text-slate-800">
-                          {p.proposer_name} <span className="text-[15px] font-normal text-slate-500">({p.proposer_rank})</span>
+                        <td className="py-3 px-2 text-center text-slate-400 font-mono font-medium">{p.seq_no}</td>
+                        <td className="py-3 px-2 text-center font-mono text-slate-500">{p.board_no}</td>
+                        <td className="py-3 px-2 font-semibold text-slate-800">
+                          <span className="block">{p.proposer_name}</span>
+                          <span className="block whitespace-nowrap text-[14px] font-normal text-slate-500">({p.proposer_rank})</span>
                         </td>
-                        <td className="py-3 px-3 text-slate-600">
+                        <td className="py-3 px-2 text-slate-600">
                           <span className="text-[15px] text-slate-400 block">{p.proposer_division}</span>
                           {p.proposer_office === p.proposer_department
                             ? (p.proposer_department || p.proposer_raw_dept || '-')
                             : (`${p.proposer_office || ''} ${p.proposer_department || ''}`.trim() || p.proposer_raw_dept || '-')}
                         </td>
-                        <td className="py-3 px-3">
+                        <td className="py-3 px-2">
                           <span className="inline-block break-keep px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[15px] font-medium">
                             {p.category}
                           </span>
                         </td>
-                        <td className="py-3 px-3">
+                        <td className="py-3 px-2">
                           <span className="text-[15px] text-sky-700 font-bold block">{p.assigned_division}</span>
                           <strong className="text-slate-900">
                             {p.assigned_office === p.assigned_department
@@ -547,8 +548,8 @@ function AdminProposalsContent() {
                             </span>
                           )}
                         </td>
-                        <td className="py-3 px-4">
-                          <div className="font-medium text-slate-900 leading-snug line-clamp-2">
+                        <td className="py-3 px-2">
+                          <div className="font-medium text-slate-900 leading-snug [overflow-wrap:anywhere]">
                             {p.title}
                           </div>
                           {p.is_duplicate === '중복' && (
@@ -557,7 +558,7 @@ function AdminProposalsContent() {
                             </span>
                           )}
                         </td>
-                        <td className="py-3 px-3 text-center">
+                        <td className="py-3 px-2 text-center">
                           <div className="flex flex-col items-center gap-1">
                             <button
                               type="button"
@@ -569,7 +570,7 @@ function AdminProposalsContent() {
                               }`}
                             >
                               <Paperclip className="w-3.5 h-3.5" />
-                              <span>파일 첨부{attList.length > 0 ? ` (${attList.length})` : ''}</span>
+                              <span className="whitespace-nowrap">첨부{attList.length > 0 ? ` (${attList.length})` : ''}</span>
                             </button>
                             {attList.length > 0 && (
                               <div className="max-w-[130px] space-y-0.5">
@@ -591,7 +592,7 @@ function AdminProposalsContent() {
                             )}
                           </div>
                         </td>
-                        <td className="py-3 px-3 text-center">
+                        <td className="py-3 px-2 text-center">
                           <span className={`inline-block px-2.5 py-1 rounded-full text-[15px] font-semibold ${
                             p.status === '평가완료'
                               ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
@@ -602,11 +603,11 @@ function AdminProposalsContent() {
                             {p.status}
                           </span>
                         </td>
-                        <td className="py-3 px-3 text-center">
+                        <td className="py-3 px-2 text-center">
                           <div className="flex flex-col items-center justify-center gap-1.5">
                             <Link
                               href={`/evaluator/evaluate/${encodeURIComponent(p.id)}?readonly=1`}
-                              className="inline-flex items-center justify-center gap-1 text-[15px] bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-lg font-semibold transition w-full"
+                              className="inline-flex items-center justify-center gap-1 text-[13px] bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 px-1 py-1 rounded-lg font-semibold transition w-full"
                               title="평가자가 보는 제안 상세 및 평가 화면을 조회 전용으로 확인합니다"
                             >
                               <Eye className="w-3.5 h-3.5 shrink-0" />
@@ -628,7 +629,7 @@ function AdminProposalsContent() {
             </div>
 
             {/* 2. Mobile Card List View (md 미만 터치 친화적 카드) */}
-            <div className="md:hidden divide-y divide-slate-100">
+            <div className="lg:hidden divide-y divide-slate-100">
               {filtered.map((p) => {
                 const attList = p.attachments || [];
                 return (
