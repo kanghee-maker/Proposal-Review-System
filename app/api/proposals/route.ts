@@ -8,7 +8,7 @@ export const revalidate = 0;
 
 export async function GET(req: Request) {
   const access = getAccess();
-  if (!access) return accessDenied(access);
+  if (!access || access.role === 'stats') return accessDenied(access);
   const { searchParams } = new URL(req.url);
   const hasSessionParam = searchParams.has('session_id');
   const sessionId = searchParams.get('session_id');

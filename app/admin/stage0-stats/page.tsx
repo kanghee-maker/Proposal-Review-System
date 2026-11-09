@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
   BarChart3,
   PieChart,
@@ -52,6 +52,8 @@ interface ProposerDeptStat {
 function Stage0StatsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const viewer = pathname === '/stage0-stats';
 
   const [sessions, setSessions] = useState<EvaluationSession[]>([]);
   const [selectedSessionId, setSelectedSessionId] = useState<string>('');
@@ -71,7 +73,10 @@ function Stage0StatsContent() {
   // 1. 0차 평가 회차 및 조직도 로드
   useEffect(() => {
     Promise.all([
-      fetch(`/api/sessions?_t=${Date.now()}`, { cache: 'no-store' }).then(r => r.json()),
+      fetch(viewer ? '/api/stage0-stats' : `/api/sessions?_t=${Date.now()}`, { cache: 'no-store' }).then(r => {
+        if (!r.ok) throw new Error('회차를 불러오지 못했습니다.');
+        return r.json();
+      }),
       fetch('/api/organization').then(r => r.json())
     ])
       .then(([sessionList, orgData]) => {
@@ -105,9 +110,10 @@ function Stage0StatsContent() {
       })
       .catch(err => {
         console.error(err);
+        setLoadError(true);
         setLoading(false);
       });
-  }, [searchParams]);
+  }, [searchParams, viewer]);
 
   // 2. 선택된 0차 회차의 제안 및 평가 데이터 로드
   useEffect(() => {
@@ -117,16 +123,16 @@ function Stage0StatsContent() {
       const res = await fetch(`${endpoint}?session_id=${encodeURIComponent(selectedSessionId)}`, {
         cache: 'no-store', signal: controller.signal
       });
-      if (res.status === 401 || res.status === 403) router.replace('/');
+      if (res.status === 401 || res.status === 403) router.refresh();
       if (!res.ok) throw new Error('평가 자료를 불러오지 못했습니다.');
       return res.json();
     };
     setLoading(true);
     setLoadError(false);
-    Promise.all([
-      getData('/api/proposals'),
-      getData('/api/evaluations')
-    ])
+    const data = viewer
+      ? getData('/api/stage0-stats').then(({ proposals, evaluations }) => [proposals, evaluations])
+      : Promise.all([getData('/api/proposals'), getData('/api/evaluations')]);
+    data
       .then(([pData, eData]) => {
         if (controller.signal.aborted) return;
         setProposals(Array.isArray(pData) ? pData : []);
@@ -139,21 +145,26 @@ function Stage0StatsContent() {
         setLoading(false);
       });
     return () => controller.abort();
-  }, [selectedSessionId, router]);
+  }, [selectedSessionId, router, viewer]);
 
   const handleSessionChange = (newId: string) => {
     setSelectedSessionId(newId);
     setLoading(true);
-    router.replace(`/admin/stage0-stats?session_id=${encodeURIComponent(newId)}`);
+    router.replace(`${pathname}?session_id=${encodeURIComponent(newId)}`);
   };
 
   const currentSession = sessions.find(s => s.id === selectedSessionId);
   const sessionQuery = `session_id=${encodeURIComponent(selectedSessionId)}`;
   const handlePrint = async () => {
-    const response = await fetch('/api/auth/admin', { cache: 'no-store' }).catch(() => null);
+    const response = await fetch(viewer ? '/api/auth/stats' : '/api/auth/admin', { cache: 'no-store' }).catch(() => null);
     if (response?.ok) window.print();
     else if (response?.status === 401 || response?.status === 403) router.replace('/');
     else alert('인쇄 권한을 확인하지 못했습니다. 다시 시도해 주세요.');
+  };
+  const handleViewerLogout = async () => {
+    const response = await fetch('/api/auth/stats', { method: 'DELETE' }).catch(() => null);
+    if (response?.ok) router.refresh();
+    else alert('로그아웃하지 못했습니다. 다시 시도해 주세요.');
   };
 
   // 평가 맵 (proposal_id -> Evaluation)
@@ -523,9 +534,9 @@ function Stage0StatsContent() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
             <Link
-              href="/admin"
+              href={viewer ? '/' : '/admin'}
               className="print:hidden p-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 transition"
-              title="관리자 회차 목록"
+              title={viewer ? '홈으로 돌아가기' : '관리자 회차 목록'}
             >
               <ArrowLeft className="w-5 h-5" />
             </Link>
@@ -566,15 +577,16 @@ function Stage0StatsContent() {
                 </option>
               ))}
             </select>
+            {viewer && <button type="button" onClick={handleViewerLogout} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700">로그아웃</button>}
             {currentSession && !loading && !loadError && proposals.length > 0 && (
               <div className="flex flex-wrap gap-2 text-xs font-bold">
                 <button type="button" onClick={handlePrint} className="inline-flex items-center gap-1.5 rounded-lg bg-sky-700 px-3 py-2 text-white">
                   <Printer className="w-4 h-4" /> 통계 인쇄
                 </button>
-                <a href={`/api/export?${sessionQuery}`} className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-700 px-3 py-2 text-white">
+                {!viewer && <><a href={`/api/export?${sessionQuery}`} className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-700 px-3 py-2 text-white">
                   <DownloadCloud className="w-4 h-4" /> 엑셀 다운로드
                 </a>
-                <Link href={`/admin/reports?${sessionQuery}`} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-700">결과 취합</Link>
+                <Link href={`/admin/reports?${sessionQuery}`} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-700">결과 취합</Link></>}
               </div>
             )}
           </div>

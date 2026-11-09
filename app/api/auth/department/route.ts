@@ -5,7 +5,7 @@ import { DEFAULT_STAGE1_JUDGES } from '@/lib/types';
 
 export function GET() {
   const access = getAccess();
-  if (!access) return accessDenied(access);
+  if (access?.role !== 'judge' && access?.role !== 'admin') return accessDenied(access);
   return NextResponse.json(access, { headers: { 'Cache-Control': 'no-store' } });
 }
 

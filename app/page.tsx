@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Shield, Users, CheckCircle, Award, ChevronRight, KeyRound, Lock, AlertCircle, X, Check, Building2, ExternalLink, ArrowRight, Sparkles } from 'lucide-react';
 import { Department, DEFAULT_STAGE1_JUDGES } from '@/lib/types';
 
@@ -344,6 +345,9 @@ export default function Home() {
               <span>관리자 모드로 입장</span>
               <ChevronRight className="w-4 h-4 ml-auto" />
             </button>
+            <Link href="/stage0-stats" className="mt-3 flex items-center justify-center gap-2 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900 hover:bg-amber-100">
+              <Lock className="h-4 w-4" /> 0차 평가 통계 조회
+            </Link>
           </div>
 
           {/* 2. 0차 부서 평가자 (Stage 0 Evaluator) 카드 - 마감 완료 (옅은 회색 톤) */}

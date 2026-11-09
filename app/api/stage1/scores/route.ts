@@ -5,7 +5,7 @@ import { accessDenied, getAccess } from '@/lib/accessSession';
 
 export async function GET(req: Request) {
   const access = getAccess();
-  if (!access) return accessDenied(access);
+  if (!access || access.role === 'stats') return accessDenied(access);
   try {
     const { searchParams } = new URL(req.url);
     const sessionId = searchParams.get('session_id') || undefined;
@@ -22,7 +22,7 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   const access = getAccess();
-  if (!access) return accessDenied(access);
+  if (!access || access.role === 'stats') return accessDenied(access);
   try {
     const body = await req.json();
     if (access.role === 'judge') {

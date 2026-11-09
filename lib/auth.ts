@@ -39,9 +39,17 @@ function saveAuthStore(store: AuthStore) {
 
 // 1. 관리자 비밀번호
 export async function verifyAdminPassword(input: unknown): Promise<boolean> {
+  return verifyAccessPassword(input, 'verify_gcprs_admin_password');
+}
+
+export async function verifyStatsPassword(input: unknown): Promise<boolean> {
+  return verifyAccessPassword(input, 'verify_gcprs_stats_password');
+}
+
+async function verifyAccessPassword(input: unknown, verifier: 'verify_gcprs_admin_password' | 'verify_gcprs_stats_password') {
   if (typeof input !== 'string' || !input || Buffer.byteLength(input, 'utf8') > 72) return false;
-  const { data, error } = await supabase.rpc('verify_gcprs_admin_password', { candidate: input });
-  if (error) throw new Error('관리자 인증 설정을 확인해 주세요.');
+  const { data, error } = await supabase.rpc(verifier, { candidate: input });
+  if (error) throw new Error('인증 설정을 확인해 주세요.');
   return data === true;
 }
 
