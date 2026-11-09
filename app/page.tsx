@@ -70,6 +70,7 @@ export default function Home() {
         if (typeof window !== 'undefined') {
           localStorage.setItem('gcuc_user_role', 'ADMIN');
           localStorage.setItem('gcuc_admin_auth', 'true');
+          localStorage.removeItem('gcuc_dept_name');
           localStorage.setItem('gcuc_user_name', '총괄 관리자');
         }
         setAdminModalOpen(false);
@@ -182,6 +183,7 @@ export default function Home() {
         if (typeof window !== 'undefined') {
           localStorage.setItem('gcuc_user_role', 'EVALUATOR');
           localStorage.setItem('gcuc_evaluator_stage', 'STAGE_1');
+          localStorage.removeItem('gcuc_admin_auth');
           localStorage.setItem('gcuc_dept_name', selectedJudgeInfo.name);
           localStorage.setItem('gcuc_judge_dept', selectedJudgeInfo.dept);
           localStorage.setItem(`gcuc_dept_auth_${selectedJudgeInfo.name}`, 'true');

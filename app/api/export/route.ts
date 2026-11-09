@@ -264,6 +264,7 @@ export async function GET(req: Request) {
         status: 200,
         headers: {
           'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          'Cache-Control': 'private, no-store',
           'Content-Disposition': `attachment; filename="2026_GCUC_Proposal_Stage1_Results.xlsx"`,
         },
       });
@@ -378,6 +379,7 @@ export async function GET(req: Request) {
       status: 200,
       headers: {
         'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'Cache-Control': 'private, no-store',
         'Content-Disposition': `attachment; filename="2026_GCUC_Proposal_Stage0_Results.xlsx"`,
       },
     });

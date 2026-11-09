@@ -44,7 +44,8 @@ export async function POST(req: Request) {
   if (access?.role !== 'admin') return accessDenied(access);
   try {
     const body = await req.json();
-    if (!body.proposal_id || !body.session_id) {
+    if (typeof body.proposal_id !== 'string' || !body.proposal_id.trim() ||
+        typeof body.session_id !== 'string' || !body.session_id.trim()) {
       return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 });
     }
 
