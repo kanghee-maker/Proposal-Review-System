@@ -12,26 +12,30 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [authorized, setAuthorized] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const isAuth = localStorage.getItem('gcuc_admin_auth');
-      if (isAuth !== 'true') {
-        router.push('/');
-      } else {
-        setAuthorized(true);
-      }
-    }
+    fetch('/api/auth/admin', { cache: 'no-store' })
+      .then(res => {
+        if (res.ok) setAuthorized(true);
+        else router.replace('/');
+      })
+      .catch(() => router.replace('/'));
   }, [router]);
 
   const navItems = [
     { href: '/admin', label: '제안평가 회차', icon: Layers },
     { href: '/admin/proposals', label: '제안 목록·배정', icon: FileText },
-    { href: '/admin/reports', label: '부서 평가(0차)', icon: DownloadCloud },
+    { href: '/admin/stage0-stats', label: '0차 평가 통계', icon: DownloadCloud },
     { href: '/admin/stage1', label: '제안 심사(1차)', icon: Award },
     { href: '/admin/organization', label: '2026 조직도', icon: Network },
     { href: '/admin/passwords', label: '부서 비밀번호', icon: KeyRound },
   ];
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    const response = await fetch('/api/auth/admin', { method: 'DELETE' }).catch(() => null);
+    if (!response?.ok) {
+      alert('로그아웃에 실패했습니다. 다시 시도해 주세요.');
+      return;
+    }
+    setAuthorized(false);
     if (typeof window !== 'undefined') {
       localStorage.removeItem('gcuc_user_role');
       localStorage.removeItem('gcuc_user_name');
@@ -52,7 +56,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] flex flex-col text-slate-800 pb-16 md:pb-0">
+    <div className="admin-shell min-h-screen bg-[#f8fafc] flex flex-col text-slate-800 pb-16 md:pb-0">
       {/* 1. GCUC Top Utility Bar (#383a41) */}
       <div className="bg-[#383a41] text-xs text-slate-300 py-1 px-4 sm:px-6 border-b border-[#25262b]">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-x-4 gap-y-2">

@@ -1,10 +1,13 @@
 import { NextResponse } from 'next/server';
+import { accessDenied, getAccess } from '@/lib/accessSession';
 import { getEvaluationsAsync, saveEvaluationAsync } from '@/lib/store';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export async function GET(req: Request) {
+  const access = getAccess();
+  if (access?.role !== 'admin') return accessDenied(access);
   const { searchParams } = new URL(req.url);
   const hasSessionParam = searchParams.has('session_id');
   const sessionId = searchParams.get('session_id');
@@ -37,6 +40,8 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  const access = getAccess();
+  if (access?.role !== 'admin') return accessDenied(access);
   try {
     const body = await req.json();
     if (!body.proposal_id || !body.session_id) {

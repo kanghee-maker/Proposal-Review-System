@@ -530,11 +530,11 @@ export default function AdminDashboardPage() {
                         </Link>
                       ) : (
                         <Link
-                          href={`/admin/reports?session_id=${s.id}`}
+                          href={`/admin/stage0-stats?session_id=${encodeURIComponent(s.id)}`}
                           onClick={() => handleSelectActiveSession(s.id)}
                           className="flex-1 py-2.5 px-3 text-center rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs transition flex items-center justify-center gap-1.5"
                         >
-                          <span>부서 평가(0차 평가) 취합</span>
+                          <span>0차 부서 평가 통계 조회</span>
                           <ArrowRight className="w-3.5 h-3.5" />
                         </Link>
                       )}
@@ -713,11 +713,11 @@ export default function AdminDashboardPage() {
                     setDeletePassword(e.target.value);
                     setDeleteError('');
                   }}
-                  placeholder="관리자 비밀번호를 입력해주세요 (기본: 0423)"
+                  placeholder="관리자 비밀번호를 입력해주세요"
                   autoFocus
                   className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-rose-500"
                 />
-                <p className="text-[15px] text-slate-400 mt-1">※ 안전한 데이터 보호를 위해 관리자 비밀번호(0423) 확인 후 즉시 삭제됩니다.</p>
+                <p className="text-[15px] text-slate-400 mt-1">관리자 비밀번호를 확인한 후 즉시 삭제됩니다.</p>
               </div>
 
               {deleteError && (

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getOrganizationChartAsync, updateOrganizationChartAsync } from '@/lib/store';
+import { accessDenied, getAccess } from '@/lib/accessSession';
 
 export async function GET() {
   const chart = await getOrganizationChartAsync();
@@ -7,6 +8,8 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  const access = getAccess();
+  if (access?.role !== 'admin') return accessDenied(access);
   try {
     const body = await req.json();
     if (!body.departments || !Array.isArray(body.departments)) {

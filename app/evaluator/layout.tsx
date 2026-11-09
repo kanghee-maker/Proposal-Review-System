@@ -15,33 +15,42 @@ export default function EvaluatorLayout({ children }: { children: React.ReactNod
   const [authorized, setAuthorized] = useState<boolean>(false);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const d = localStorage.getItem('gcuc_dept_name') || '';
-      const u = localStorage.getItem('gcuc_user_name') || (isStage1 ? '1차 심사위원' : '부서 평가자');
-      const isAuth = d ? localStorage.getItem(`gcuc_dept_auth_${d}`) : null;
-      const isAdminAuth = localStorage.getItem('gcuc_admin_auth') === 'true';
-
-      if (!isStage1 && !isAdminAuth) {
-        alert('0차 심사는 종료 되었습니다.');
-        router.push('/');
-        return;
-      }
-
-      if (isAdminAuth && (!d || isAuth !== 'true')) {
-        setDeptName('총괄 관리자 (미리보기)');
-        setUserName('조회 전용 모드');
+    let current = true;
+    setAuthorized(false);
+    fetch('/api/auth/department', { cache: 'no-store' })
+      .then(async response => {
+        if (!current) return;
+        if (!response.ok) {
+          router.replace('/');
+          return;
+        }
+        const access = await response.json();
+        if (!current) return;
+        if (access.role === 'admin') {
+          setDeptName('총괄 관리자 (미리보기)');
+          setUserName('조회 전용 모드');
+        } else if (access.role === 'judge' && isStage1) {
+          setDeptName(access.judge);
+          setUserName(localStorage.getItem('gcuc_user_name') || access.judge);
+          localStorage.setItem('gcuc_dept_name', access.judge);
+        } else {
+          router.replace('/');
+          return;
+        }
         setAuthorized(true);
-      } else if (!d || isAuth !== 'true') {
-        router.push('/');
-      } else {
-        setDeptName(d);
-        setUserName(u);
-        setAuthorized(true);
-      }
-    }
+      })
+      .catch(() => { if (current) router.replace('/'); });
+    return () => { current = false; };
   }, [router, isStage1]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    const response = await fetch('/api/auth/department', { method: 'DELETE' }).catch(() => null);
+    if (!response?.ok) {
+      alert('로그아웃에 실패했습니다. 다시 시도해 주세요.');
+      return;
+    }
+    setAuthorized(false);
+    localStorage.removeItem('gcuc_admin_auth');
     if (typeof window !== 'undefined') {
       localStorage.removeItem('gcuc_user_role');
       localStorage.removeItem('gcuc_evaluator_stage');

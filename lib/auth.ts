@@ -6,7 +6,6 @@ const DATA_DIR = path.join(process.cwd(), 'data');
 const AUTH_FILE = path.join(DATA_DIR, 'auth_store.json');
 
 interface AuthStore {
-  adminPassword: string;
   departmentPasswords: Record<string, string>; // deptName -> password
 }
 
@@ -15,7 +14,6 @@ function getAuthStore(): AuthStore {
     if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
     if (!fs.existsSync(AUTH_FILE)) {
       const initial: AuthStore = {
-        adminPassword: '0423',
         departmentPasswords: {}
       };
       fs.writeFileSync(AUTH_FILE, JSON.stringify(initial, null, 2), 'utf8');
@@ -24,11 +22,10 @@ function getAuthStore(): AuthStore {
     const content = fs.readFileSync(AUTH_FILE, 'utf8');
     const parsed = JSON.parse(content);
     return {
-      adminPassword: parsed.adminPassword || '0423',
       departmentPasswords: parsed.departmentPasswords || {}
     };
   } catch (err) {
-    return { adminPassword: '0423', departmentPasswords: {} };
+    return { departmentPasswords: {} };
   }
 }
 
@@ -42,14 +39,8 @@ function saveAuthStore(store: AuthStore) {
 
 // 1. 관리자 비밀번호
 export function verifyAdminPassword(input: string): boolean {
-  const store = getAuthStore();
-  return store.adminPassword === input;
-}
-
-export function updateAdminPassword(newPass: string): void {
-  const store = getAuthStore();
-  store.adminPassword = newPass;
-  saveAuthStore(store);
+  const password = process.env.ADMIN_PASSWORD;
+  return Boolean(password && password !== '0423' && password === input);
 }
 
 // 2. 부서 비밀번호
@@ -88,10 +79,6 @@ export async function getDepartmentAuthStatus(deptName: string): Promise<{ hasPa
 }
 
 export async function verifyDepartmentPassword(deptName: string, inputPass: string): Promise<boolean> {
-  if (inputPass === '0423') {
-    return true;
-  }
-
   // 1. Supabase DB 확인
   try {
     const { data, error } = await supabase
