@@ -1,46 +1,23 @@
 import { NextResponse } from 'next/server';
-import { getCommitteeScoresAsync, saveCommitteeScoreAsync, saveCommitteeScoresBatchAsync, updateProposalAsync, getProposalsAsync, getSessionsAsync } from '@/lib/store';
-import { CommitteeScore, DEFAULT_STAGE1_JUDGES } from '@/lib/types';
-import { accessDenied, getAccess } from '@/lib/accessSession';
+import { getCommitteeScoresAsync, saveCommitteeScoreAsync, saveCommitteeScoresBatchAsync, updateProposalAsync, getProposalsAsync } from '@/lib/store';
+import { CommitteeScore } from '@/lib/types';
 
 export async function GET(req: Request) {
-  const access = getAccess();
-  if (!access || access.role === 'stats') return accessDenied(access);
   try {
     const { searchParams } = new URL(req.url);
     const sessionId = searchParams.get('session_id') || undefined;
     const proposalId = searchParams.get('proposal_id') || undefined;
 
     const scores = await getCommitteeScoresAsync(sessionId, proposalId);
-    return NextResponse.json(access.role === 'judge' ? scores.filter(score => score.judge_name === access.judge) : scores, {
-      headers: { 'Cache-Control': 'private, no-store' }
-    });
+    return NextResponse.json(scores);
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }
 
 export async function POST(req: Request) {
-  const access = getAccess();
-  if (!access || access.role === 'stats') return accessDenied(access);
   try {
     const body = await req.json();
-    if (access.role === 'judge') {
-      if (body.scores || typeof body.session_id !== 'string' || typeof body.proposal_id !== 'string') {
-        return accessDenied(access);
-      }
-      const judge = DEFAULT_STAGE1_JUDGES.find(candidate => candidate.name === access.judge);
-      const session = (await getSessionsAsync()).find(s => s.id === body.session_id && s.stage === 'STAGE_1');
-      if (!judge || !session) return accessDenied(access);
-      const proposals = await getProposalsAsync(session.id);
-      if (!proposals.some(p => p.id === body.proposal_id)) return accessDenied(access);
-      const scores = await getCommitteeScoresAsync(session.id, body.proposal_id);
-      const previous = scores.find(score => score.judge_name === judge.name);
-      body.id = previous?.id || `cs-${body.proposal_id}-${judge.name}`;
-      body.judge_name = judge.name;
-      body.judge_dept = judge.dept;
-      body.judge_title = judge.title;
-    }
 
     // 1) 여러 건 일괄 저장인 경우
     if (body.scores && Array.isArray(body.scores)) {

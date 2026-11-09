@@ -74,20 +74,15 @@ CREATE TABLE IF NOT EXISTS public.evaluations (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 앱 서버에서 인증 및 접근 범위를 확인한 후 서비스 역할로 접근합니다.
+-- Row Level Security (RLS) 활성화 및 Anon 권한 허용 (배포 및 테스트용)
 ALTER TABLE public.organization_charts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.departments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.evaluation_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.proposals ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.evaluations ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS "Allow public read/write on organization_charts" ON public.organization_charts;
-DROP POLICY IF EXISTS "Allow public read/write on departments" ON public.departments;
-DROP POLICY IF EXISTS "Allow public read/write on evaluation_sessions" ON public.evaluation_sessions;
-DROP POLICY IF EXISTS "Allow public read/write on proposals" ON public.proposals;
-DROP POLICY IF EXISTS "Allow public read/write on evaluations" ON public.evaluations;
-
-REVOKE ALL ON public.organization_charts, public.departments, public.evaluation_sessions,
-  public.proposals, public.evaluations FROM PUBLIC, anon, authenticated;
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.organization_charts, public.departments,
-  public.evaluation_sessions, public.proposals, public.evaluations TO service_role;
+CREATE POLICY "Allow public read/write on organization_charts" ON public.organization_charts FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow public read/write on departments" ON public.departments FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow public read/write on evaluation_sessions" ON public.evaluation_sessions FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow public read/write on proposals" ON public.proposals FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow public read/write on evaluations" ON public.evaluations FOR ALL USING (true) WITH CHECK (true);

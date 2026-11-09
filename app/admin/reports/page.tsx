@@ -3,7 +3,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { DownloadCloud, CheckCircle2, Clock, FileSpreadsheet, AlertTriangle, ArrowDownToLine, Layers, ChevronRight, Sparkles, X, Check, ArrowRight, Printer } from 'lucide-react';
+import { DownloadCloud, CheckCircle2, Clock, FileSpreadsheet, AlertTriangle, ArrowDownToLine, Layers, ChevronRight, Sparkles, X, Check, ArrowRight } from 'lucide-react';
 import { Proposal, Evaluation, EvaluationSession } from '@/lib/types';
 
 function AdminReportsContent() {
@@ -15,7 +15,6 @@ function AdminReportsContent() {
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [reportError, setReportError] = useState('');
 
   // 1차 제안심사 연계 생성 모달 상태
   const [isBridgeModalOpen, setIsBridgeModalOpen] = useState<boolean>(false);
@@ -26,12 +25,8 @@ function AdminReportsContent() {
   // 1. 회차 목록 로드 및 현재 회차 결정
   useEffect(() => {
     fetch(`/api/sessions?_t=${Date.now()}`, { cache: 'no-store' })
-      .then(res => {
-        if (!res.ok) throw new Error('평가 회차를 불러오지 못했습니다.');
-        return res.json();
-      })
-      .then((allSessions: EvaluationSession[]) => {
-        const sessionList = allSessions.filter(s => s.stage !== 'STAGE_1');
+      .then(res => res.json())
+      .then((sessionList: EvaluationSession[]) => {
         setSessions(sessionList);
 
         if (!sessionList || sessionList.length === 0) {
@@ -60,53 +55,41 @@ function AdminReportsContent() {
       })
       .catch(err => {
         console.error(err);
-        setReportError('평가 회차를 불러오지 못했습니다.');
         setLoading(false);
       });
   }, [searchParams]);
 
   // 2. 선택된 회차의 데이터 로드
-  useEffect(() => {
-    if (!selectedSessionId) return;
-    const controller = new AbortController();
-    const sessionId = encodeURIComponent(selectedSessionId);
+  const fetchReportData = (sessionId: string) => {
+    if (!sessionId) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
-    setReportError('');
-    setProposals([]);
-    setEvaluations([]);
-
-    const fetchData = async (path: string) => {
-      const response = await fetch(`${path}?session_id=${sessionId}`, {
-        cache: 'no-store',
-        signal: controller.signal
-      });
-      if (response.status === 401 || response.status === 403) {
-        router.replace('/');
-      }
-      if (!response.ok) throw new Error('평가 결과를 불러오지 못했습니다.');
-      return response.json();
-    };
-
     Promise.all([
-      fetchData('/api/proposals'),
-      fetchData('/api/evaluations')
+      fetch(`/api/proposals?session_id=${encodeURIComponent(sessionId)}&_t=${Date.now()}`, { cache: 'no-store' }).then(r => r.json()),
+      fetch(`/api/evaluations?session_id=${encodeURIComponent(sessionId)}&_t=${Date.now()}`, { cache: 'no-store' }).then(r => r.json())
     ])
       .then(([pData, eData]) => {
-        if (controller.signal.aborted) return;
         setProposals(Array.isArray(pData) ? pData : []);
         setEvaluations(Array.isArray(eData) ? eData : []);
         setLoading(false);
       })
-      .catch(() => {
-        if (controller.signal.aborted) return;
-        setReportError('평가 결과를 불러오지 못했습니다. 새로고침해 주세요.');
+      .catch(err => {
+        console.error(err);
         setLoading(false);
       });
-    return () => controller.abort();
-  }, [selectedSessionId, router]);
+  };
+
+  useEffect(() => {
+    if (selectedSessionId) {
+      fetchReportData(selectedSessionId);
+    } else {
+      setLoading(false);
+    }
+  }, [selectedSessionId]);
 
   const handleSessionChange = (newSessionId: string) => {
-    setLoading(true);
     setSelectedSessionId(newSessionId);
     if (typeof window !== 'undefined') {
       localStorage.setItem('gcuc_active_session_id', newSessionId);
@@ -125,9 +108,8 @@ function AdminReportsContent() {
   let yesCount = 0;
   let noCount = 0;
 
-  proposals.forEach(proposal => {
-    const ev = evalMap.get(proposal.id);
-    if (ev?.is_submitted) {
+  evaluations.forEach(ev => {
+    if (ev.is_submitted) {
       if (ev.answers?.result === 'Yes') yesCount++;
       if (ev.answers?.result === 'No') noCount++;
     }
@@ -135,13 +117,6 @@ function AdminReportsContent() {
 
   const handleDownloadExcel = () => {
     window.location.href = `/api/export?session_id=${encodeURIComponent(selectedSessionId)}`;
-  };
-
-  const handlePrint = async () => {
-    const response = await fetch('/api/auth/admin', { cache: 'no-store' }).catch(() => null);
-    if (response?.ok) window.print();
-    else if (response?.status === 401 || response?.status === 403) router.replace('/');
-    else alert('인쇄 권한을 확인하지 못했습니다. 다시 시도해 주세요.');
   };
 
   const handleCreateStage1 = async () => {
@@ -178,9 +153,9 @@ function AdminReportsContent() {
   };
 
   return (
-    <div className="stage0-report space-y-4 sm:space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* 1. 제안평가 회차 선행 선택 바 */}
-      <div className="print:hidden bg-white rounded-2xl border border-sky-200 p-4 sm:p-5 shadow-sm bg-gradient-to-r from-sky-50/70 via-white to-blue-50/40 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white rounded-2xl border border-sky-200 p-4 sm:p-5 shadow-sm bg-gradient-to-r from-sky-50/70 via-white to-blue-50/40 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
           <div className="w-11 h-11 rounded-2xl bg-sky-600 text-white flex items-center justify-center shadow-md shadow-sky-600/25 flex-shrink-0">
             <Layers className="w-5 h-5" />
@@ -233,42 +208,30 @@ function AdminReportsContent() {
         <div>
           <h2 className="text-lg sm:text-xl font-bold text-slate-900 flex items-center gap-2">
             <DownloadCloud className="w-5 h-5 text-sky-600 flex-shrink-0" />
-            <span>0차 부서 평가 통계 조회</span>
+            <span>[{currentSession?.title || '제안평가'}] 부서 평가(0차 평가) 취합 및 엑셀 다운로드</span>
           </h2>
-          <p className="text-sm text-slate-600 mt-1">
-            {currentSession && `[${currentSession.year}년] ${currentSession.title}`}
+          <p className="text-[15px] sm:text-xs text-slate-500 mt-1">
+            선택된 평가 회차의 각 부서 심사 결과(Yes/No 및 검토의견)와 부서이동(이관) 상세 이력을 실시간 집계하고 보고용 엑셀로 내보냅니다. (부서 평가 완료 후 1차 제안심사 회차로 바로 연계)
           </p>
         </div>
 
-        <div className="print:hidden flex items-center gap-2.5 flex-wrap">
+        <div className="flex items-center gap-2.5 flex-wrap">
           {/* 1차 제안심사 연계 버튼 */}
           <button
-            disabled={!currentSession || loading || Boolean(reportError)}
             onClick={() => {
               const defaultTitle = `${(currentSession?.title || '과천도시공사 제안 심사').replace('(0차 부서평가)', '').trim()} (1차 제안심사)`;
               setBridgeTitle(defaultTitle);
               setIsBridgeModalOpen(true);
             }}
-            className="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white font-semibold text-xs sm:text-sm shadow-md shadow-amber-600/25 transition whitespace-nowrap disabled:opacity-50"
+            className="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white font-semibold text-xs sm:text-sm shadow-md shadow-amber-600/25 transition whitespace-nowrap"
           >
             <Sparkles className="w-4 h-4 text-amber-200" />
             <span>✨ 이 결과로 1차 제안심사 생성</span>
           </button>
 
           <button
-            type="button"
-            disabled={loading || Boolean(reportError) || proposals.length === 0}
-            onClick={handlePrint}
-            className="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-semibold text-xs sm:text-sm transition disabled:opacity-50"
-          >
-            <Printer className="w-4 h-4" />
-            <span>통계 인쇄</span>
-          </button>
-
-          <button
-            disabled={!currentSession || loading || Boolean(reportError)}
             onClick={handleDownloadExcel}
-            className="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs sm:text-sm shadow-md shadow-emerald-600/25 transition whitespace-nowrap disabled:opacity-50"
+            className="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs sm:text-sm shadow-md shadow-emerald-600/25 transition whitespace-nowrap"
           >
             <ArrowDownToLine className="w-4 h-4" />
             <span>종합 결과 엑셀 다운로드</span>
@@ -277,7 +240,7 @@ function AdminReportsContent() {
       </div>
 
       {/* KPI Cards (모바일 반응형 2x2 또는 4열 그리드) */}
-      <div className="grid grid-cols-2 md:grid-cols-4 print:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
         <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-sm">
           <span className="text-xs text-slate-400 font-medium block mb-1">대상 제안 건수</span>
           <div className="flex items-baseline gap-2">
@@ -327,9 +290,7 @@ function AdminReportsContent() {
           <span className="text-xs text-slate-400">총 {proposals.length}건</span>
         </div>
 
-        {reportError ? (
-          <p role="alert" className="p-6 text-center text-sm text-rose-700">{reportError}</p>
-        ) : loading ? (
+        {loading ? (
           <div className="py-16 text-center text-xs text-slate-500">
             <div className="w-6 h-6 border-2 border-sky-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
             평가 결과를 집계 중입니다...
@@ -350,7 +311,7 @@ function AdminReportsContent() {
         ) : (
           <>
             {/* Desktop Table View */}
-            <div className="hidden md:block print:block overflow-x-auto">
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full min-w-[920px] text-left border-collapse text-xs">
                 <thead>
                   <tr className="bg-slate-100/80 border-b border-slate-200 text-slate-600 font-semibold">
@@ -441,7 +402,7 @@ function AdminReportsContent() {
             </div>
 
             {/* Mobile Card List View */}
-            <div className="md:hidden print:hidden divide-y divide-slate-100">
+            <div className="md:hidden divide-y divide-slate-100">
               {proposals.map((p) => {
                 const ev = evalMap.get(p.id);
                 const result = ev?.answers?.result;
@@ -510,7 +471,7 @@ function AdminReportsContent() {
 
       {/* --- 모달: 1차 제안심사 연계 생성 --- */}
       {isBridgeModalOpen && (
-        <div className="print:hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-slate-200">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
               <div className="flex items-center gap-2.5">

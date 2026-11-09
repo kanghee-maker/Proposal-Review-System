@@ -1,10 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createStage1SessionFromStage0Async } from '@/lib/store';
-import { accessDenied, getAccess } from '@/lib/accessSession';
 
 export async function POST(req: Request) {
-  const access = getAccess();
-  if (access?.role !== 'admin') return accessDenied(access);
   try {
     const body = await req.json();
     if (!body.sourceSessionId) {

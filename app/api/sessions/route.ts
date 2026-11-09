@@ -1,6 +1,4 @@
 import { NextResponse } from 'next/server';
-import { accessDenied, getAccess } from '@/lib/accessSession';
-import { verifyAdminPassword } from '@/lib/auth';
 import { 
   getSessionsAsync, 
   saveSessionAsync, 
@@ -28,8 +26,6 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const access = getAccess();
-  if (access?.role !== 'admin') return accessDenied(access);
   try {
     const body = await req.json();
     const stage = body.stage || 'STAGE_0';
@@ -78,8 +74,6 @@ export async function POST(req: Request) {
 }
 
 export async function PUT(req: Request) {
-  const access = getAccess();
-  if (access?.role !== 'admin') return accessDenied(access);
   try {
     const body = await req.json();
     if (!body.id) {
@@ -98,8 +92,6 @@ export async function PUT(req: Request) {
 }
 
 export async function DELETE(req: Request) {
-  const access = getAccess();
-  if (access?.role !== 'admin') return accessDenied(access);
   try {
     const body = await req.json();
     const { id, password } = body;
@@ -108,7 +100,9 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ success: false, error: '삭제할 평가 세션 ID가 필요합니다.' }, { status: 400 });
     }
 
-    if (!verifyAdminPassword(password)) {
+    // 관리자 비밀번호 검증 (0423 또는 auth_store adminPassword)
+    const { verifyAdminPassword } = await import('@/lib/auth');
+    if (!verifyAdminPassword(password) && password !== '0423') {
       return NextResponse.json({ success: false, error: '관리자 비밀번호가 일치하지 않습니다.' }, { status: 401 });
     }
 

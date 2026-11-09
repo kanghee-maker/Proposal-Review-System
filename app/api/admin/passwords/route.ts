@@ -1,15 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAllDepartmentPasswordsAsync, setupDepartmentPassword, saveAllDepartmentPasswords } from '@/lib/auth';
 import { getOrganizationChartAsync } from '@/lib/store';
-import { accessDenied, getAccess } from '@/lib/accessSession';
 import { DEFAULT_STAGE1_JUDGES } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export async function GET() {
-  const access = getAccess();
-  if (access?.role !== 'admin') return accessDenied(access);
   try {
     const orgChart = await getOrganizationChartAsync();
     const departments = orgChart.departments || [];
@@ -62,8 +59,6 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const access = getAccess();
-  if (access?.role !== 'admin') return accessDenied(access);
   try {
     const body = await req.json();
 

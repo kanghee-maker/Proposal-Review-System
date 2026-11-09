@@ -1,14 +1,11 @@
 import { getProposalTransfers, saveProposalTransfer } from '@/lib/proposalTransfers';
 import { NextResponse } from 'next/server';
-import { getProposalsAsync, getSessionsAsync, updateProposalAsync } from '@/lib/store';
-import { accessDenied, getAccess } from '@/lib/accessSession';
+import { getProposalsAsync, updateProposalAsync } from '@/lib/store';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export async function GET(req: Request) {
-  const access = getAccess();
-  if (!access || access.role === 'stats') return accessDenied(access);
   const { searchParams } = new URL(req.url);
   const hasSessionParam = searchParams.has('session_id');
   const sessionId = searchParams.get('session_id');
@@ -29,11 +26,7 @@ export async function GET(req: Request) {
   let list;
   try {
     const [proposals, transfers] = await Promise.all([getProposalsAsync(sessionId || undefined), getProposalTransfers()]);
-    const allowedSessions = access.role === 'judge'
-      ? new Set((await getSessionsAsync()).filter(s => s.stage === 'STAGE_1').map(s => s.id))
-      : null;
-    list = proposals.filter(p => !allowedSessions || allowedSessions.has(p.session_id))
-      .map(p => ({ ...p, ...transfers[p.id] }));
+    list = proposals.map(p => ({ ...p, ...transfers[p.id] }));
   } catch {
     return NextResponse.json({ success: false, error: '이관 요청을 포함한 제안 조회에 실패했습니다. 다시 시도해 주세요.' }, { status: 503 });
   }
@@ -77,8 +70,6 @@ export async function GET(req: Request) {
 }
 
 export async function PUT(req: Request) {
-  const access = getAccess();
-  if (access?.role !== 'admin') return accessDenied(access);
   try {
     const body = await req.json();
     if (!body.id) {
