@@ -38,9 +38,11 @@ function saveAuthStore(store: AuthStore) {
 }
 
 // 1. 관리자 비밀번호
-export function verifyAdminPassword(input: string): boolean {
-  const password = process.env.ADMIN_PASSWORD;
-  return Boolean(password && password !== '0423' && password === input);
+export async function verifyAdminPassword(input: unknown): Promise<boolean> {
+  if (typeof input !== 'string' || !input || Buffer.byteLength(input, 'utf8') > 72) return false;
+  const { data, error } = await supabase.rpc('verify_gcprs_admin_password', { candidate: input });
+  if (error) throw new Error('관리자 인증 설정을 확인해 주세요.');
+  return data === true;
 }
 
 // 2. 부서 비밀번호

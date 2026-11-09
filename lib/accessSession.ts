@@ -8,11 +8,11 @@ const COOKIE = 'gcuc_access';
 const SESSION_SECONDS = 8 * 60 * 60;
 
 function sign(payload: string, secret: string) {
-  return createHmac('sha256', secret).update(payload).digest('base64url');
+  return createHmac('sha256', secret).update('gcprs:access-session:v1:').update(payload).digest('base64url');
 }
 
 export function getAccess(): Access | null {
-  const secret = process.env.ACCESS_SESSION_SECRET;
+  const secret = process.env.SUPABASE_SERVICE_ROLE_KEY;
   const [payload, signature, extra] = cookies().get(COOKIE)?.value.split('.') ?? [];
   if (!secret || !payload || !signature || extra !== undefined) return null;
 
@@ -34,7 +34,7 @@ export function getAccess(): Access | null {
 }
 
 export function setAccess(response: NextResponse, access: Access) {
-  const secret = process.env.ACCESS_SESSION_SECRET;
+  const secret = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!secret) throw new Error('서버 인증 설정이 필요합니다.');
 
   const expiresAt = Date.now() + SESSION_SECONDS * 1000;
