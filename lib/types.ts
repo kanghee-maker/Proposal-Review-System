@@ -52,6 +52,10 @@ export const DEFAULT_STAGE1_JUDGES: CommitteeJudge[] = [
   { id: 'j-12', name: '신상조', dept: '직군별 심사자(추첨)', title: '체육' }
 ];
 
+export function getStage1PasswordDepartment(judge: CommitteeJudge): string | undefined {
+  return judge.title.match(/^(.*[부단])장$/)?.[1];
+}
+
 export interface CommitteeScore {
   id: string;
   proposal_id: string;

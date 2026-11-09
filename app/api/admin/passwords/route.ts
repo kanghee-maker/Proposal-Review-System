@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAllDepartmentPasswordsAsync, setupDepartmentPassword, saveAllDepartmentPasswords } from '@/lib/auth';
 import { getOrganizationChartAsync } from '@/lib/store';
 import { accessDenied, getAccess } from '@/lib/accessSession';
-import { DEFAULT_STAGE1_JUDGES } from '@/lib/types';
+import { DEFAULT_STAGE1_JUDGES, getStage1PasswordDepartment } from '@/lib/types';
+
+const inheritedJudges = new Set(DEFAULT_STAGE1_JUDGES.filter(getStage1PasswordDepartment).map(j => j.name));
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -26,18 +28,15 @@ export async function GET() {
     });
 
     const judgesWithPasswords = DEFAULT_STAGE1_JUDGES.map((j) => {
-      const mappedOrgDept = j.title
-        .replace(/부장$/, '부')
-        .replace('사업계획부', '사업기획부')
-        .replace('청렴감사단장', '경영감사실')
-        .replace('안전총괄단장', '안전관리부');
-      const pass = passwords[j.name] || passwords[mappedOrgDept] || passwords[j.dept] || '';
+      const inheritedDepartment = getStage1PasswordDepartment(j);
+      const pass = passwords[inheritedDepartment ?? j.name] || '';
       return {
         code: j.id,
         division: j.dept,
         office: j.title,
         department: j.name,
         name: `[${j.dept}] ${j.title} (${j.name})`,
+        inheritedDepartment,
         password: pass,
         hasPassword: Boolean(pass)
       };
@@ -70,6 +69,9 @@ export async function POST(req: NextRequest) {
     // 1. 일괄 저장 (Bulk)
     const bulkData = body.passwords || body.allPasswords;
     if (bulkData && typeof bulkData === 'object') {
+      if (Object.keys(bulkData).some(key => inheritedJudges.has(key))) {
+        return NextResponse.json({ error: '0차와 연동된 비밀번호는 부서 비밀번호에서 변경해 주세요.' }, { status: 400 });
+      }
       await saveAllDepartmentPasswords(bulkData);
       return NextResponse.json({ success: true, message: '부서 비밀번호가 일괄 저장되었습니다.' });
     }
@@ -78,6 +80,9 @@ export async function POST(req: NextRequest) {
     const { dept, password } = body;
     if (!dept) {
       return NextResponse.json({ success: false, error: '부서명이 필요합니다.' }, { status: 400 });
+    }
+    if (inheritedJudges.has(dept)) {
+      return NextResponse.json({ error: '0차와 연동된 비밀번호는 부서 비밀번호에서 변경해 주세요.' }, { status: 400 });
     }
 
     await setupDepartmentPassword(dept, password || '');

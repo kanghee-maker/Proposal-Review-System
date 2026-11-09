@@ -107,8 +107,8 @@ export async function verifyDepartmentPassword(deptName: string, inputPass: stri
 
     if (!error && data?.description) {
       const dbPasswords = JSON.parse(data.description);
-      if (dbPasswords && dbPasswords[deptName]) {
-        return dbPasswords[deptName] === inputPass;
+      if (dbPasswords && Object.prototype.hasOwnProperty.call(dbPasswords, deptName)) {
+        return Boolean(dbPasswords[deptName]) && dbPasswords[deptName] === inputPass;
       }
     }
   } catch (err) {}
@@ -132,30 +132,8 @@ export async function verifyDepartmentPassword(deptName: string, inputPass: stri
 }
 
 export async function setupDepartmentPassword(deptName: string, newPass: string): Promise<void> {
-  const store = getAuthStore();
-  if (!store.departmentPasswords) {
-    store.departmentPasswords = {};
-  }
   const trimmed = (newPass || '').trim();
-  if (trimmed) {
-    store.departmentPasswords[deptName] = trimmed;
-  } else {
-    delete store.departmentPasswords[deptName];
-  }
-  saveAuthStore(store);
-
-  // 1. Supabase DB 영구 저장
-  try {
-    await supabase.from('organization_charts').upsert({
-      id: 'dept_passwords_store',
-      name: 'department_passwords',
-      version: '2026-v1.0',
-      description: JSON.stringify(store.departmentPasswords),
-      updated_at: new Date().toISOString()
-    });
-  } catch (err) {
-    console.error('Failed to sync password to Supabase:', err);
-  }
+  await saveAllDepartmentPasswords({ [deptName]: trimmed });
 
   // 2. Supabase departments 테이블도 시도 (컬럼 존재 시)
   try {
@@ -204,49 +182,31 @@ export async function getAllDepartmentPasswordsAsync(): Promise<Record<string, s
 
 export async function saveAllDepartmentPasswords(map: Record<string, string>): Promise<void> {
   const store = getAuthStore();
-  if (!store.departmentPasswords) {
-    store.departmentPasswords = {};
-  }
-
-  // 기존 DB 데이터도 가져와서 병합
-  try {
-    const { data } = await supabase
-      .from('organization_charts')
-      .select('description')
-      .eq('id', 'dept_passwords_store')
-      .single();
-    if (data?.description) {
-      const parsed = JSON.parse(data.description);
-      if (parsed && typeof parsed === 'object') {
-        store.departmentPasswords = { ...parsed, ...store.departmentPasswords };
-      }
-    }
-  } catch (e) {}
-
-  for (const [dept, pass] of Object.entries(map)) {
-    const trimmed = (pass || '').trim();
-    if (trimmed) {
-      store.departmentPasswords[dept] = trimmed;
-    } else {
-      delete store.departmentPasswords[dept];
-    }
-  }
-  saveAuthStore(store);
-
-  // Supabase DB 영구 저장
-  try {
-    const res = await supabase.from('organization_charts').upsert({
+  const table = () => supabase.from('organization_charts');
+  const updates = Object.fromEntries(Object.entries(map).map(([dept, pass]) => [dept, pass.trim()]));
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const { data, error } = await table().select('description,updated_at').eq('id', 'dept_passwords_store').maybeSingle();
+    if (error) throw new Error('기존 비밀번호를 불러오지 못했습니다.');
+    const passwords = { ...store.departmentPasswords, ...(data?.description ? JSON.parse(data.description) : {}), ...updates };
+    const record = {
       id: 'dept_passwords_store',
       name: 'department_passwords',
       version: '2026-v1.0',
-      description: JSON.stringify(store.departmentPasswords),
-      updated_at: new Date().toISOString()
-    });
-    if (res.error) {
-      console.error('Supabase saveAllDepartmentPasswords upsert error:', res.error);
+      description: JSON.stringify(passwords),
+      updated_at: new Date(Math.max(Date.now(), (Date.parse(data?.updated_at || '') || 0) + 1)).toISOString()
+    };
+    const result = data
+      ? await (data.updated_at
+        ? table().update(record).eq('id', record.id).eq('updated_at', data.updated_at)
+        : table().update(record).eq('id', record.id).is('updated_at', null)).select('id')
+      : await table().insert(record).select('id');
+    if (result.error?.code === '23505') continue;
+    if (result.error) throw new Error('비밀번호를 저장하지 못했습니다.');
+    if (result.data?.length) {
+      saveAuthStore({ ...store, departmentPasswords: passwords });
+      return;
     }
-  } catch (err) {
-    console.error('Failed to save all passwords to Supabase:', err);
   }
+  throw new Error('다른 변경이 먼저 저장되었습니다. 새로고침하고 다시 시도해 주세요.');
 }
 

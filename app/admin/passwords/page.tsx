@@ -26,6 +26,7 @@ interface DepartmentPasswordItem {
   name: string;
   password: string;
   hasPassword: boolean;
+  inheritedDepartment?: string;
 }
 
 export default function AdminPasswordsPage() {
@@ -78,6 +79,7 @@ export default function AdminPasswordsPage() {
   }, []);
 
   const currentItems = activeTab === 'STAGE_1' ? judges : departments;
+  const editableItems = currentItems.filter(item => !item.inheritedDepartment);
 
   // 4자리 랜덤 숫자 생성 (1000 ~ 9999)
   const generateRandom4Digits = (): string => {
@@ -96,7 +98,7 @@ export default function AdminPasswordsPage() {
   const handleBulkRandomizeUnset = () => {
     const newInputs = { ...inputPasswords };
     let count = 0;
-    currentItems.forEach(d => {
+    editableItems.forEach(d => {
       if (!inputPasswords[d.department] || inputPasswords[d.department].trim() === '') {
         newInputs[d.department] = generateRandom4Digits();
         count++;
@@ -114,16 +116,16 @@ export default function AdminPasswordsPage() {
 
   // 전체 부서/위원 일괄 재발급 (랜덤)
   const handleBulkRandomizeAll = () => {
-    const label = activeTab === 'STAGE_1' ? '1차 심사위원' : '0차 평가 부서';
+    const label = activeTab === 'STAGE_1' ? '직군별 심사자' : '0차 평가 부서';
     if (!confirm(`정말로 모든 ${label}의 비밀번호를 새로운 4자리 숫자로 랜덤 재발급하시겠습니까? 기존 설정된 비밀번호도 모두 갱신됩니다.`)) {
       return;
     }
     const newInputs: Record<string, string> = { ...inputPasswords };
-    currentItems.forEach(d => {
+    editableItems.forEach(d => {
       newInputs[d.department] = generateRandom4Digits();
     });
     setInputPasswords(newInputs);
-    showToast(`전체 ${currentItems.length}건에 새 4자리 번호가 생성되었습니다. [전체 일괄 저장]을 눌러 적용하세요.`);
+    showToast(`${editableItems.length}건에 새 4자리 번호가 생성되었습니다. [전체 일괄 저장]을 눌러 적용하세요.`);
   };
 
   // 단일 부서/위원 저장
@@ -166,25 +168,19 @@ export default function AdminPasswordsPage() {
 
   // 전체 일괄 저장
   const handleSaveAll = async () => {
+    const changes = Object.fromEntries(editableItems
+      .filter(d => inputPasswords[d.department] !== d.password)
+      .map(d => [d.department, inputPasswords[d.department]?.trim() || '']));
+    if (!Object.keys(changes).length) return;
     setBulkSaving(true);
     try {
       const res = await fetch('/api/admin/passwords', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ passwords: inputPasswords })
+        body: JSON.stringify({ passwords: changes })
       });
       const data = await res.json();
       if (data.success) {
-        const updater = (prev: DepartmentPasswordItem[]) => prev.map(d => {
-          const p = (inputPasswords[d.department] || '').trim();
-          return {
-            ...d,
-            password: p,
-            hasPassword: Boolean(p)
-          };
-        });
-        setDepartments(updater);
-        setJudges(updater);
         showToast('비밀번호가 성공적으로 일괄 저장되었습니다.');
         await fetchPasswords(false);
       } else {
@@ -257,7 +253,7 @@ export default function AdminPasswordsPage() {
 
   const totalCount = currentItems.length;
   const savedCount = currentItems.filter(d => Boolean(d.password)).length;
-  const pendingSaveCount = currentItems.filter(d => Boolean(inputPasswords[d.department]) && inputPasswords[d.department] !== d.password).length;
+  const pendingSaveCount = editableItems.filter(d => inputPasswords[d.department] !== d.password).length;
   const unsetCount = currentItems.filter(d => !d.password && !inputPasswords[d.department]).length;
 
   return (
@@ -279,7 +275,7 @@ export default function AdminPasswordsPage() {
           </div>
           <h2 className="text-2xl font-bold tracking-tight mb-2">평가 접속 비밀번호 관리</h2>
           <p className="text-sm text-slate-300 max-w-xl">
-            0차 부서 평가자 및 1차 제안심사 평가자(11인)가 각 평가함에 접속할 때 사용할 4자리 비밀번호를 안전하게 발급하고 관리합니다.
+            1차 심사위원은 소속 부서의 0차 비밀번호를 사용합니다. 직군별 심사자 3명은 개별 비밀번호를 발급합니다.
           </p>
         </div>
 
@@ -295,7 +291,7 @@ export default function AdminPasswordsPage() {
 
           <button
             onClick={handleSaveAll}
-            disabled={bulkSaving}
+            disabled={bulkSaving || pendingSaveCount === 0}
             className={`px-4 py-2.5 rounded-xl text-white text-xs font-semibold flex items-center gap-1.5 shadow-md transition disabled:opacity-50 ${
               pendingSaveCount > 0
                 ? 'bg-emerald-600 hover:bg-emerald-500 ring-2 ring-emerald-400 shadow-emerald-600/40 animate-pulse'
@@ -423,10 +419,10 @@ export default function AdminPasswordsPage() {
             <button
               onClick={handleBulkRandomizeAll}
               className="px-3 py-2 rounded-xl bg-white border border-slate-200 hover:border-slate-300 text-slate-600 hover:text-slate-900 text-xs font-semibold flex items-center gap-1.5 transition"
-              title="모든 부서의 비밀번호를 4자리 난수로 일괄 재발급합니다."
+              title={activeTab === 'STAGE_1' ? '직군별 심사자만 재발급합니다.' : '모든 부서 비밀번호를 재발급합니다.'}
             >
               <RefreshCw className="w-3.5 h-3.5" />
-              <span>전체 4자리 랜덤 재발급</span>
+              <span>{activeTab === 'STAGE_1' ? '직군별 3명 재발급' : '전체 4자리 랜덤 재발급'}</span>
             </button>
           </div>
         </div>
@@ -519,6 +515,7 @@ export default function AdminPasswordsPage() {
                               maxLength={10}
                               placeholder="4자리 숫자"
                               value={currentInput}
+                              readOnly={Boolean(d.inheritedDepartment)}
                               onChange={(e) => {
                                 const val = e.target.value;
                                 setInputPasswords(prev => ({ ...prev, [d.department]: val }));
@@ -547,7 +544,9 @@ export default function AdminPasswordsPage() {
                       </td>
 
                       <td className="py-3.5 px-4 text-right">
-                        <div className="inline-flex items-center gap-1.5">
+                        {d.inheritedDepartment ? (
+                          <span className="text-sm font-medium text-slate-600">{d.inheritedDepartment} 0차 비밀번호 연동</span>
+                        ) : <div className="inline-flex items-center gap-1.5">
                           <button
                             type="button"
                             onClick={() => handleRandomizeSingle(d.department)}
@@ -571,7 +570,7 @@ export default function AdminPasswordsPage() {
                             <Save className="w-3.5 h-3.5" />
                             <span>{isSaving ? '저장...' : isModified ? '저장 필요' : '저장'}</span>
                           </button>
-                        </div>
+                        </div>}
                       </td>
                     </tr>
                   );
