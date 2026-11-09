@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Shield, Users, CheckCircle, Award, ChevronRight, KeyRound, Lock, AlertCircle, X, Check, Building2, ExternalLink, ArrowRight, BarChart3, Sparkles } from 'lucide-react';
+import Link from 'next/link';
+import { Shield, Users, CheckCircle, Award, ChevronRight, KeyRound, Lock, AlertCircle, X, Check, Building2, ExternalLink, ArrowRight, Sparkles } from 'lucide-react';
 import { Department, DEFAULT_STAGE1_JUDGES } from '@/lib/types';
 
 export default function Home() {
@@ -71,6 +71,7 @@ export default function Home() {
         if (typeof window !== 'undefined') {
           localStorage.setItem('gcuc_user_role', 'ADMIN');
           localStorage.setItem('gcuc_admin_auth', 'true');
+          localStorage.removeItem('gcuc_dept_name');
           localStorage.setItem('gcuc_user_name', '총괄 관리자');
         }
         setAdminModalOpen(false);
@@ -163,19 +164,12 @@ export default function Home() {
     setStage1Loading(true);
     setStage1Error('');
 
-    const mappedOrgDept = selectedJudgeInfo.title
-      .replace(/부장$/, '부')
-      .replace('사업계획부', '사업기획부')
-      .replace('청렴감사단장', '경영감사실')
-      .replace('안전총괄단장', '안전관리부');
-
     try {
       const res = await fetch('/api/auth/department', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           dept: selectedJudgeInfo.name,
-          fallbackDept: mappedOrgDept || selectedJudgeInfo.dept,
           password: stage1Password,
           action: 'login'
         })
@@ -190,6 +184,7 @@ export default function Home() {
         if (typeof window !== 'undefined') {
           localStorage.setItem('gcuc_user_role', 'EVALUATOR');
           localStorage.setItem('gcuc_evaluator_stage', 'STAGE_1');
+          localStorage.removeItem('gcuc_admin_auth');
           localStorage.setItem('gcuc_dept_name', selectedJudgeInfo.name);
           localStorage.setItem('gcuc_judge_dept', selectedJudgeInfo.dept);
           localStorage.setItem(`gcuc_dept_auth_${selectedJudgeInfo.name}`, 'true');
@@ -283,16 +278,6 @@ export default function Home() {
                 <div className="border border-slate-300 bg-slate-200/80 text-slate-600 text-[14px] font-bold px-2.5 py-1 rounded-md whitespace-nowrap">
                   0차 부서 평가 완료 (마감)
                 </div>
-                <Link
-                  href="/stage0-stats"
-                  className="relative inline-flex p-[2px] rounded-lg bg-gradient-to-r from-yellow-300 via-amber-500 to-yellow-400 shadow-md shadow-amber-500/30 hover:shadow-lg hover:shadow-amber-500/50 hover:-translate-y-0.5 transition-all duration-200 group/stat"
-                >
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-[6px] bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-amber-300 group-hover/stat:text-yellow-200 text-[13px] font-extrabold whitespace-nowrap">
-                    <BarChart3 className="w-3.5 h-3.5 text-yellow-400" />
-                    <span>0차 부서 평가 통계 조회</span>
-                    <ChevronRight className="w-3.5 h-3.5 text-amber-400 group-hover/stat:translate-x-0.5 transition-transform" />
-                  </span>
-                </Link>
               </div>
               <div className="flex flex-wrap items-center gap-2 mb-2">
                 <span className="w-5 h-5 rounded-full bg-slate-200 text-slate-600 font-bold text-xs flex items-center justify-center">1</span>
@@ -360,6 +345,9 @@ export default function Home() {
               <span>관리자 모드로 입장</span>
               <ChevronRight className="w-4 h-4 ml-auto" />
             </button>
+            <Link href="/stage0-stats" className="mt-3 flex items-center justify-center gap-2 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900 hover:bg-amber-100">
+              <Lock className="h-4 w-4" /> 0차 평가 통계 조회
+            </Link>
           </div>
 
           {/* 2. 0차 부서 평가자 (Stage 0 Evaluator) 카드 - 마감 완료 (옅은 회색 톤) */}

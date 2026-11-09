@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { accessDenied, getAccess } from '@/lib/accessSession';
 import { getProposalsAsync, getEvaluationsAsync, getSessionsAsync, getCommitteeScoresAsync } from '@/lib/store';
 import { getProposalTransfers } from '@/lib/proposalTransfers';
 import { TransferHistoryEntry, DEFAULT_STAGE1_JUDGES, CommitteeJudge, Proposal } from '@/lib/types';
@@ -44,9 +45,13 @@ function formatHistoryEntry(h: TransferHistoryEntry, index: number): string {
 }
 
 export async function GET(req: Request) {
+  const access = getAccess();
+  if (access?.role !== 'admin') return accessDenied(access);
+
   try {
     const { searchParams } = new URL(req.url);
     const sessionId = searchParams.get('session_id') || undefined;
+    if (!sessionId) return NextResponse.json({ error: '평가 회차를 선택해 주세요.' }, { status: 400 });
 
     const [sessions, rawProposals, evaluations, transfers] = await Promise.all([
       getSessionsAsync(),
@@ -56,6 +61,7 @@ export async function GET(req: Request) {
     ]);
 
     const currentSession = sessionId ? sessions.find(s => s.id === sessionId) : undefined;
+    if (!currentSession) return NextResponse.json({ error: '평가 회차를 찾을 수 없습니다.' }, { status: 404 });
     const isStage1 =
       currentSession?.stage === 'STAGE_1' ||
       (sessionId && String(sessionId).startsWith('session-stage1-')) ||
@@ -258,6 +264,7 @@ export async function GET(req: Request) {
         status: 200,
         headers: {
           'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          'Cache-Control': 'private, no-store',
           'Content-Disposition': `attachment; filename="2026_GCUC_Proposal_Stage1_Results.xlsx"`,
         },
       });
@@ -372,6 +379,7 @@ export async function GET(req: Request) {
       status: 200,
       headers: {
         'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'Cache-Control': 'private, no-store',
         'Content-Disposition': `attachment; filename="2026_GCUC_Proposal_Stage0_Results.xlsx"`,
       },
     });
