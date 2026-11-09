@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { OrganizationChart, EvaluationSession, Proposal, ProposalAttachment, Evaluation, EvaluationCriteria, Department, CommitteeJudge, CommitteeScore, EvaluationStage, DEFAULT_STAGE1_JUDGES } from './types';
 import { supabase } from './supabaseClient';
+import { getStage0ReviewLinks, saveStage0ReviewLinks } from './stage0ReviewLinks';
 
 const DATA_DIR = path.join(process.cwd(), 'data');
 
@@ -1032,6 +1033,57 @@ export async function getEvaluationsAsync(sessionId?: string): Promise<Evaluatio
   return getEvaluations(sessionId);
 }
 
+export async function attachStage0Reviews(proposals: Proposal[], sessions: EvaluationSession[]): Promise<Proposal[]> {
+  const stage1 = new Map(sessions.filter(s => s.stage === 'STAGE_1').map(s => [s.id, s]));
+  const sourceSessions = sessions.filter(s => s.stage !== 'STAGE_1');
+  const targetIds = Array.from(new Set(proposals.map(p => p.session_id).filter(id => stage1.has(id))));
+
+  const loadSource = async (sessionId: string) => {
+    const [originals, evaluations] = await Promise.all([getProposalsAsync(sessionId), getEvaluationsAsync(sessionId)]);
+    const reviews = new Map<string, Evaluation>();
+    for (const evaluation of evaluations) {
+      if (!evaluation.is_submitted) continue;
+      const previous = reviews.get(evaluation.proposal_id);
+      if (!previous || (Date.parse(evaluation.updated_at || evaluation.submitted_at || '') || 0) >
+        (Date.parse(previous.updated_at || previous.submitted_at || '') || 0)) {
+        reviews.set(evaluation.proposal_id, evaluation);
+      }
+    }
+    return { originals, reviews };
+  };
+  const sourceCache = new Map<string, ReturnType<typeof loadSource>>();
+  const linked = new Map<string, Proposal>();
+
+  await Promise.all(targetIds.map(async id => {
+    const target = stage1.get(id)!;
+    const links = await getStage0ReviewLinks(id);
+    const explicitSource = links?.sourceSessionId || target.source_session_id;
+    const candidates = sourceSessions.filter(s => explicitSource
+      ? s.id === explicitSource
+      : s.year === target.year && Date.parse(s.created_at) <= Date.parse(target.created_at));
+    const sources = await Promise.all(candidates.map(source => {
+      if (!sourceCache.has(source.id)) sourceCache.set(source.id, loadSource(source.id));
+      return sourceCache.get(source.id)!;
+    }));
+
+    for (const p of proposals.filter(p => p.session_id === id)) {
+      const sourceId = links?.sourceProposalIds[p.id];
+      const matches = sources.flatMap(({ originals, reviews }) => originals
+        .filter(original => links ? original.id === sourceId :
+          Boolean(p.board_no?.trim()) && original.board_no?.trim() === p.board_no.trim() && original.title.trim() === p.title.trim())
+        .map(original => ({ original, review: reviews.get(original.id) })));
+      const match = matches.length === 1 ? matches[0] : undefined;
+      linked.set(p.id, {
+        ...p,
+        stage0_result: match?.review?.answers?.result || match?.original.stage0_result,
+        stage0_opinion: match?.review?.answers?.opinion?.trim() || match?.original.stage0_opinion?.trim(),
+        stage0_dept: match?.review?.department_name || match?.original.stage0_dept || match?.original.assigned_department,
+      });
+    }
+  }));
+  return proposals.map(p => linked.get(p.id) ?? p);
+}
+
 export function getEvaluations(sessionId?: string): Evaluation[] {
   let evals = readJson<Evaluation[]>('evaluations_store.json', []);
   if (sessionId) {
@@ -1148,12 +1200,13 @@ export async function createStage1SessionFromStage0Async(params: {
   // 1) 출처 세션 조회
   const sessions = await getSessionsAsync();
   const sourceSession = sessions.find(s => s.id === sourceSessionId);
+  if (!sourceSession || sourceSession.stage === 'STAGE_1') throw new Error('출처 0차 부서평가 회차를 찾을 수 없습니다.');
   const sourceTitle = sourceSession?.title || '과천도시공사 제안 심사';
 
   // 2) 출처 세션의 제안 및 0차 평가결과 조회
   const sourceProposals = await getProposalsAsync(sourceSessionId);
   const sourceEvaluations = await getEvaluationsAsync(sourceSessionId);
-  const evalMap = new Map(sourceEvaluations.map(e => [e.proposal_id, e]));
+  const evalMap = new Map(sourceEvaluations.filter(e => e.is_submitted).map(e => [e.proposal_id, e]));
 
   // 3) 대상 제안 필터링 (부서 채택 Yes 제안만 또는 선택된 제안)
   let targetProposals = sourceProposals;
@@ -1187,8 +1240,6 @@ export async function createStage1SessionFromStage0Async(params: {
     criteria: getDefaultStage1Criteria()
   };
 
-  await saveSessionAsync(newSession);
-
   // 5) 제안 데이터 복제 및 0차 평가결과 보존
   const clonedProposals: Proposal[] = targetProposals.map((p, idx) => {
     const ev = evalMap.get(p.id);
@@ -1198,9 +1249,9 @@ export async function createStage1SessionFromStage0Async(params: {
       id: newPropId,
       session_id: newSessionId,
       seq_no: idx + 1,
-      stage0_result: ev?.answers?.result || p.stage0_result || 'Yes',
-      stage0_opinion: ev?.answers?.opinion || p.stage0_opinion || '부서 자체 타당성 검토 결과 채택 및 1차 심사 추천',
-      stage0_dept: p.assigned_department,
+      stage0_result: ev?.answers?.result || p.stage0_result,
+      stage0_opinion: ev?.answers?.opinion || p.stage0_opinion,
+      stage0_dept: ev?.department_name || p.assigned_department,
       contribution_rate: 100,
       stage1_is_closed: false,
       stage1_decision: '심사대기',
@@ -1209,6 +1260,11 @@ export async function createStage1SessionFromStage0Async(params: {
       status: '미평가' as any
     };
   });
+  await saveStage0ReviewLinks(newSessionId, {
+    sourceSessionId,
+    sourceProposalIds: Object.fromEntries(clonedProposals.map((p, idx) => [p.id, targetProposals[idx].id])),
+  });
+  await saveSessionAsync(newSession);
 
   // 로컬 proposals_store에 추가
   let currentStore = readJson<Proposal[]>('proposals_store.json', []);

@@ -209,10 +209,10 @@ function Stage1EvaluatorDashboardContent() {
                   {/* 0차 부서평가 검토의견 요약 */}
                   <div className="text-xs bg-slate-50 p-2.5 rounded-xl border border-slate-200/80 text-slate-600">
                     <span className="font-bold text-sky-700 mr-2">
-                      [0차 부서검토: {p.stage0_result || 'Yes'}]
+                      0차 부서평가{p.stage0_dept && ` · ${p.stage0_dept}`} · {p.stage0_result === 'Yes' ? '채택' : p.stage0_result === 'No' ? '불채택' : p.stage0_result || '결과 미확인'}
                     </span>
                     <span className="line-clamp-1">
-                      {p.stage0_opinion || '부서 자체 타당성 검토 완료 및 1차 심사 상정'}
+                      {p.stage0_opinion || '확인할 수 있는 0차 부서 검토 의견이 없습니다.'}
                     </span>
                   </div>
 

@@ -1,6 +1,6 @@
 import { getProposalTransfers, saveProposalTransfer } from '@/lib/proposalTransfers';
 import { NextResponse } from 'next/server';
-import { getProposalsAsync, getSessionsAsync, updateProposalAsync } from '@/lib/store';
+import { attachStage0Reviews, getProposalsAsync, getSessionsAsync, updateProposalAsync } from '@/lib/store';
 import { accessDenied, getAccess } from '@/lib/accessSession';
 
 export const dynamic = 'force-dynamic';
@@ -28,14 +28,15 @@ export async function GET(req: Request) {
 
   let list;
   try {
-    const [proposals, transfers] = await Promise.all([getProposalsAsync(sessionId || undefined), getProposalTransfers()]);
-    const allowedSessions = access.role === 'judge'
-      ? new Set((await getSessionsAsync()).filter(s => s.stage === 'STAGE_1').map(s => s.id))
-      : null;
-    list = proposals.filter(p => !allowedSessions || allowedSessions.has(p.session_id))
-      .map(p => ({ ...p, ...transfers[p.id] }));
+    const [proposals, transfers, sessions] = await Promise.all([
+      getProposalsAsync(sessionId || undefined), getProposalTransfers(), getSessionsAsync()
+    ]);
+    const judgeSessions = new Set(sessions.filter(s => s.stage === 'STAGE_1').map(s => s.id));
+    const visible = proposals.filter(p => (access.role !== 'judge' || judgeSessions.has(p.session_id)) &&
+      (!proposalId || p.id === proposalId)).map(p => ({ ...p, ...transfers[p.id] }));
+    list = await attachStage0Reviews(visible, sessions);
   } catch {
-    return NextResponse.json({ success: false, error: '이관 요청을 포함한 제안 조회에 실패했습니다. 다시 시도해 주세요.' }, { status: 503 });
+    return NextResponse.json({ success: false, error: '제안과 연결된 평가 자료를 불러오지 못했습니다. 다시 시도해 주세요.' }, { status: 503 });
   }
 
   if (proposalId) {

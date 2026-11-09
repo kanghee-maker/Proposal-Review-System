@@ -41,7 +41,10 @@ function Stage1EvaluateProposalContent() {
     setJudgeTitle(matched?.title || '제안1차심사자');
 
     Promise.all([
-      fetch(`/api/proposals?id=${encodeURIComponent(proposalId)}`).then(r => r.json()),
+      fetch(`/api/proposals?id=${encodeURIComponent(proposalId)}`).then(r => {
+        if (!r.ok) throw new Error('제안과 연결된 평가 자료를 불러오지 못했습니다.');
+        return r.json();
+      }),
       fetch(`/api/stage1/scores?proposal_id=${encodeURIComponent(proposalId)}`).then(r => r.json())
     ])
       .then(([prop, scoreList]) => {
@@ -173,17 +176,17 @@ function Stage1EvaluateProposalContent() {
 
           {/* 0차 부서평가 검토결과 하이라이트 박스 */}
           <div className="rounded-xl border-2 border-sky-200 bg-sky-50/60 p-4 text-xs space-y-2">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="font-bold text-sky-900 flex items-center gap-1.5">
                 <Building2 className="w-4 h-4 text-sky-600" />
-                <span>0차 부서평가 검토결과 ({proposal.stage0_dept || proposal.assigned_department})</span>
+                <span>0차 부서평가 검토 의견{proposal.stage0_dept && ` (${proposal.stage0_dept})`}</span>
               </span>
               <span className="px-2.5 py-0.5 rounded-full bg-sky-600 text-white font-bold">
-                채택 여부: {proposal.stage0_result || 'Yes'}
+                {proposal.stage0_result === 'Yes' ? '채택' : proposal.stage0_result === 'No' ? '불채택' : proposal.stage0_result || '결과 미확인'}
               </span>
             </div>
             <div className="bg-white p-3 rounded-lg border border-sky-100 text-slate-700 leading-relaxed whitespace-pre-wrap">
-              {proposal.stage0_opinion || '부서 자체 타당성 검토 완료 및 1차 제안심사위원회 추천'}
+              {proposal.stage0_opinion || '확인할 수 있는 0차 부서 검토 의견이 없습니다.'}
             </div>
           </div>
 
