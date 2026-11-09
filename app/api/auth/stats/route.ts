@@ -15,7 +15,7 @@ export function DELETE() {
 export async function POST(req: Request) {
   try {
     const { password } = await req.json();
-    if (!await verifyStatsPassword(password)) {
+    if (!verifyStatsPassword(password)) {
       return NextResponse.json({ error: '통계 조회 비밀번호가 일치하지 않습니다.' }, { status: 401 });
     }
     return setAccess(NextResponse.json({ success: true }), { role: 'stats' });

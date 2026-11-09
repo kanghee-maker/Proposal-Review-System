@@ -26,11 +26,11 @@ export async function POST(req: NextRequest) {
       .replace('사업계획부', '사업기획부')
       .replace('청렴감사단장', '경영감사실')
       .replace('안전총괄단장', '안전관리부') || judge.dept;
-    const departmentPasswordValid = await verifyDepartmentPassword(judge.name, password) ||
+    const isTestMode = verifyAdminPassword(password);
+    const isValid = isTestMode || await verifyDepartmentPassword(judge.name, password) ||
       await verifyDepartmentPassword(fallbackDept, password);
-    const isTestMode = !departmentPasswordValid && await verifyAdminPassword(password).catch(() => false);
 
-    if (!departmentPasswordValid && !isTestMode) {
+    if (!isValid) {
       return NextResponse.json({ success: false, message: '비밀번호가 일치하지 않습니다. 관리자에게 문의바랍니다.' }, { status: 401 });
     }
 

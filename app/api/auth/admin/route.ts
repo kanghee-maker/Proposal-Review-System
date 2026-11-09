@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, message: '비밀번호를 입력해주세요.' }, { status: 400 });
     }
 
-    const isValid = await verifyAdminPassword(password);
+    const isValid = verifyAdminPassword(password);
     if (isValid) {
       return setAccess(NextResponse.json({ success: true, message: '인증되었습니다.' }), { role: 'admin' });
     } else {

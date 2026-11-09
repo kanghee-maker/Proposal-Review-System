@@ -108,7 +108,7 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ success: false, error: '삭제할 평가 세션 ID가 필요합니다.' }, { status: 400 });
     }
 
-    if (!await verifyAdminPassword(password)) {
+    if (!verifyAdminPassword(password)) {
       return NextResponse.json({ success: false, error: '관리자 비밀번호가 일치하지 않습니다.' }, { status: 401 });
     }
 
