@@ -10,7 +10,9 @@ const SESSION_SECONDS = 8 * 60 * 60;
 declare const __GCPRS_ACCESS_SIGNING_KEY__: string;
 
 function sign(payload: string) {
-  return createHmac('sha256', __GCPRS_ACCESS_SIGNING_KEY__).update('gcprs:access-session:v1:').update(payload).digest('base64url');
+  const configuredKey = process.env.AUTH_SESSION_SECRET;
+  const key = configuredKey && configuredKey.length >= 32 ? configuredKey : __GCPRS_ACCESS_SIGNING_KEY__;
+  return createHmac('sha256', key).update('gcprs:access-session:v1:').update(payload).digest('base64url');
 }
 
 export function getAccess(): Access | null {

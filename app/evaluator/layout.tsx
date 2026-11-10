@@ -13,19 +13,26 @@ export default function EvaluatorLayout({ children }: { children: React.ReactNod
   const [deptName, setDeptName] = useState<string>('');
   const [userName, setUserName] = useState<string>('');
   const [authorized, setAuthorized] = useState<boolean>(false);
+  const [authIssue, setAuthIssue] = useState<'sign-in' | 'connection' | null>(null);
+  const [authAttempt, setAuthAttempt] = useState(0);
 
   useEffect(() => {
-    let current = true;
+    const controller = new AbortController();
     setAuthorized(false);
-    fetch('/api/auth/department', { cache: 'no-store' })
+    setAuthIssue(null);
+    fetch('/api/auth/department', { cache: 'no-store', signal: controller.signal })
       .then(async response => {
-        if (!current) return;
+        if (controller.signal.aborted) return;
+        if (response.status === 401 || response.status === 403) {
+          setAuthIssue('sign-in');
+          return;
+        }
         if (!response.ok) {
-          router.replace('/');
+          setAuthIssue('connection');
           return;
         }
         const access = await response.json();
-        if (!current) return;
+        if (controller.signal.aborted) return;
         if (access.role === 'admin') {
           setDeptName('총괄 관리자 (미리보기)');
           setUserName('조회 전용 모드');
@@ -34,14 +41,14 @@ export default function EvaluatorLayout({ children }: { children: React.ReactNod
           setUserName(localStorage.getItem('gcuc_user_name') || access.judge);
           localStorage.setItem('gcuc_dept_name', access.judge);
         } else {
-          router.replace('/');
+          setAuthIssue('sign-in');
           return;
         }
         setAuthorized(true);
       })
-      .catch(() => { if (current) router.replace('/'); });
-    return () => { current = false; };
-  }, [router, isStage1]);
+      .catch(() => { if (!controller.signal.aborted) setAuthIssue('connection'); });
+    return () => controller.abort();
+  }, [isStage1, authAttempt]);
 
   const handleLogout = async () => {
     const response = await fetch('/api/auth/department', { method: 'DELETE' }).catch(() => null);
@@ -68,8 +75,23 @@ export default function EvaluatorLayout({ children }: { children: React.ReactNod
     return (
       <div className="min-h-screen bg-white flex items-center justify-center text-slate-800">
         <div className="text-center">
-          <div className={`w-8 h-8 border-2 ${isStage1 ? 'border-amber-600' : 'border-[#169268]'} border-t-transparent rounded-full animate-spin mx-auto mb-3`} />
-          <p className="text-xs text-slate-500 font-medium">인증 확인 중...</p>
+          {authIssue === 'sign-in' ? (
+            <>
+              <p role="alert" className="text-sm">심사 화면을 이용하려면 다시 로그인해 주세요.</p>
+              <Link href="/" className="mt-3 inline-block rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white">로그인 화면으로</Link>
+            </>
+          ) : authIssue === 'connection' ? (
+            <>
+              <p role="alert" className="text-sm">접속 상태를 확인하지 못했습니다.</p>
+              <button type="button" onClick={() => setAuthAttempt(attempt => attempt + 1)}
+                className="mt-3 rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white">다시 시도</button>
+            </>
+          ) : (
+            <>
+              <div className={`w-8 h-8 border-2 ${isStage1 ? 'border-amber-600' : 'border-[#169268]'} border-t-transparent rounded-full animate-spin mx-auto mb-3`} />
+              <p className="text-xs text-slate-500 font-medium">인증 확인 중...</p>
+            </>
+          )}
         </div>
       </div>
     );
