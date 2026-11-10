@@ -496,7 +496,7 @@ function Stage1EvaluateProposalContent() {
               {/* 5. 심사위원 의견 */}
               <div>
                 <label className="block font-bold text-slate-800 text-sm mb-1.5">
-                  5. 심사위원 검토 의견 (Opinion)
+                  5. 심사위원 검토 의견 (Opinion) <span className="text-xs font-normal text-slate-500">· 선택</span>
                 </label>
                 <textarea
                   rows={4}
