@@ -6,6 +6,7 @@ import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { ArrowLeft, Award, Send, AlertCircle, FileText, Check, Paperclip, Download, Building2 } from 'lucide-react';
 import { Proposal, CommitteeScore, DEFAULT_STAGE1_JUDGES } from '@/lib/types';
 import AdoptionCriteria from '../AdoptionCriteria';
+import { readLocalScores, storeLocalScores } from '@/lib/stage1LocalScores';
 
 function Stage1EvaluateProposalContent() {
   const router = useRouter();
@@ -36,28 +37,20 @@ function Stage1EvaluateProposalContent() {
   const returnLink = `/evaluator/stage1?${returnParams}`;
 
   useEffect(() => {
-    let jName = searchParams.get('judge') || '';
-    if (!jName && typeof window !== 'undefined') {
-      jName = localStorage.getItem('gcuc_dept_name') || DEFAULT_STAGE1_JUDGES[0]?.name || '박종용';
-    }
+    const jName = localStorage.getItem('gcuc_dept_name') || searchParams.get('judge') || '';
     const matched = DEFAULT_STAGE1_JUDGES.find(j => j.name === jName);
     setJudgeName(jName);
     setJudgeDept(matched?.dept || (typeof window !== 'undefined' ? localStorage.getItem('gcuc_judge_dept') || '' : ''));
     setJudgeTitle(matched?.title || '제안1차심사자');
 
-    Promise.all([
-      fetch(`/api/proposals?id=${encodeURIComponent(proposalId)}`).then(r => {
+    fetch(`/api/proposals?id=${encodeURIComponent(proposalId)}`, { cache: 'no-store' })
+      .then(r => {
         if (!r.ok) throw new Error('제안과 연결된 평가 자료를 불러오지 못했습니다.');
         return r.json();
-      }),
-      fetch(`/api/stage1/scores?proposal_id=${encodeURIComponent(proposalId)}&include_draft=1`, { cache: 'no-store' }).then(r => {
-        if (!r.ok) throw new Error('기존 심사 점수를 불러오지 못했습니다.');
-        return r.json();
       })
-    ])
-      .then(([prop, scoreList]) => {
-        setProposal(prop || null);
-        if (Array.isArray(scoreList) && jName) {
+      .then((prop: Proposal | null) => {
+        if (prop && jName) {
+          const scoreList = readLocalScores(prop.session_id, jName).filter(score => score.proposal_id === proposalId);
           const finalScore = scoreList.find((s: CommitteeScore) => s.judge_name === jName && !s.is_draft);
           const draft = scoreList.find((s: CommitteeScore) => s.judge_name === jName && s.is_draft);
           const existing = draft && (!finalScore || Date.parse(draft.submitted_at || '') > Date.parse(finalScore.submitted_at || ''))
@@ -70,6 +63,7 @@ function Stage1EvaluateProposalContent() {
             setOpinion(existing.opinion || '');
           }
         }
+        setProposal(prop);
         setLoading(false);
       })
       .catch(err => {
@@ -79,12 +73,13 @@ function Stage1EvaluateProposalContent() {
       });
   }, [proposalId, searchParams]);
 
-  const handleSaveScore = async (isFinal: boolean) => {
-    if (!proposal || !judgeName) return;
+  const handleSaveScore = (isFinal: boolean) => {
+    if (!proposal || !DEFAULT_STAGE1_JUDGES.some(judge => judge.name === judgeName)) return;
 
     setSubmitting(true);
     try {
-      const payload = {
+      const payload: CommitteeScore = {
+        id: `cs-${proposal.id}-${judgeName}${isFinal ? '' : '-draft'}`,
         proposal_id: proposal.id,
         session_id: proposal.session_id,
         judge_name: judgeName,
@@ -94,30 +89,22 @@ function Stage1EvaluateProposalContent() {
         feasibility: Number(feasibility || 0),
         effectiveness: Number(effectiveness || 0),
         dissemination: Number(dissemination || 0),
+        total_score: totalScore,
         opinion: opinion.trim() || '-',
+        submitted_at: new Date().toISOString(),
         is_draft: !isFinal
       };
 
-      const res = await fetch('/api/stage1/scores', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json();
-
-      if (res.ok && data.success) {
-        if (isFinal) {
-          alert(`[${data.score.judge_name} 위원] 1차 제안심사 채점 결과(총점 ${data.score.total_score}점)가 최종 제출되었습니다!`);
-          router.push(returnLink);
-        } else {
-          setSaveToast('임시저장 완료되었습니다.');
-          setTimeout(() => setSaveToast(''), 2500);
-        }
+      storeLocalScores(proposal.session_id, [payload], judgeName);
+      if (isFinal) {
+        alert(`총점 ${totalScore}점을 이 브라우저에 저장했습니다. 심사를 마친 뒤 목록에서 결과 파일을 내려받아 관리자에게 전달해 주세요.`);
+        router.push(returnLink);
       } else {
-        alert(data.error || '채점 저장 중 오류가 발생했습니다.');
+        setSaveToast('이 브라우저에 임시저장했습니다.');
+        setTimeout(() => setSaveToast(''), 2500);
       }
     } catch (err) {
-      alert('서버 통신 중 오류가 발생했습니다.');
+      alert('브라우저에 저장하지 못했습니다. 저장 공간과 브라우저 설정을 확인한 뒤 다시 시도해 주세요.');
     } finally {
       setSubmitting(false);
     }
@@ -391,6 +378,7 @@ function Stage1EvaluateProposalContent() {
             </div>
 
             <AdoptionCriteria />
+            <p className="text-sm text-slate-700">점수는 이 브라우저에 저장됩니다. 심사를 마친 뒤 목록에서 결과 파일을 내려받아 관리자에게 전달해 주세요.</p>
 
             <div className="space-y-4 text-xs">
               {/* 1. 창의성 */}
@@ -536,7 +524,7 @@ function Stage1EvaluateProposalContent() {
                 className="w-2/3 py-3 px-4 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold text-xs shadow-lg shadow-amber-600/25 flex items-center justify-center gap-1.5 transition disabled:opacity-50"
               >
                 <Send className="w-3.5 h-3.5" />
-                <span>{submitting ? '제출 중...' : `1차 심사 채점 제출 (${totalScore}점)`}</span>
+                <span>{submitting ? '저장 중...' : `점수 확정·저장 (${totalScore}점)`}</span>
               </button>
             </div>
           </div>

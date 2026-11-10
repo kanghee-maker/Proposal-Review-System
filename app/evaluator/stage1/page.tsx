@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { Award, CheckCircle2, Clock, ChevronRight, Layers, Building2 } from 'lucide-react';
 import { Proposal, EvaluationSession, CommitteeScore, DEFAULT_STAGE1_JUDGES } from '@/lib/types';
 import AdoptionCriteria from './AdoptionCriteria';
+import { downloadStage1Results, readLocalScores } from '@/lib/stage1LocalScores';
 
 function Stage1EvaluatorDashboardContent() {
   const searchParams = useSearchParams();
@@ -64,10 +65,7 @@ function Stage1EvaluatorDashboardContent() {
   // 2. 심사위원 정보 및 선택된 1차 회차 데이터 로드
   useEffect(() => {
     const controller = new AbortController();
-    let jName = searchParams.get('judge') || '';
-    if (!jName && typeof window !== 'undefined') {
-      jName = localStorage.getItem('gcuc_dept_name') || DEFAULT_STAGE1_JUDGES[0]?.name || '박종용';
-    }
+    const jName = localStorage.getItem('gcuc_dept_name') || searchParams.get('judge') || '';
     const matched = DEFAULT_STAGE1_JUDGES.find(j => j.name === jName);
     setJudgeName(jName);
     setJudgeDept(matched ? `${matched.dept} • ${matched.title}` : (typeof window !== 'undefined' ? localStorage.getItem('gcuc_judge_dept') || '' : ''));
@@ -76,22 +74,15 @@ function Stage1EvaluatorDashboardContent() {
       setLoading(true);
       setLoadError('');
       const requestOptions = { cache: 'no-store' as const, signal: controller.signal };
-      Promise.all([
-        fetch(`/api/proposals?session_id=${encodeURIComponent(selectedSessionId)}`, requestOptions),
-        fetch(`/api/stage1/scores?session_id=${encodeURIComponent(selectedSessionId)}`, requestOptions)
-      ])
-        .then(async ([proposalsResponse, scoresResponse]) => {
-          if (!proposalsResponse.ok || !scoresResponse.ok) throw new Error('제안 또는 점수 조회 실패');
-          const [pList, sList] = await Promise.all([proposalsResponse.json(), scoresResponse.json()]);
+      fetch(`/api/proposals?session_id=${encodeURIComponent(selectedSessionId)}`, requestOptions)
+        .then(async proposalsResponse => {
+          if (!proposalsResponse.ok) throw new Error('제안 조회 실패');
+          const pList = await proposalsResponse.json();
           if (controller.signal.aborted) return;
           setProposals(Array.isArray(pList) ? pList : []);
           const scoreMap = new Map<string, CommitteeScore>();
-          if (Array.isArray(sList)) {
-            sList.forEach((sc: CommitteeScore) => {
-              if (sc.judge_name === jName) {
-                scoreMap.set(sc.proposal_id, sc);
-              }
-            });
+          for (const score of readLocalScores(selectedSessionId, jName)) {
+            if (!score.is_draft) scoreMap.set(score.proposal_id, score);
           }
           setMyScoresMap(scoreMap);
           setLoading(false);
@@ -156,7 +147,7 @@ function Stage1EvaluatorDashboardContent() {
               상정 제안: <strong className="text-slate-900 font-bold">{loading || loadError ? '—' : `${proposals.length}건`}</strong>
             </div>
             <div className="bg-amber-100 border border-amber-300 text-amber-900 rounded-xl px-3 py-2">
-              채점 완료: <strong className="font-bold">{loading || loadError ? '—' : `${completedCount}건`}</strong>
+              채점 완료(이 브라우저): <strong className="font-bold">{loading || loadError ? '—' : `${completedCount}건`}</strong>
             </div>
             <div className="bg-white border border-slate-200 text-slate-600 rounded-xl px-3 py-2">
               미채점: <strong className="font-bold">{loading || loadError ? '—' : `${pendingCount}건`}</strong>
@@ -166,6 +157,18 @@ function Stage1EvaluatorDashboardContent() {
       </div>
 
       <AdoptionCriteria />
+      <section className="rounded-xl border border-slate-300 bg-white p-4 text-sm">
+        <h3 className="font-bold text-slate-900">임시 심사 결과 제출 방법</h3>
+        <p className="mt-1 text-slate-700">확정한 점수는 이 브라우저에 저장됩니다. 심사를 마친 뒤 결과 파일을 내려받아 내부 제출 경로로 관리자에게 전달해 주세요.</p>
+        <button type="button" disabled={loading || Boolean(loadError) || completedCount === 0}
+          className="mt-3 rounded-lg bg-sky-700 px-3 py-2 font-semibold text-white disabled:opacity-50"
+          onClick={() => downloadStage1Results(selectedSessionId, proposals.flatMap(proposal => {
+            const score = myScoresMap.get(proposal.id);
+            return score ? [score] : [];
+          }), judgeName)}>
+          심사 결과 파일 내려받기
+        </button>
+      </section>
 
       {/* Proposals List */}
       <div className="flex items-center gap-3 px-1" aria-hidden="true">
