@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Award, CheckCircle2, Clock, ChevronRight, Layers, Building2 } from 'lucide-react';
 import { Proposal, EvaluationSession, CommitteeScore, DEFAULT_STAGE1_JUDGES } from '@/lib/types';
+import AdoptionCriteria from './AdoptionCriteria';
 
 function Stage1EvaluatorDashboardContent() {
   const searchParams = useSearchParams();
@@ -149,6 +150,8 @@ function Stage1EvaluatorDashboardContent() {
           </div>
         </div>
       </div>
+
+      <AdoptionCriteria />
 
       {/* Proposals List */}
       <div className="flex items-center gap-3 px-1" aria-hidden="true">

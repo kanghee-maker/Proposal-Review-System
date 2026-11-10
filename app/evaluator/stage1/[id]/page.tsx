@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { ArrowLeft, Award, Send, AlertCircle, FileText, Check, Paperclip, Download, Building2 } from 'lucide-react';
 import { Proposal, CommitteeScore, DEFAULT_STAGE1_JUDGES } from '@/lib/types';
+import AdoptionCriteria from '../AdoptionCriteria';
 
 function Stage1EvaluateProposalContent() {
   const router = useRouter();
@@ -378,6 +379,8 @@ function Stage1EvaluateProposalContent() {
                 <strong className="text-2xl font-extrabold text-amber-600">{totalScore}점</strong>
               </div>
             </div>
+
+            <AdoptionCriteria />
 
             <div className="space-y-4 text-xs">
               {/* 1. 창의성 */}
