@@ -18,9 +18,9 @@ function Stage1EvaluateProposalContent() {
   const [judgeDept, setJudgeDept] = useState<string>('');
   const [judgeTitle, setJudgeTitle] = useState<string>('제안1차심사자');
   const [loading, setLoading] = useState<boolean>(true);
+  const [loadError, setLoadError] = useState('');
 
   // 1차 심사 채점 상태 (기본값: 각 배점의 중간값 15 / 15 / 15 / 5 = 총점 50점)
-  const [scoreId, setScoreId] = useState<string>('');
   const [creativity, setCreativity] = useState<number>(15);
   const [feasibility, setFeasibility] = useState<number>(15);
   const [effectiveness, setEffectiveness] = useState<number>(15);
@@ -30,6 +30,10 @@ function Stage1EvaluateProposalContent() {
   const [saveToast, setSaveToast] = useState<string>('');
 
   const totalScore = Number(creativity || 0) + Number(feasibility || 0) + Number(effectiveness || 0) + Number(dissemination || 0);
+  const sessionId = proposal?.session_id || searchParams.get('session_id') || '';
+  const returnParams = new URLSearchParams({ judge: judgeName });
+  if (sessionId) returnParams.set('session_id', sessionId);
+  const returnLink = `/evaluator/stage1?${returnParams}`;
 
   useEffect(() => {
     let jName = searchParams.get('judge') || '';
@@ -46,14 +50,19 @@ function Stage1EvaluateProposalContent() {
         if (!r.ok) throw new Error('제안과 연결된 평가 자료를 불러오지 못했습니다.');
         return r.json();
       }),
-      fetch(`/api/stage1/scores?proposal_id=${encodeURIComponent(proposalId)}`).then(r => r.json())
+      fetch(`/api/stage1/scores?proposal_id=${encodeURIComponent(proposalId)}&include_draft=1`, { cache: 'no-store' }).then(r => {
+        if (!r.ok) throw new Error('기존 심사 점수를 불러오지 못했습니다.');
+        return r.json();
+      })
     ])
       .then(([prop, scoreList]) => {
         setProposal(prop || null);
         if (Array.isArray(scoreList) && jName) {
-          const existing = scoreList.find((s: CommitteeScore) => s.judge_name === jName);
+          const finalScore = scoreList.find((s: CommitteeScore) => s.judge_name === jName && !s.is_draft);
+          const draft = scoreList.find((s: CommitteeScore) => s.judge_name === jName && s.is_draft);
+          const existing = draft && (!finalScore || Date.parse(draft.submitted_at || '') > Date.parse(finalScore.submitted_at || ''))
+            ? draft : finalScore;
           if (existing) {
-            setScoreId(existing.id);
             setCreativity(Number(existing.creativity || 0));
             setFeasibility(Number(existing.feasibility || 0));
             setEffectiveness(Number(existing.effectiveness || 0));
@@ -65,6 +74,7 @@ function Stage1EvaluateProposalContent() {
       })
       .catch(err => {
         console.error(err);
+        setLoadError('제안 또는 저장된 심사 점수를 불러오지 못했습니다. 다시 시도해 주세요.');
         setLoading(false);
       });
   }, [proposalId, searchParams]);
@@ -75,7 +85,6 @@ function Stage1EvaluateProposalContent() {
     setSubmitting(true);
     try {
       const payload = {
-        id: scoreId || `cs-${proposal.id}-${judgeName}`,
         proposal_id: proposal.id,
         session_id: proposal.session_id,
         judge_name: judgeName,
@@ -85,7 +94,8 @@ function Stage1EvaluateProposalContent() {
         feasibility: Number(feasibility || 0),
         effectiveness: Number(effectiveness || 0),
         dissemination: Number(dissemination || 0),
-        opinion: opinion.trim() || '-'
+        opinion: opinion.trim() || '-',
+        is_draft: !isFinal
       };
 
       const res = await fetch('/api/stage1/scores', {
@@ -95,10 +105,10 @@ function Stage1EvaluateProposalContent() {
       });
       const data = await res.json();
 
-      if (data.success) {
+      if (res.ok && data.success) {
         if (isFinal) {
-          alert(`[${judgeName} 위원] 1차 제안심사 채점 결과(총점 ${totalScore}점)가 최종 제출되었습니다!`);
-          router.push(`/evaluator/stage1?judge=${encodeURIComponent(judgeName)}`);
+          alert(`[${data.score.judge_name} 위원] 1차 제안심사 채점 결과(총점 ${data.score.total_score}점)가 최종 제출되었습니다!`);
+          router.push(returnLink);
         } else {
           setSaveToast('임시저장 완료되었습니다.');
           setTimeout(() => setSaveToast(''), 2500);
@@ -120,8 +130,8 @@ function Stage1EvaluateProposalContent() {
   if (!proposal) {
     return (
       <div className="bg-white rounded-2xl p-8 text-center border border-slate-200">
-        <p className="text-sm text-slate-600 mb-4">해당 제안을 찾을 수 없습니다.</p>
-        <Link href={`/evaluator/stage1?judge=${encodeURIComponent(judgeName)}`} className="text-xs text-amber-600 font-semibold underline">
+        <p className="text-sm text-slate-600 mb-4">{loadError || '해당 제안을 찾을 수 없습니다.'}</p>
+        <Link href={returnLink} className="text-xs text-amber-600 font-semibold underline">
           1차 심사 목록으로 돌아가기
         </Link>
       </div>
@@ -133,7 +143,7 @@ function Stage1EvaluateProposalContent() {
       {/* Top Bar */}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <Link
-          href={`/evaluator/stage1?judge=${encodeURIComponent(judgeName)}`}
+          href={returnLink}
           className="inline-flex items-center gap-1.5 text-xs text-slate-600 hover:text-slate-900 bg-white border border-slate-200 px-3.5 py-2 rounded-xl transition shadow-sm font-semibold"
         >
           <ArrowLeft className="w-4 h-4" />

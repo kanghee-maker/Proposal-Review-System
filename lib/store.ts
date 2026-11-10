@@ -338,7 +338,6 @@ export async function deleteSessionAsync(sessionId: string): Promise<boolean> {
   markSystemInitialized();
   // 1. Supabase delete
   try {
-    await supabase.from('committee_scores').delete().eq('session_id', sessionId);
     await supabase.from('evaluations').delete().eq('session_id', sessionId);
     await supabase.from('proposals').delete().eq('session_id', sessionId);
     await supabase.from('evaluation_sessions').delete().eq('id', sessionId);
@@ -1132,60 +1131,7 @@ export function saveEvaluation(evaluation: Evaluation): void {
 }
 
 // 6. 1차 제안심사 다면평가 (Committee Scores)
-export async function getCommitteeScoresAsync(sessionId?: string, proposalId?: string): Promise<CommitteeScore[]> {
-  try {
-    let query = supabase.from('committee_scores').select('*');
-    if (sessionId) query = query.eq('session_id', sessionId);
-    if (proposalId) query = query.eq('proposal_id', proposalId);
-    const { data } = await query;
-    if (data && data.length > 0) {
-      return data;
-    }
-  } catch (err) {}
-  return getCommitteeScores(sessionId, proposalId);
-}
-
-export function getCommitteeScores(sessionId?: string, proposalId?: string): CommitteeScore[] {
-  let scores = readJson<CommitteeScore[]>('committee_scores_store.json', []);
-  if (sessionId) {
-    scores = scores.filter(s => s.session_id === sessionId);
-  }
-  if (proposalId) {
-    scores = scores.filter(s => s.proposal_id === proposalId);
-  }
-  return scores;
-}
-
-export async function saveCommitteeScoreAsync(score: CommitteeScore): Promise<void> {
-  try {
-    await supabase.from('committee_scores').upsert(score);
-  } catch (err) {}
-  saveCommitteeScore(score);
-}
-
-export function saveCommitteeScore(score: CommitteeScore): void {
-  const scores = readJson<CommitteeScore[]>('committee_scores_store.json', []);
-  const idx = scores.findIndex(s => s.proposal_id === score.proposal_id && s.judge_name === score.judge_name);
-  if (idx >= 0) {
-    scores[idx] = score;
-  } else {
-    scores.push(score);
-  }
-  writeJson('committee_scores_store.json', scores);
-}
-
-export async function saveCommitteeScoresBatchAsync(scoresToSave: CommitteeScore[]): Promise<void> {
-  try {
-    await supabase.from('committee_scores').upsert(scoresToSave);
-  } catch (err) {}
-  const scores = readJson<CommitteeScore[]>('committee_scores_store.json', []);
-  const map = new Map<string, CommitteeScore>();
-  scores.forEach(s => map.set(`${s.proposal_id}_${s.judge_name}`, s));
-  scoresToSave.forEach(s => map.set(`${s.proposal_id}_${s.judge_name}`, s));
-  writeJson('committee_scores_store.json', Array.from(map.values()));
-}
-
-// 7. 0차 부서평가 완결 결과 기반 -> 1차 제안심사 회차 연계 생성
+// 6. 0차 부서평가 완결 결과 기반 -> 1차 제안심사 회차 연계 생성
 export async function createStage1SessionFromStage0Async(params: {
   sourceSessionId: string;
   newTitle?: string;

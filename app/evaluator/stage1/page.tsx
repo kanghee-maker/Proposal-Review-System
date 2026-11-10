@@ -16,11 +16,15 @@ function Stage1EvaluatorDashboardContent() {
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [myScoresMap, setMyScoresMap] = useState<Map<string, CommitteeScore>>(new Map());
   const [loading, setLoading] = useState<boolean>(true);
+  const [loadError, setLoadError] = useState('');
 
   // 1. 1차 심사 회차(STAGE_1) 목록 로드
   useEffect(() => {
     fetch(`/api/sessions?_t=${Date.now()}`, { cache: 'no-store' })
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error('심사 회차 조회 실패');
+        return res.json();
+      })
       .then((sessionList: EvaluationSession[]) => {
         const stage1Sessions = Array.isArray(sessionList)
           ? sessionList.filter(s => s.stage === 'STAGE_1')
@@ -52,12 +56,14 @@ function Stage1EvaluatorDashboardContent() {
       })
       .catch(err => {
         console.error(err);
+        setLoadError('심사 회차를 불러오지 못했습니다.');
         setLoading(false);
       });
   }, [searchParams]);
 
   // 2. 심사위원 정보 및 선택된 1차 회차 데이터 로드
   useEffect(() => {
+    const controller = new AbortController();
     let jName = searchParams.get('judge') || '';
     if (!jName && typeof window !== 'undefined') {
       jName = localStorage.getItem('gcuc_dept_name') || DEFAULT_STAGE1_JUDGES[0]?.name || '박종용';
@@ -68,11 +74,16 @@ function Stage1EvaluatorDashboardContent() {
 
     if (jName && selectedSessionId) {
       setLoading(true);
+      setLoadError('');
+      const requestOptions = { cache: 'no-store' as const, signal: controller.signal };
       Promise.all([
-        fetch(`/api/proposals?session_id=${encodeURIComponent(selectedSessionId)}&_t=${Date.now()}`, { cache: 'no-store' }).then(r => r.json()),
-        fetch(`/api/stage1/scores?session_id=${encodeURIComponent(selectedSessionId)}&_t=${Date.now()}`, { cache: 'no-store' }).then(r => r.json())
+        fetch(`/api/proposals?session_id=${encodeURIComponent(selectedSessionId)}`, requestOptions),
+        fetch(`/api/stage1/scores?session_id=${encodeURIComponent(selectedSessionId)}`, requestOptions)
       ])
-        .then(([pList, sList]) => {
+        .then(async ([proposalsResponse, scoresResponse]) => {
+          if (!proposalsResponse.ok || !scoresResponse.ok) throw new Error('제안 또는 점수 조회 실패');
+          const [pList, sList] = await Promise.all([proposalsResponse.json(), scoresResponse.json()]);
+          if (controller.signal.aborted) return;
           setProposals(Array.isArray(pList) ? pList : []);
           const scoreMap = new Map<string, CommitteeScore>();
           if (Array.isArray(sList)) {
@@ -86,12 +97,15 @@ function Stage1EvaluatorDashboardContent() {
           setLoading(false);
         })
         .catch(err => {
+          if (controller.signal.aborted) return;
           console.error(err);
+          setLoadError('제안 목록 또는 제출 내역을 불러오지 못했습니다.');
           setLoading(false);
         });
     } else {
       setLoading(false);
     }
+    return () => controller.abort();
   }, [searchParams, selectedSessionId]);
 
   const completedCount = proposals.filter(p => myScoresMap.has(p.id)).length;
@@ -139,13 +153,13 @@ function Stage1EvaluatorDashboardContent() {
           )}
           <div className="flex flex-wrap items-center gap-2 whitespace-nowrap">
             <div className="bg-white border border-slate-200 rounded-xl px-3 py-2">
-              상정 제안: <strong className="text-slate-900 font-bold">{proposals.length}건</strong>
+              상정 제안: <strong className="text-slate-900 font-bold">{loading || loadError ? '—' : `${proposals.length}건`}</strong>
             </div>
             <div className="bg-amber-100 border border-amber-300 text-amber-900 rounded-xl px-3 py-2">
-              채점 완료: <strong className="font-bold">{completedCount}건</strong>
+              채점 완료: <strong className="font-bold">{loading || loadError ? '—' : `${completedCount}건`}</strong>
             </div>
             <div className="bg-white border border-slate-200 text-slate-600 rounded-xl px-3 py-2">
-              미채점: <strong className="font-bold">{pendingCount}건</strong>
+              미채점: <strong className="font-bold">{loading || loadError ? '—' : `${pendingCount}건`}</strong>
             </div>
           </div>
         </div>
@@ -160,7 +174,12 @@ function Stage1EvaluatorDashboardContent() {
       </div>
 
       <div className="space-y-3">
-        {sessions.length === 0 ? (
+        {loadError ? (
+          <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+            {loadError}{' '}
+            <button type="button" className="font-semibold underline" onClick={() => window.location.reload()}>다시 불러오기</button>
+          </div>
+        ) : sessions.length === 0 ? (
           <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center text-slate-500 text-xs">
             <p className="font-semibold text-slate-700 mb-1">현재 개설된 1차 제안심사 회차가 없습니다.</p>
             <p className="text-slate-400">총괄 관리자가 0차 부서평가 결과를 1차 제안심사로 연계 생성하면 제안 목록이 표시됩니다.</p>
@@ -239,7 +258,7 @@ function Stage1EvaluatorDashboardContent() {
 
                 <div className="flex items-center gap-3 flex-shrink-0 self-end md:self-center">
                   <Link
-                    href={`/evaluator/stage1/${p.id}?judge=${encodeURIComponent(judgeName)}`}
+                    href={`/evaluator/stage1/${p.id}?${new URLSearchParams({ judge: judgeName, session_id: selectedSessionId })}`}
                     className={`px-4 py-2.5 rounded-xl font-semibold text-xs transition flex items-center gap-1.5 shadow-sm ${
                       isCompleted
                         ? 'bg-slate-100 hover:bg-slate-200 text-slate-700'

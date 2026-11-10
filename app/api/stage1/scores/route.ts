@@ -1,23 +1,50 @@
 import { NextResponse } from 'next/server';
-import { getCommitteeScoresAsync, saveCommitteeScoreAsync, saveCommitteeScoresBatchAsync, updateProposalAsync, getProposalsAsync, getSessionsAsync } from '@/lib/store';
-import { CommitteeScore, DEFAULT_STAGE1_JUDGES } from '@/lib/types';
 import { accessDenied, getAccess } from '@/lib/accessSession';
+import { getCommitteeScoresAsync, saveCommitteeScoresAsync } from '@/lib/committeeScores';
+import { getProposalsAsync, getSessionsAsync, updateProposalAsync } from '@/lib/store';
+import { CommitteeJudge, CommitteeScore, DEFAULT_STAGE1_JUDGES } from '@/lib/types';
+
+const noStore = { 'Cache-Control': 'private, no-store' };
+
+function failure(error: string, status: number) {
+  return NextResponse.json({ success: false, error }, { status, headers: noStore });
+}
 
 export async function GET(req: Request) {
   const access = getAccess();
   if (!access || access.role === 'stats') return accessDenied(access);
+  const params = new URL(req.url).searchParams;
+  const sessionId = params.get('session_id') || undefined;
+  const proposalId = params.get('proposal_id') || undefined;
   try {
-    const { searchParams } = new URL(req.url);
-    const sessionId = searchParams.get('session_id') || undefined;
-    const proposalId = searchParams.get('proposal_id') || undefined;
-
-    const scores = await getCommitteeScoresAsync(sessionId, proposalId);
-    return NextResponse.json(access.role === 'judge' ? scores.filter(score => score.judge_name === access.judge) : scores, {
-      headers: { 'Cache-Control': 'private, no-store' }
-    });
-  } catch (err: any) {
-    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+    const judge = access.role === 'judge' ? access.judge : undefined;
+    const includeDrafts = Boolean(judge && proposalId && params.get('include_draft') === '1');
+    const scores = await getCommitteeScoresAsync(sessionId, proposalId, judge, includeDrafts);
+    return NextResponse.json(scores, { headers: noStore });
+  } catch (error) {
+    console.error('Stage 1 score read failed:', error);
+    return failure('1차 심사 점수를 불러오지 못했습니다. 다시 시도해 주세요.', 503);
   }
+}
+
+function toScore(input: Partial<CommitteeScore>, judge: CommitteeJudge, proposalId: string, sessionId: string, isDraft: boolean): CommitteeScore | null {
+  const fields = ['creativity', 'feasibility', 'effectiveness', 'dissemination'] as const;
+  const values = fields.map(field => Number(input[field]));
+  if (values.some((value, index) => !Number.isInteger(value) || value < 0 || value > (index === 3 ? 10 : 30))) return null;
+  const [creativity, feasibility, effectiveness, dissemination] = values;
+  return {
+    id: `cs-${proposalId}-${judge.name}${isDraft ? '-draft' : ''}`,
+    proposal_id: proposalId,
+    session_id: sessionId,
+    judge_name: judge.name,
+    judge_dept: judge.dept,
+    judge_title: judge.title || '제안1차심사자',
+    creativity, feasibility, effectiveness, dissemination,
+    total_score: creativity + feasibility + effectiveness + dissemination,
+    opinion: typeof input.opinion === 'string' ? input.opinion : '',
+    submitted_at: new Date().toISOString(),
+    is_draft: isDraft
+  };
 }
 
 export async function POST(req: Request) {
@@ -25,85 +52,50 @@ export async function POST(req: Request) {
   if (!access || access.role === 'stats') return accessDenied(access);
   try {
     const body = await req.json();
-    if (access.role === 'judge') {
-      if (body.scores || typeof body.session_id !== 'string' || typeof body.proposal_id !== 'string') {
-        return accessDenied(access);
+    const { proposal_id: proposalId, session_id: sessionId } = body;
+    if (typeof proposalId !== 'string' || typeof sessionId !== 'string') {
+      return failure('심사 회차와 제안 정보를 확인해 주세요.', 400);
+    }
+    const session = (await getSessionsAsync()).find(s => s.id === sessionId && s.stage === 'STAGE_1');
+    if (!session) return accessDenied(access);
+    const proposal = (await getProposalsAsync(sessionId)).find(p => p.id === proposalId);
+    if (!proposal) return accessDenied(access);
+
+    if (Array.isArray(body.scores)) {
+      if (access.role !== 'admin') return accessDenied(access);
+      const judges = session.judges?.length && !session.judges.some(j => j.name === '박민호')
+        ? session.judges : DEFAULT_STAGE1_JUDGES;
+      const scores: CommitteeScore[] = [];
+      for (const input of body.scores) {
+        const judge = judges.find(j => j.name === input?.judge_name);
+        const score = judge && toScore(input, judge, proposalId, sessionId, false);
+        if (!score) return failure('심사위원 또는 점수 범위를 확인해 주세요.', 400);
+        scores.push(score);
       }
-      const judge = DEFAULT_STAGE1_JUDGES.find(candidate => candidate.name === access.judge);
-      const session = (await getSessionsAsync()).find(s => s.id === body.session_id && s.stage === 'STAGE_1');
-      if (!judge || !session) return accessDenied(access);
-      const proposals = await getProposalsAsync(session.id);
-      if (!proposals.some(p => p.id === body.proposal_id)) return accessDenied(access);
-      const scores = await getCommitteeScoresAsync(session.id, body.proposal_id);
-      const previous = scores.find(score => score.judge_name === judge.name);
-      body.id = previous?.id || `cs-${body.proposal_id}-${judge.name}`;
-      body.judge_name = judge.name;
-      body.judge_dept = judge.dept;
-      body.judge_title = judge.title;
+      await saveCommitteeScoresAsync(scores);
+
+      const saved = await getCommitteeScoresAsync(sessionId, proposalId);
+      const totalAvg = saved.length ? Math.round(saved.reduce((sum, score) => sum + score.total_score, 0) / saved.length) : 0;
+      await updateProposalAsync({
+        ...proposal,
+        stage1_avg_score: totalAvg,
+        stage1_is_closed: body.stage1_is_closed ?? proposal.stage1_is_closed,
+        stage1_decision: body.stage1_decision ?? (totalAvg >= 60 ? '채택' : '미결'),
+        stage1_review_date: new Date().toISOString().split('T')[0],
+        status: '평가완료'
+      });
+      return NextResponse.json({ success: true, count: scores.length }, { headers: noStore });
     }
 
-    // 1) 여러 건 일괄 저장인 경우
-    if (body.scores && Array.isArray(body.scores)) {
-      const scores: CommitteeScore[] = body.scores.map((s: any, idx: number) => ({
-        id: s.id || `cs-${Date.now()}-${idx}`,
-        proposal_id: s.proposal_id,
-        session_id: s.session_id,
-        judge_name: s.judge_name,
-        judge_dept: s.judge_dept,
-        judge_title: s.judge_title || '제안1차심사자',
-        creativity: Number(s.creativity || 0),
-        feasibility: Number(s.feasibility || 0),
-        effectiveness: Number(s.effectiveness || 0),
-        dissemination: Number(s.dissemination || 0),
-        total_score: Number(s.creativity || 0) + Number(s.feasibility || 0) + Number(s.effectiveness || 0) + Number(s.dissemination || 0),
-        opinion: s.opinion || '',
-        submitted_at: s.submitted_at || new Date().toISOString()
-      }));
-
-      await saveCommitteeScoresBatchAsync(scores);
-
-      // 제안 평균 점수 및 마감/결정 상태 함께 갱신
-      if (body.proposal_id) {
-        const proposals = await getProposalsAsync(body.session_id);
-        const proposal = proposals.find(p => p.id === body.proposal_id);
-        if (proposal) {
-          const totalAvg = scores.length > 0 
-            ? Math.round(scores.reduce((acc, curr) => acc + curr.total_score, 0) / scores.length) 
-            : 0;
-          await updateProposalAsync({
-            ...proposal,
-            stage1_avg_score: totalAvg,
-            stage1_is_closed: body.stage1_is_closed ?? proposal.stage1_is_closed,
-            stage1_decision: body.stage1_decision ?? (totalAvg >= 60 ? '채택' : '미결'),
-            stage1_review_date: new Date().toISOString().split('T')[0],
-            status: '평가완료'
-          });
-        }
-      }
-
-      return NextResponse.json({ success: true, count: scores.length });
-    }
-
-    // 2) 단일 건 저장인 경우
-    const score: CommitteeScore = {
-      id: body.id || `cs-${Date.now()}`,
-      proposal_id: body.proposal_id,
-      session_id: body.session_id,
-      judge_name: body.judge_name,
-      judge_dept: body.judge_dept,
-      judge_title: body.judge_title || '제안1차심사자',
-      creativity: Number(body.creativity || 0),
-      feasibility: Number(body.feasibility || 0),
-      effectiveness: Number(body.effectiveness || 0),
-      dissemination: Number(body.dissemination || 0),
-      total_score: Number(body.creativity || 0) + Number(body.feasibility || 0) + Number(body.effectiveness || 0) + Number(body.dissemination || 0),
-      opinion: body.opinion || '',
-      submitted_at: new Date().toISOString()
-    };
-
-    await saveCommitteeScoreAsync(score);
-    return NextResponse.json({ success: true, score });
-  } catch (err: any) {
-    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+    const judgeName = access.role === 'judge' ? access.judge : body.judge_name;
+    const judge = DEFAULT_STAGE1_JUDGES.find(candidate => candidate.name === judgeName);
+    if (!judge) return accessDenied(access);
+    const score = toScore(body, judge, proposalId, sessionId, body.is_draft === true);
+    if (!score) return failure('항목별 점수 범위를 확인해 주세요.', 400);
+    await saveCommitteeScoresAsync([score]);
+    return NextResponse.json({ success: true, score }, { headers: noStore });
+  } catch (error) {
+    console.error('Stage 1 score write failed:', error);
+    return failure('점수 저장을 확인하지 못했습니다. 입력 내용을 유지한 채 다시 시도해 주세요.', 503);
   }
 }

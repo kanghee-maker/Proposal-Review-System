@@ -71,6 +71,7 @@ export interface CommitteeScore {
   total_score: number;   // 총점
   opinion: string;       // 의견
   submitted_at?: string;
+  is_draft?: boolean;
 }
 
 export interface EvaluationSession {

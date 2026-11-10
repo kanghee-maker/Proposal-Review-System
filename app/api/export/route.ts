@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { accessDenied, getAccess } from '@/lib/accessSession';
-import { getProposalsAsync, getEvaluationsAsync, getSessionsAsync, getCommitteeScoresAsync } from '@/lib/store';
+import { getProposalsAsync, getEvaluationsAsync, getSessionsAsync } from '@/lib/store';
+import { getCommitteeScoresAsync } from '@/lib/committeeScores';
 import { getProposalTransfers } from '@/lib/proposalTransfers';
 import { TransferHistoryEntry, DEFAULT_STAGE1_JUDGES, CommitteeJudge, Proposal } from '@/lib/types';
 import * as XLSX from 'xlsx';

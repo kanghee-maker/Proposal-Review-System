@@ -27,7 +27,7 @@ import {
   ArrowDownToLine,
   DownloadCloud
 } from 'lucide-react';
-import { Proposal, EvaluationSession, CommitteeScore, CommitteeJudge, DEFAULT_STAGE1_JUDGES } from '@/lib/types';
+import { Proposal, EvaluationSession, CommitteeScore, DEFAULT_STAGE1_JUDGES } from '@/lib/types';
 
 function AdminStage1Content() {
   const router = useRouter();
@@ -52,6 +52,10 @@ function AdminStage1Content() {
   // 심사내역보기 상세 모달 상태 (이미지 2)
   const [selectedProposal, setSelectedProposal] = useState<Proposal | null>(null);
   const [scores, setScores] = useState<CommitteeScore[]>([]);
+  const [roundScores, setRoundScores] = useState<CommitteeScore[] | null>(null);
+  const [scoreLoadError, setScoreLoadError] = useState(false);
+  const [modalScoreError, setModalScoreError] = useState(false);
+  const [editedJudges, setEditedJudges] = useState<Set<string>>(new Set());
   const [modalLoading, setModalLoading] = useState<boolean>(false);
   const [isEditingScores, setIsEditingScores] = useState<boolean>(false);
   const [savingScores, setSavingScores] = useState<boolean>(false);
@@ -122,6 +126,23 @@ function AdminStage1Content() {
     }
   }, [selectedSessionId]);
 
+  useEffect(() => {
+    if (!selectedSessionId) return;
+    const controller = new AbortController();
+    setRoundScores(null);
+    setScoreLoadError(false);
+    fetch(`/api/stage1/scores?session_id=${encodeURIComponent(selectedSessionId)}`, {
+      cache: 'no-store', signal: controller.signal
+    })
+      .then(response => {
+        if (!response.ok) throw new Error('심사위원 제출 현황 조회 실패');
+        return response.json();
+      })
+      .then(data => { if (!controller.signal.aborted) setRoundScores(data); })
+      .catch(() => { if (!controller.signal.aborted) setScoreLoadError(true); });
+    return () => controller.abort();
+  }, [selectedSessionId]);
+
   const handleSessionChange = (newSessionId: string) => {
     setSelectedSessionId(newSessionId);
     if (typeof window !== 'undefined') {
@@ -131,6 +152,18 @@ function AdminStage1Content() {
   };
 
   const currentSession = sessions.find(s => s.id === selectedSessionId);
+  const sessionJudges = currentSession?.judges;
+  const judges = sessionJudges?.length && !sessionJudges.some(j => j.name === '박민호')
+    ? sessionJudges : DEFAULT_STAGE1_JUDGES;
+  const submissionCounts = useMemo(() => {
+    const result = new Map<string, Set<string>>();
+    for (const score of roundScores || []) {
+      const proposalIds = result.get(score.judge_name) ?? new Set<string>();
+      proposalIds.add(score.proposal_id);
+      result.set(score.judge_name, proposalIds);
+    }
+    return result;
+  }, [roundScores]);
 
   // 부서 목록 추출 (필터용)
   const departments = useMemo(() => {
@@ -167,19 +200,17 @@ function AdminStage1Content() {
   // 3. 심사내역보기 모달 열기 (이미지 2 데이터 로드)
   const handleOpenDetailModal = async (proposal: Proposal) => {
     setSelectedProposal(proposal);
+    setScores([]);
+    setEditedJudges(new Set());
+    setModalScoreError(false);
     setIsClosed(proposal.stage1_is_closed ?? true);
     setFinalDecision(proposal.stage1_decision || '채택');
     setModalLoading(true);
 
     try {
-      const res = await fetch(`/api/stage1/scores?session_id=${encodeURIComponent(selectedSessionId)}&proposal_id=${encodeURIComponent(proposal.id)}`);
+      const res = await fetch(`/api/stage1/scores?session_id=${encodeURIComponent(selectedSessionId)}&proposal_id=${encodeURIComponent(proposal.id)}`, { cache: 'no-store' });
+      if (!res.ok) throw new Error('심사 점수 조회 실패');
       const existingScores: CommitteeScore[] = await res.json();
-
-      const hasLegacyJudges = currentSession?.judges?.some(j => j.name === '박민호');
-      const judges: CommitteeJudge[] =
-        currentSession?.judges && currentSession.judges.length > 0 && !hasLegacyJudges
-          ? currentSession.judges
-          : DEFAULT_STAGE1_JUDGES;
 
       // 12명 심사위원과 매핑
       const mappedScores: CommitteeScore[] = judges.map((judge, idx) => {
@@ -211,6 +242,7 @@ function AdminStage1Content() {
       setScores(mappedScores);
     } catch (err) {
       console.error(err);
+      setModalScoreError(true);
     } finally {
       setModalLoading(false);
     }
@@ -229,17 +261,19 @@ function AdminStage1Content() {
     }
     updated[index] = item;
     setScores(updated);
+    setEditedJudges(previous => new Set(previous).add(item.judge_name));
   };
 
   // 통계 평균 계산 (하단 평균 행)
   const averages = useMemo(() => {
-    if (scores.length === 0) return { c: 0, f: 0, e: 0, d: 0, total: 0 };
-    const n = scores.length;
-    const sumC = scores.reduce((acc, s) => acc + Number(s.creativity || 0), 0);
-    const sumF = scores.reduce((acc, s) => acc + Number(s.feasibility || 0), 0);
-    const sumE = scores.reduce((acc, s) => acc + Number(s.effectiveness || 0), 0);
-    const sumD = scores.reduce((acc, s) => acc + Number(s.dissemination || 0), 0);
-    const sumTotal = scores.reduce((acc, s) => acc + Number(s.total_score || 0), 0);
+    const scored = scores.filter(score => score.submitted_at || editedJudges.has(score.judge_name));
+    if (scored.length === 0) return { c: '—', f: '—', e: '—', d: '—', total: '—' };
+    const n = scored.length;
+    const sumC = scored.reduce((acc, s) => acc + Number(s.creativity || 0), 0);
+    const sumF = scored.reduce((acc, s) => acc + Number(s.feasibility || 0), 0);
+    const sumE = scored.reduce((acc, s) => acc + Number(s.effectiveness || 0), 0);
+    const sumD = scored.reduce((acc, s) => acc + Number(s.dissemination || 0), 0);
+    const sumTotal = scored.reduce((acc, s) => acc + Number(s.total_score || 0), 0);
     return {
       c: Math.round(sumC / n),
       f: Math.round(sumF / n),
@@ -247,7 +281,7 @@ function AdminStage1Content() {
       d: Math.round(sumD / n),
       total: Math.round(sumTotal / n)
     };
-  }, [scores]);
+  }, [scores, editedJudges]);
 
   // 점수 및 마감여부 저장
   const handleSaveScores = async () => {
@@ -261,16 +295,19 @@ function AdminStage1Content() {
         body: JSON.stringify({
           session_id: selectedSessionId,
           proposal_id: selectedProposal.id,
-          scores,
+          scores: scores.filter(score => editedJudges.has(score.judge_name)),
           stage1_is_closed: isClosed,
           stage1_decision: finalDecision
         })
       });
       const data = await res.json();
-      if (data.success) {
+      if (res.ok && data.success) {
         alert('1차 심사위원 다면 채점 결과가 성공적으로 저장되었습니다.');
         setIsEditingScores(false);
         fetchProposals(selectedSessionId);
+        void handleOpenDetailModal(selectedProposal);
+        const updated = await fetch(`/api/stage1/scores?session_id=${encodeURIComponent(selectedSessionId)}`, { cache: 'no-store' });
+        if (updated.ok) setRoundScores(await updated.json());
       } else {
         alert(data.error || '저장 실패');
       }
@@ -391,6 +428,26 @@ function AdminStage1Content() {
           <span>제안실행예정부서지정</span>
         </button>
       </div>
+
+      {selectedSessionId && (
+        <section className="rounded-2xl border border-sky-200 bg-white p-4">
+          <h3 className="font-bold text-slate-900">심사위원별 제출 현황</h3>
+          {scoreLoadError ? (
+            <p role="alert" className="mt-2 text-sm text-red-700">제출 현황을 불러오지 못했습니다. 새로고침해 주세요.</p>
+          ) : roundScores === null ? (
+            <p className="mt-2 text-sm text-slate-500">제출 현황을 불러오는 중입니다.</p>
+          ) : (
+            <ul className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+              {judges.map(judge => (
+                <li key={judge.name} className="flex justify-between gap-2 rounded-lg bg-sky-50 px-3 py-2 text-sm">
+                  <span>{judge.name}</span>
+                  <strong className="text-sky-900">{submissionCounts.get(judge.name)?.size ?? 0}건</strong>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      )}
 
       {/* 3. 과천도시공사 검색 필터 바 (이미지 1 상단 필터 영역 완벽 구현) */}
       <div className="bg-white border border-slate-200 p-4 sm:p-5 shadow-sm space-y-3 text-xs text-slate-700">
@@ -611,6 +668,7 @@ function AdminStage1Content() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setIsEditingScores(!isEditingScores)}
+                  disabled={modalLoading || modalScoreError}
                   className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition flex items-center gap-1.5 ${
                     isEditingScores
                       ? 'bg-amber-500 text-white border-amber-600'
@@ -628,6 +686,11 @@ function AdminStage1Content() {
                 </button>
               </div>
             </div>
+
+            {modalLoading && <p className="text-sm text-slate-500">심사 점수를 불러오는 중입니다.</p>}
+            {modalScoreError && (
+              <p role="alert" className="text-sm text-red-700">심사 점수를 불러오지 못했습니다. 창을 닫고 다시 열어 주세요.</p>
+            )}
 
             {/* 상단 제안 상세 정보 그리드 (이미지 2 상단 완벽 재현) */}
             <div className="bg-slate-50 rounded-xl p-3 sm:p-4 border border-slate-200 text-xs">
@@ -817,7 +880,7 @@ function AdminStage1Content() {
 
                         {/* 총점 */}
                         <td className="py-2 px-2 bg-amber-50 font-bold text-amber-900">
-                          {score.total_score}
+                          {score.submitted_at || editedJudges.has(score.judge_name) ? score.total_score : '—'}
                         </td>
 
                         {/* 의견 */}
