@@ -346,7 +346,7 @@ function Stage1EvaluatorDashboardContent() {
                         (창의성 {myScore.creativity} / 실현성 {myScore.feasibility} / 효과성 {myScore.effectiveness} / 전파성 {myScore.dissemination})
                       </span>
                       {myScore.opinion && myScore.opinion !== '-' && (
-                        <span className="text-slate-600 truncate max-w-md">
+                        <span className="text-slate-700 whitespace-pre-wrap break-words leading-relaxed">
                           &ldquo;{myScore.opinion}&rdquo;
                         </span>
                       )}

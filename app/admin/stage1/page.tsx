@@ -677,8 +677,8 @@ function AdminStage1Content() {
                           {p.board_no || `#${p.seq_no}`}
                         </td>
                         <td className="py-2.5 px-3 text-slate-600">{p.category || '-'}</td>
-                        <td className="py-2.5 px-4 text-left font-bold text-slate-900">
-                          <span className="line-clamp-1">{p.title}</span>
+                        <td className="py-2.5 px-4 text-left font-bold text-slate-900 whitespace-pre-wrap break-words">
+                          {p.title}
                         </td>
                         <td className="py-2.5 px-3 font-medium text-slate-700">
                           {p.assigned_department || '-'}
@@ -688,8 +688,8 @@ function AdminStage1Content() {
                         <td className="py-2.5 px-2 bg-sky-50/40 font-semibold text-slate-800">{score.effectiveness}</td>
                         <td className="py-2.5 px-2 bg-sky-50/40 font-semibold text-slate-800">{score.dissemination}</td>
                         <td className="py-2.5 px-2 bg-amber-50 font-extrabold text-amber-800">{score.total_score}점</td>
-                        <td className="py-2.5 px-3 text-left text-slate-600">
-                          <span className="line-clamp-1">{score.opinion && score.opinion !== '-' ? score.opinion : '-'}</span>
+                        <td className="py-2.5 px-3 text-left text-slate-700 whitespace-pre-wrap break-words leading-relaxed max-w-md">
+                          {score.opinion && score.opinion !== '-' ? score.opinion : '-'}
                         </td>
                         <td className="py-2 px-2">
                           <button
@@ -919,7 +919,7 @@ function AdminStage1Content() {
       {/* 5. 심사내역보기 상세 팝업 (첨부 이미지 2 완벽 구현) */}
       {selectedProposal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
-          <div className="bg-white rounded-2xl max-w-5xl w-full p-5 sm:p-6 shadow-2xl border border-slate-300 my-auto text-slate-800 space-y-4">
+          <div className="bg-white rounded-2xl max-w-6xl w-full p-5 sm:p-6 shadow-2xl border border-slate-300 my-auto text-slate-800 space-y-4">
             {/* Modal Header */}
             <div className="flex items-center justify-between pb-3 border-b border-slate-200">
               <div className="flex items-center gap-2">
@@ -966,7 +966,7 @@ function AdminStage1Content() {
                 </div>
                 <div className="sm:col-span-2">
                   <span className="text-slate-400 block text-[14px]">제안명</span>
-                  <strong className="text-slate-900 line-clamp-1">{selectedProposal.title}</strong>
+                  <strong className="text-slate-900 whitespace-pre-wrap break-words">{selectedProposal.title}</strong>
                 </div>
                 <div>
                   <span className="text-slate-400 block text-[14px]">제안일</span>
@@ -998,7 +998,7 @@ function AdminStage1Content() {
                 </div>
                 <div className="sm:col-span-2">
                   <span className="text-sky-700 font-bold block text-[14px]">0차 부서평가 검토결과</span>
-                  <span className="text-slate-700">
+                  <span className="text-slate-700 whitespace-pre-wrap break-words leading-relaxed">
                     <strong className="text-sky-700">[{selectedProposal.stage0_result || 'Yes'}]</strong> {selectedProposal.stage0_opinion || '부서 자체 타당성 검토 완료 및 1차 심사 추천'}
                   </span>
                 </div>
@@ -1053,7 +1053,7 @@ function AdminStage1Content() {
 
             {/* 심사위원별 다면 평가 테이블 (첨부 이미지 2 하단 테이블 완벽 복원) */}
             <div className="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-              <div className="max-h-80 overflow-y-auto">
+              <div className="max-h-[460px] overflow-y-auto">
                 <table className="w-full min-w-[920px] text-left text-xs border-collapse">
                   <thead className="sticky top-0 bg-sky-900 text-white text-[15px] font-semibold text-center z-10">
                     <tr>
@@ -1067,7 +1067,7 @@ function AdminStage1Content() {
                       <th className="whitespace-nowrap py-2 px-2 w-16 bg-sky-800">효과성</th>
                       <th className="whitespace-nowrap py-2 px-2 w-16 bg-sky-800">전파성</th>
                       <th className="whitespace-nowrap py-2 px-2 w-16 bg-amber-600 font-bold">총점</th>
-                      <th className="whitespace-nowrap py-2 px-4 text-left">의견</th>
+                      <th className="whitespace-nowrap py-2 px-4 text-left min-w-[240px]">위원 검토의견</th>
                       <th className="whitespace-nowrap py-2 px-2 w-40">제출/초기화 관리</th>
                     </tr>
                   </thead>
@@ -1168,16 +1168,18 @@ function AdminStage1Content() {
                         </td>
 
                         {/* 의견 */}
-                        <td className="py-1.5 px-3 text-left">
+                        <td className="py-2 px-3 text-left align-middle">
                           {isEditingScores ? (
-                            <input
-                              type="text"
+                            <textarea
+                              rows={2}
                               value={score.opinion}
                               onChange={(e) => handleScoreChange(idx, 'opinion', e.target.value)}
-                              className="w-full bg-white border border-slate-300 rounded px-2 py-1 text-xs"
+                              className="w-full bg-white border border-slate-300 rounded px-2 py-1 text-xs leading-relaxed"
                             />
                           ) : (
-                            <span className="text-slate-600 line-clamp-1">{score.opinion || '-'}</span>
+                            <div className="text-slate-700 whitespace-pre-wrap break-words leading-relaxed">
+                              {score.opinion || '-'}
+                            </div>
                           )}
                         </td>
 
