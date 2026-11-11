@@ -155,6 +155,8 @@ function AdminStage1Content() {
   const sessionJudges = currentSession?.judges;
   const judges = sessionJudges?.length && !sessionJudges.some(j => j.name === '박민호')
     ? sessionJudges : DEFAULT_STAGE1_JUDGES;
+  const selectedJudgeFilter = searchParams.get('judge') || '';
+
   const submissionCounts = useMemo(() => {
     const result = new Map<string, Set<string>>();
     for (const score of roundScores || []) {
@@ -164,6 +166,28 @@ function AdminStage1Content() {
     }
     return result;
   }, [roundScores]);
+
+  // 제안별 완료 심사위원 맵 (proposal_id -> Map<judge_name, CommitteeScore>)
+  const proposalJudgeScoresMap = useMemo(() => {
+    const validJudgeNames = new Set(judges.map(j => j.name));
+    const map = new Map<string, Map<string, CommitteeScore>>();
+    for (const score of roundScores || []) {
+      if (score.is_draft || !validJudgeNames.has(score.judge_name)) continue;
+      const byJudge = map.get(score.proposal_id) ?? new Map<string, CommitteeScore>();
+      byJudge.set(score.judge_name, score);
+      map.set(score.proposal_id, byJudge);
+    }
+    return map;
+  }, [roundScores, judges]);
+
+  const totalJudgesCount = judges.length || 12;
+
+  const getProposalProgress = (proposalId: string) => {
+    const count = proposalJudgeScoresMap.get(proposalId)?.size ?? 0;
+    const status: '심사완료' | '심사중' | '심사대기' =
+      count >= totalJudgesCount ? '심사완료' : count > 0 ? '심사중' : '심사대기';
+    return { count, total: totalJudgesCount, status };
+  };
 
   // 부서 목록 추출 (필터용)
   const departments = useMemo(() => {
@@ -181,10 +205,16 @@ function AdminStage1Content() {
       if (filterType !== 'ALL' && p.proposal_type !== filterType) return false;
       if (filterDept !== 'ALL' && p.assigned_department !== filterDept && p.proposer_department !== filterDept) return false;
       if (filterStatus !== 'ALL') {
-        const pStatus = p.stage1_decision || p.status;
-        if (filterStatus === '심사완료' && p.stage1_is_closed) return true;
-        if (filterStatus === '심사대기' && !p.stage1_is_closed) return true;
-        if (filterStatus !== pStatus) return false;
+        const { status } = getProposalProgress(p.id);
+        if (filterStatus === '심사완료') {
+          if (status !== '심사완료') return false;
+        } else if (filterStatus === '심사중' || filterStatus === '심사진행') {
+          if (status !== '심사중') return false;
+        } else if (filterStatus === '심사대기') {
+          if (status !== '심사대기') return false;
+        } else if (filterStatus !== (p.stage1_decision || status)) {
+          return false;
+        }
       }
       if (searchKeyword.trim()) {
         const kw = searchKeyword.toLowerCase();
@@ -195,7 +225,19 @@ function AdminStage1Content() {
       }
       return true;
     });
-  }, [proposals, filterType, filterDept, filterStatus, searchKeyword]);
+  }, [proposals, filterType, filterDept, filterStatus, searchKeyword, proposalJudgeScoresMap, totalJudgesCount]);
+
+  // 특정 심사위원이 평가완료한 제안 목록 (심사위원 제출건수 클릭 시 화면용)
+  const selectedJudgeInfo = judges.find(j => j.name === selectedJudgeFilter);
+  const judgeCompletedItems = useMemo(() => {
+    if (!selectedJudgeFilter) return [];
+    return proposals
+      .map(p => {
+        const judgeScore = proposalJudgeScoresMap.get(p.id)?.get(selectedJudgeFilter);
+        return judgeScore ? { proposal: p, score: judgeScore } : null;
+      })
+      .filter((item): item is { proposal: Proposal; score: CommitteeScore } => item !== null);
+  }, [proposals, proposalJudgeScoresMap, selectedJudgeFilter]);
 
   // 3. 심사내역보기 모달 열기 (이미지 2 데이터 로드)
   const handleOpenDetailModal = async (proposal: Proposal) => {
@@ -503,24 +545,158 @@ function AdminStage1Content() {
 
       {selectedSessionId && (
         <section className="rounded-2xl border border-sky-200 bg-white p-4">
-          <h3 className="font-bold text-slate-900">심사위원별 제출 현황</h3>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h3 className="font-bold text-slate-900">심사위원별 제출 현황</h3>
+            <span className="text-xs text-slate-500">
+              * 제출 건수(숫자)를 클릭하면 해당 심사위원이 평가 완료한 제안 목록 화면으로 이동합니다.
+            </span>
+          </div>
           {scoreLoadError ? (
             <p role="alert" className="mt-2 text-sm text-red-700">제출 현황을 불러오지 못했습니다. 새로고침해 주세요.</p>
           ) : roundScores === null ? (
             <p className="mt-2 text-sm text-slate-500">제출 현황을 불러오는 중입니다.</p>
           ) : (
             <ul className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
-              {judges.map(judge => (
-                <li key={judge.name} className="flex justify-between gap-2 rounded-lg bg-sky-50 px-3 py-2 text-sm">
-                  <span>{judge.name}</span>
-                  <strong className="text-sky-900">{submissionCounts.get(judge.name)?.size ?? 0}건</strong>
-                </li>
-              ))}
+              {judges.map(judge => {
+                const count = submissionCounts.get(judge.name)?.size ?? 0;
+                const isSelected = selectedJudgeFilter === judge.name;
+                return (
+                  <li
+                    key={judge.name}
+                    className={`flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm border transition ${
+                      isSelected
+                        ? 'bg-amber-50 border-amber-400 ring-2 ring-amber-300/50'
+                        : 'bg-sky-50 border-sky-100 hover:border-sky-300'
+                    }`}
+                  >
+                    <span className="font-medium text-slate-800">{judge.name}</span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        router.push(
+                          `/admin/stage1?session_id=${encodeURIComponent(selectedSessionId)}&judge=${encodeURIComponent(judge.name)}`
+                        )
+                      }
+                      className="px-2 py-0.5 rounded-md bg-white hover:bg-amber-500 text-sky-900 hover:text-white border border-sky-200 hover:border-amber-600 font-extrabold text-xs shadow-2xs transition cursor-pointer underline decoration-sky-400 hover:no-underline underline-offset-2"
+                      title={`${judge.name} 위원이 평가 완료한 제안 모아보기`}
+                    >
+                      {count}건
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </section>
       )}
 
+      {selectedJudgeFilter ? (
+        /* 심사위원별 평가완료 제안 전용 화면 */
+        <div className="bg-white rounded-2xl border-2 border-amber-300 shadow-sm overflow-hidden">
+          <div className="bg-gradient-to-r from-amber-50 via-white to-orange-50/60 p-4 sm:p-5 border-b border-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300 text-xs font-bold mb-1.5">
+                <User className="w-3.5 h-3.5 text-amber-700" />
+                <span>심사위원별 평가완료 제안 모아보기</span>
+              </div>
+              <h3 className="text-base sm:text-lg font-extrabold text-slate-900">
+                [{selectedJudgeInfo?.dept || '심사위원'}] {selectedJudgeInfo?.title ? `${selectedJudgeInfo.title} ` : ''}
+                <span className="text-amber-700">{selectedJudgeFilter} 위원</span> 평가완료 제안 목록
+                <span className="ml-2 text-sm font-bold text-slate-600">
+                  ({judgeCompletedItems.length}건 완료 / 전체 {proposals.length}건)
+                </span>
+              </h3>
+            </div>
+            <button
+              type="button"
+              onClick={() => router.push(`/admin/stage1?session_id=${encodeURIComponent(selectedSessionId)}`)}
+              className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-sm transition self-start sm:self-center whitespace-nowrap"
+            >
+              ← 전체 제안심사(1차) 목록으로 돌아가기
+            </button>
+          </div>
+
+          {judgeCompletedItems.length === 0 ? (
+            <div className="p-12 text-center text-xs text-slate-500">
+              <p className="font-bold text-slate-700 text-sm mb-1">
+                {selectedJudgeFilter} 위원이 아직 최종 제출(평가완료)한 제안이 없습니다.
+              </p>
+              <p className="text-slate-400">위원이 1차 제안심사 채점을 제출하면 이곳에 모아 표시됩니다.</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[980px] text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-slate-100 border-b border-slate-200 text-slate-700 text-[14px] font-bold whitespace-nowrap text-center">
+                    <th className="py-2.5 px-3 w-12">번호</th>
+                    <th className="py-2.5 px-3 w-24">제안번호</th>
+                    <th className="py-2.5 px-3 w-24">분야</th>
+                    <th className="py-2.5 px-4 text-left">제안 제목</th>
+                    <th className="py-2.5 px-3 w-28">실행부서</th>
+                    <th className="py-2.5 px-2 w-16 bg-sky-50 text-sky-900">창의성(30)</th>
+                    <th className="py-2.5 px-2 w-16 bg-sky-50 text-sky-900">실현성(30)</th>
+                    <th className="py-2.5 px-2 w-16 bg-sky-50 text-sky-900">효과성(30)</th>
+                    <th className="py-2.5 px-2 w-16 bg-sky-50 text-sky-900">전파성(10)</th>
+                    <th className="py-2.5 px-2 w-20 bg-amber-100 text-amber-950">위원 총점</th>
+                    <th className="py-2.5 px-3 text-left min-w-[180px]">위원 검토의견</th>
+                    <th className="py-2.5 px-3 w-28">전체 진행상태</th>
+                    <th className="py-2.5 px-3 w-28">상세보기</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-[14px]">
+                  {judgeCompletedItems.map(({ proposal: p, score }, idx) => {
+                    const prog = getProposalProgress(p.id);
+                    return (
+                      <tr key={p.id} className="hover:bg-amber-50/30 transition text-center text-slate-700">
+                        <td className="py-2.5 px-3 font-mono text-slate-400">{idx + 1}</td>
+                        <td className="py-2.5 px-3 font-mono font-semibold text-slate-800">
+                          {p.board_no || `#${p.seq_no}`}
+                        </td>
+                        <td className="py-2.5 px-3 text-slate-600">{p.category || '-'}</td>
+                        <td className="py-2.5 px-4 text-left font-bold text-slate-900">
+                          <span className="line-clamp-1">{p.title}</span>
+                        </td>
+                        <td className="py-2.5 px-3 font-medium text-slate-700">
+                          {p.assigned_department || '-'}
+                        </td>
+                        <td className="py-2.5 px-2 bg-sky-50/40 font-semibold text-slate-800">{score.creativity}</td>
+                        <td className="py-2.5 px-2 bg-sky-50/40 font-semibold text-slate-800">{score.feasibility}</td>
+                        <td className="py-2.5 px-2 bg-sky-50/40 font-semibold text-slate-800">{score.effectiveness}</td>
+                        <td className="py-2.5 px-2 bg-sky-50/40 font-semibold text-slate-800">{score.dissemination}</td>
+                        <td className="py-2.5 px-2 bg-amber-50 font-extrabold text-amber-800">{score.total_score}점</td>
+                        <td className="py-2.5 px-3 text-left text-slate-600">
+                          <span className="line-clamp-1">{score.opinion && score.opinion !== '-' ? score.opinion : '-'}</span>
+                        </td>
+                        <td className="py-2.5 px-3">
+                          <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold whitespace-nowrap ${
+                            prog.status === '심사완료'
+                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                              : prog.status === '심사중'
+                                ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                                : 'bg-slate-100 text-slate-500 border border-slate-200'
+                          }`}>
+                            {prog.status} ({prog.count}/{prog.total})
+                          </span>
+                        </td>
+                        <td className="py-2 px-2">
+                          <button
+                            type="button"
+                            onClick={() => handleOpenDetailModal(p)}
+                            className="w-full py-1.5 px-2.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs shadow-xs transition"
+                          >
+                            심사내역보기
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      ) : (
+      <>
       {/* 3. 과천도시공사 검색 필터 바 (이미지 1 상단 필터 영역 완벽 구현) */}
       <div className="bg-white border border-slate-200 p-4 sm:p-5 shadow-sm space-y-3 text-xs text-slate-700">
         <div className="flex items-center justify-between border-b border-slate-100 pb-2">
@@ -593,13 +769,9 @@ function AdminStage1Content() {
               className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 font-semibold"
             >
               <option value="ALL">전체</option>
-              <option value="심사대기">심사대기</option>
-              <option value="심사완료">심사완료</option>
-              <option value="계획서등록">계획서등록</option>
-              <option value="실행중">실행중</option>
-              <option value="실행완료">실행완료</option>
-              <option value="실행부서반려">실행부서반려</option>
-              <option value="심사진행">심사진행</option>
+              <option value="심사대기">심사대기 (0/{totalJudgesCount})</option>
+              <option value="심사중">심사중 (1~{totalJudgesCount - 1}/{totalJudgesCount})</option>
+              <option value="심사완료">심사완료 ({totalJudgesCount}/{totalJudgesCount})</option>
             </select>
           </div>
         </div>
@@ -657,13 +829,14 @@ function AdminStage1Content() {
                     심사내역보기
                   </th>
                   <th className="whitespace-nowrap py-2.5 px-3 w-24">심사일자</th>
-                  <th className="whitespace-nowrap py-2.5 px-3 w-20">진행상태</th>
+                  <th className="whitespace-nowrap py-2.5 px-3 w-32">진행상태 (완료/전체)</th>
                   <th className="whitespace-nowrap py-2.5 px-3 w-20">심사결과</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-[15px]">
                 {filteredProposals.map((p, idx) => {
-                  const isDone = Boolean(p.stage1_is_closed);
+                  const prog = getProposalProgress(p.id);
+                  const isDone = prog.status === '심사완료';
                   return (
                     <tr
                       key={p.id}
@@ -700,15 +873,18 @@ function AdminStage1Content() {
                         </button>
                       </td>
                       <td className="py-2.5 px-3 text-slate-500 font-mono">
-                        {p.stage1_review_date || (isDone ? '2025/12/20' : '-')}
+                        {p.stage1_review_date || (isDone ? new Date().toISOString().split('T')[0] : '-')}
                       </td>
                       <td className="py-2.5 px-3">
-                        <span className={`px-2 py-0.5 rounded-full text-[14px] font-bold ${
-                          isDone
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[14px] font-bold whitespace-nowrap ${
+                          prog.status === '심사완료'
                             ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                            : 'bg-slate-100 text-slate-500 border border-slate-200'
+                            : prog.status === '심사중'
+                              ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                              : 'bg-slate-100 text-slate-500 border border-slate-200'
                         }`}>
-                          {isDone ? '심사완료' : '심사대기'}
+                          <span>{prog.status}</span>
+                          <span className="font-mono text-xs opacity-90">({prog.count}/{prog.total})</span>
                         </span>
                       </td>
                       <td className="py-2.5 px-3 font-bold">
@@ -724,6 +900,8 @@ function AdminStage1Content() {
           </div>
         )}
       </div>
+      </>
+      )}
 
       {/* 5. 심사내역보기 상세 팝업 (첨부 이미지 2 완벽 구현) */}
       {selectedProposal && (
