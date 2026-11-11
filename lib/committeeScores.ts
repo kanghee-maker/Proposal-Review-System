@@ -46,12 +46,20 @@ export async function saveCommitteeScoresAsync(scores: CommitteeScore[]) {
   if (error || data?.length !== records.length) throw error ?? new Error('Stage 1 score write was not confirmed');
 
   // 최종 제출 시 기존 임시저장 레코드 정리 / 임시저장 전환 시 기존 최종 제출 레코드 정리
-  const oppositeIds = scores.map(score =>
-    prefix + JSON.stringify([score.session_id, score.proposal_id, score.judge_name, !Boolean(score.is_draft)])
+  // 주의: id에 JSON 배열 문자열(", , 포함)이 들어가므로 PostgREST .in('id', ...) 대신 컬럼 조건(.eq)으로 삭제
+  await Promise.all(
+    scores.map(async score => {
+      const { error: delError } = await supabase
+        .from('evaluations')
+        .delete()
+        .like('id', prefix + '%')
+        .eq('session_id', score.session_id)
+        .eq('proposal_id', score.proposal_id)
+        .eq('evaluator_name', score.judge_name)
+        .eq('is_submitted', Boolean(score.is_draft));
+      if (delError) throw delError;
+    })
   );
-  if (oppositeIds.length > 0) {
-    await supabase.from('evaluations').delete().in('id', oppositeIds);
-  }
 }
 
 export async function unsubmitCommitteeScoresAsync(
@@ -92,17 +100,17 @@ export async function resetCommitteeScoresAsync(
   judgeNames: string[]
 ): Promise<void> {
   if (judgeNames.length === 0) return;
-  const idsToDelete: string[] = [];
-  for (const judgeName of judgeNames) {
-    idsToDelete.push(
-      prefix + JSON.stringify([sessionId, proposalId, judgeName, false]),
-      prefix + JSON.stringify([sessionId, proposalId, judgeName, true])
-    );
-  }
-  const { error } = await supabase
-    .from('evaluations')
-    .delete()
-    .in('id', idsToDelete);
-  if (error) throw error;
+  await Promise.all(
+    judgeNames.map(async judgeName => {
+      const { error } = await supabase
+        .from('evaluations')
+        .delete()
+        .like('id', prefix + '%')
+        .eq('session_id', sessionId)
+        .eq('proposal_id', proposalId)
+        .eq('evaluator_name', judgeName);
+      if (error) throw error;
+    })
+  );
 }
 
