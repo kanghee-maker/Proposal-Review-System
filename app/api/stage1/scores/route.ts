@@ -87,11 +87,12 @@ export async function POST(req: Request) {
       const totalAvg = saved.length
         ? Math.round(saved.reduce((sum, s) => sum + s.total_score, 0) / saved.length)
         : undefined;
+      const under50Count = saved.filter(s => Number(s.total_score) < 50).length;
       await updateProposalAsync({
         ...proposal,
         stage1_avg_score: totalAvg,
         stage1_is_closed: false,
-        stage1_decision: '심사대기',
+        stage1_decision: under50Count >= 3 ? '과락 불채택' : '심사대기',
         stage1_review_date: undefined,
         status: '평가작성중'
       });
@@ -114,14 +115,19 @@ export async function POST(req: Request) {
 
       const saved = await getCommitteeScoresAsync(sessionId, proposalId);
       const totalAvg = saved.length ? Math.round(saved.reduce((sum, score) => sum + score.total_score, 0) / saved.length) : 0;
+      const under50Count = saved.filter(s => Number(s.total_score) < 50).length;
       const isClosedNext = body.stage1_is_closed ?? proposal.stage1_is_closed ?? false;
+      const autoDecision = under50Count >= 3 ? '과락 불채택' : (totalAvg >= 50 ? '채택' : '불채택');
+      const nextDecision = under50Count >= 3
+        ? '과락 불채택'
+        : isClosedNext
+          ? (body.stage1_decision ?? autoDecision)
+          : (body.stage1_decision && body.stage1_decision !== '심사대기' ? body.stage1_decision : '심사대기');
       await updateProposalAsync({
         ...proposal,
         stage1_avg_score: totalAvg,
         stage1_is_closed: isClosedNext,
-        stage1_decision: isClosedNext
-          ? (body.stage1_decision ?? (totalAvg >= 50 ? '채택' : '미결'))
-          : (body.stage1_decision === '미결' || body.stage1_decision === '심사대기' ? body.stage1_decision : '심사대기'),
+        stage1_decision: nextDecision,
         stage1_review_date: isClosedNext ? new Date().toISOString().split('T')[0] : undefined,
         status: isClosedNext ? '평가완료' : '평가작성중'
       });
@@ -134,6 +140,25 @@ export async function POST(req: Request) {
     const score = toScore(body, judge, proposalId, sessionId, body.is_draft === true);
     if (!score) return failure('항목별 점수 범위를 확인해 주세요.', 400);
     await saveCommitteeScoresAsync([score]);
+
+    const saved = await getCommitteeScoresAsync(sessionId, proposalId);
+    const totalAvg = saved.length
+      ? Math.round(saved.reduce((sum, s) => sum + s.total_score, 0) / saved.length)
+      : undefined;
+    const under50Count = saved.filter(s => Number(s.total_score) < 50).length;
+    if (under50Count >= 3 || proposal.stage1_decision === '과락 불채택' || saved.length > 0) {
+      const nextDecision = under50Count >= 3
+        ? '과락 불채택'
+        : proposal.stage1_decision === '과락 불채택'
+          ? '심사대기'
+          : proposal.stage1_decision;
+      await updateProposalAsync({
+        ...proposal,
+        stage1_avg_score: totalAvg,
+        stage1_decision: nextDecision
+      });
+    }
+
     return NextResponse.json({ success: true, score }, { headers: noStore });
   } catch (error) {
     console.error('Stage 1 score write failed:', error);

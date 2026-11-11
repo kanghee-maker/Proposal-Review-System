@@ -149,7 +149,7 @@ export interface Proposal {
   // 1차 제안심사 전용 정보
   contribution_rate?: number; // 기여율 (%) - 기본 100
   stage1_is_closed?: boolean; // 1차마감여부 (YES/NO)
-  stage1_decision?: '미결' | '채택' | '불채택' | '심사중' | string; // 심사결과
+  stage1_decision?: '미결' | '채택' | '조건부채택' | '불채택' | '과락 불채택' | '심사중' | string; // 심사결과
   stage1_avg_score?: number; // 심사위원 평균 총점
   stage1_review_date?: string; // 심사일자
 }

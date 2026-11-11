@@ -189,6 +189,23 @@ function AdminStage1Content() {
     return { count, total: totalJudgesCount, status };
   };
 
+  const getProposalDecision = (proposal: Proposal) => {
+    const judgeScores = Array.from(proposalJudgeScoresMap.get(proposal.id)?.values() ?? []);
+    const under50Count = judgeScores.filter(s => Number(s.total_score) < 50).length;
+    if (under50Count >= 3) {
+      return { decision: '과락 불채택', under50Count };
+    }
+    const prog = getProposalProgress(proposal.id);
+    if (proposal.stage1_decision && proposal.stage1_decision !== '심사대기' && proposal.stage1_decision !== '과락 불채택') {
+      return { decision: proposal.stage1_decision, under50Count };
+    }
+    if (prog.status === '심사완료' && judgeScores.length > 0) {
+      const avg = judgeScores.reduce((sum, s) => sum + Number(s.total_score || 0), 0) / judgeScores.length;
+      return { decision: avg >= 50 ? '채택' : '불채택', under50Count };
+    }
+    return { decision: '미결', under50Count };
+  };
+
   // 부서 목록 추출 (필터용)
   const departments = useMemo(() => {
     const set = new Set<string>();
@@ -283,6 +300,19 @@ function AdminStage1Content() {
       });
 
       setScores(mappedScores);
+
+      const scoredRows = mappedScores.filter(s => Boolean(s.submitted_at && !s.is_draft));
+      const under50Count = scoredRows.filter(s => Number(s.total_score) < 50).length;
+      if (under50Count >= 3) {
+        setFinalDecision('과락 불채택');
+      } else if (proposal.stage1_decision && proposal.stage1_decision !== '심사대기' && proposal.stage1_decision !== '과락 불채택') {
+        setFinalDecision(proposal.stage1_decision);
+      } else if (scoredRows.length >= totalJudgesCount) {
+        const avg = scoredRows.reduce((acc, s) => acc + Number(s.total_score || 0), 0) / scoredRows.length;
+        setFinalDecision(avg >= 50 ? '채택' : '불채택');
+      } else {
+        setFinalDecision('채택');
+      }
     } catch (err) {
       console.error(err);
       setModalScoreError(true);
@@ -304,7 +334,17 @@ function AdminStage1Content() {
     }
     updated[index] = item;
     setScores(updated);
-    setEditedJudges(previous => new Set(previous).add(item.judge_name));
+    const nextEdited = new Set(editedJudges).add(item.judge_name);
+    setEditedJudges(nextEdited);
+
+    const scored = updated.filter(s => (s.submitted_at && !s.is_draft) || nextEdited.has(s.judge_name));
+    const under50Count = scored.filter(s => Number(s.total_score) < 50).length;
+    if (under50Count >= 3) {
+      setFinalDecision('과락 불채택');
+    } else if (finalDecision === '과락 불채택') {
+      const avg = scored.length > 0 ? scored.reduce((acc, s) => acc + Number(s.total_score || 0), 0) / scored.length : 50;
+      setFinalDecision(avg >= 50 ? '채택' : '불채택');
+    }
   };
 
   // 통계 평균 계산 (하단 평균 행)
@@ -324,6 +364,11 @@ function AdminStage1Content() {
       d: Math.round(sumD / n),
       total: Math.round(sumTotal / n)
     };
+  }, [scores, editedJudges]);
+
+  const modalUnder50Count = useMemo(() => {
+    const scored = scores.filter(score => (score.submitted_at && !score.is_draft) || editedJudges.has(score.judge_name));
+    return scored.filter(s => Number(s.total_score) < 50).length;
   }, [scores, editedJudges]);
 
   // 점수 및 마감여부 저장
@@ -843,13 +888,14 @@ function AdminStage1Content() {
                   </th>
                   <th className="whitespace-nowrap py-2.5 px-3 w-24">심사일자</th>
                   <th className="whitespace-nowrap py-2.5 px-3 w-32">진행상태 (완료/전체)</th>
-                  <th className="whitespace-nowrap py-2.5 px-3 w-20">심사결과</th>
+                  <th className="whitespace-nowrap py-2.5 px-3 w-24">심사결과</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-[15px]">
                 {filteredProposals.map((p, idx) => {
                   const prog = getProposalProgress(p.id);
                   const isDone = prog.status === '심사완료';
+                  const { decision } = getProposalDecision(p);
                   return (
                     <tr
                       key={p.id}
@@ -900,10 +946,18 @@ function AdminStage1Content() {
                           <span className="font-mono text-xs opacity-90">({prog.count}/{prog.total})</span>
                         </span>
                       </td>
-                      <td className="py-2.5 px-3 font-bold">
-                        <span className={p.stage1_decision === '채택' ? 'text-sky-700' : 'text-slate-500'}>
-                          {p.stage1_decision || (isDone ? '채택' : '미결')}
-                        </span>
+                      <td className="py-2.5 px-3 font-bold whitespace-nowrap">
+                        {decision === '과락 불채택' ? (
+                          <span className="px-2 py-0.5 rounded-md bg-rose-50 text-rose-700 border border-rose-200 text-xs font-extrabold">
+                            과락 불채택
+                          </span>
+                        ) : decision === '불채택' ? (
+                          <span className="text-rose-600">{decision}</span>
+                        ) : decision === '채택' || decision === '조건부채택' ? (
+                          <span className="text-sky-700">{decision}</span>
+                        ) : (
+                          <span className="text-slate-500">{decision}</span>
+                        )}
                       </td>
                     </tr>
                   );
@@ -1036,16 +1090,26 @@ function AdminStage1Content() {
                 </span>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                {modalUnder50Count >= 3 && (
+                  <span className="px-2.5 py-1 rounded-lg bg-rose-100 text-rose-800 border border-rose-300 font-bold text-xs">
+                    ⚠️ 50점 미만 평가자 {modalUnder50Count}명 (과락 불채택 자동 지정)
+                  </span>
+                )}
                 <span className="font-bold text-slate-700">최종 판정:</span>
                 <select
                   value={finalDecision}
                   onChange={(e) => setFinalDecision(e.target.value)}
-                  className="bg-white border border-slate-300 font-bold text-xs rounded-lg px-2.5 py-1 text-sky-800"
+                  className={`bg-white border font-bold text-xs rounded-lg px-2.5 py-1 ${
+                    finalDecision === '과락 불채택'
+                      ? 'border-rose-400 text-rose-700 bg-rose-50'
+                      : 'border-slate-300 text-sky-800'
+                  }`}
                 >
                   <option value="채택">채택</option>
                   <option value="조건부채택">조건부채택</option>
                   <option value="불채택">불채택</option>
+                  <option value="과락 불채택">과락 불채택</option>
                   <option value="미결">미결</option>
                 </select>
               </div>
@@ -1247,7 +1311,7 @@ function AdminStage1Content() {
             {/* Footer Buttons */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
               <span className="text-[15px] text-slate-500">
-                * 심사위원 총점 평균 50점 이상 시 채택 (단, 50점 미만 부여 위원이 3명 이상이면 불채택)
+                * 심사위원 총점 평균 50점 이상 시 채택 (단, 50점 미만 부여 위원이 3명 이상이면 과락 불채택 자동 지정)
               </span>
 
               <div className="flex flex-wrap items-center gap-2">
