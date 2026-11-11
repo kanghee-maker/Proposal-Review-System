@@ -208,13 +208,14 @@ function AdminStage1Content() {
     setModalLoading(true);
 
     try {
-      const res = await fetch(`/api/stage1/scores?session_id=${encodeURIComponent(selectedSessionId)}&proposal_id=${encodeURIComponent(proposal.id)}`, { cache: 'no-store' });
+      const res = await fetch(`/api/stage1/scores?session_id=${encodeURIComponent(selectedSessionId)}&proposal_id=${encodeURIComponent(proposal.id)}&include_draft=1`, { cache: 'no-store' });
       if (!res.ok) throw new Error('심사 점수 조회 실패');
       const existingScores: CommitteeScore[] = await res.json();
 
-      // 12명 심사위원과 매핑
+      // 12명 심사위원과 매핑 (제출본 우선, 임시저장본 포함)
       const mappedScores: CommitteeScore[] = judges.map((judge, idx) => {
-        const found = existingScores.find(s => s.judge_name === judge.name);
+        const candidates = existingScores.filter(s => s.judge_name === judge.name);
+        const found = candidates.find(s => !s.is_draft) || candidates[0];
         if (found) {
           return {
             ...found,
@@ -305,7 +306,7 @@ function AdminStage1Content() {
         alert('1차 심사위원 다면 채점 결과가 성공적으로 저장되었습니다.');
         setIsEditingScores(false);
         fetchProposals(selectedSessionId);
-        void handleOpenDetailModal(selectedProposal);
+        void handleOpenDetailModal({ ...selectedProposal, stage1_is_closed: isClosed, stage1_decision: finalDecision });
         const updated = await fetch(`/api/stage1/scores?session_id=${encodeURIComponent(selectedSessionId)}`, { cache: 'no-store' });
         if (updated.ok) setRoundScores(await updated.json());
       } else {
@@ -313,6 +314,77 @@ function AdminStage1Content() {
       }
     } catch (err) {
       alert('서버 저장 중 오류가 발생했습니다.');
+    } finally {
+      setSavingScores(false);
+    }
+  };
+
+  // 관리자: 특정 심사위원 제출 취소 처리 (점수·의견은 임시저장으로 보존)
+  const handleAdminCancelJudgeSubmit = async (judgeName: string) => {
+    if (!selectedProposal || !selectedSessionId) return;
+    if (!window.confirm(`[${judgeName} 위원]의 최종 제출을 취소하고 임시저장(작성중) 상태로 전환하시겠습니까?\n(입력된 점수와 의견 데이터는 그대로 보존됩니다.)`)) {
+      return;
+    }
+    setSavingScores(true);
+    try {
+      const res = await fetch('/api/stage1/scores', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'unsubmit',
+          session_id: selectedSessionId,
+          proposal_id: selectedProposal.id,
+          judge_name: judgeName
+        })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setScores(prev => prev.map(s => s.judge_name === judgeName ? { ...s, is_draft: true } : s));
+        const updated = await fetch(`/api/stage1/scores?session_id=${encodeURIComponent(selectedSessionId)}`, { cache: 'no-store' });
+        if (updated.ok) setRoundScores(await updated.json());
+      } else {
+        alert(data.error || '제출 취소 처리 실패');
+      }
+    } catch {
+      alert('서버 통신 중 오류가 발생했습니다.');
+    } finally {
+      setSavingScores(false);
+    }
+  };
+
+  // 관리자: 제안 건 전체 제출/마감 취소 처리 (점수·의견 데이터는 임시저장으로 보존하고 심사대기로 전환)
+  const handleAdminCancelProposalSubmit = async (targetProp?: Proposal) => {
+    const prop = targetProp || selectedProposal;
+    if (!prop || !selectedSessionId) return;
+    if (!window.confirm(`해당 제안의 완료(제출) 상태를 취소하고 '심사대기(임시저장)' 상태로 되돌리시겠습니까?\n(심사위원들이 입력한 점수와 의견 데이터는 모두 그대로 유지됩니다.)`)) {
+      return;
+    }
+    setSavingScores(true);
+    try {
+      const res = await fetch('/api/stage1/scores', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'unsubmit',
+          session_id: selectedSessionId,
+          proposal_id: prop.id,
+          reopen_proposal: true
+        })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setIsClosed(false);
+        setFinalDecision('심사대기');
+        setScores(prev => prev.map(s => s.submitted_at ? { ...s, is_draft: true } : s));
+        fetchProposals(selectedSessionId);
+        const updated = await fetch(`/api/stage1/scores?session_id=${encodeURIComponent(selectedSessionId)}`, { cache: 'no-store' });
+        if (updated.ok) setRoundScores(await updated.json());
+        alert('제출 취소 처리가 완료되었습니다. 입력된 점수는 임시저장 상태로 보존됩니다.');
+      } else {
+        alert(data.error || '제출 취소 처리 실패');
+      }
+    } catch {
+      alert('서버 통신 중 오류가 발생했습니다.');
     } finally {
       setSavingScores(false);
     }
@@ -591,7 +663,7 @@ function AdminStage1Content() {
               </thead>
               <tbody className="divide-y divide-slate-100 text-[15px]">
                 {filteredProposals.map((p, idx) => {
-                  const isDone = p.stage1_is_closed || p.status === '평가완료';
+                  const isDone = Boolean(p.stage1_is_closed);
                   return (
                     <tr
                       key={p.id}
@@ -798,21 +870,42 @@ function AdminStage1Content() {
                       <th className="whitespace-nowrap py-2 px-2 w-24">심사구분</th>
                       <th className="whitespace-nowrap py-2 px-3 w-28">부서</th>
                       <th className="whitespace-nowrap py-2 px-2 w-20">심사자</th>
+                      <th className="whitespace-nowrap py-2 px-2 w-20">상태</th>
                       <th className="whitespace-nowrap py-2 px-2 w-16 bg-sky-800">창의성</th>
                       <th className="whitespace-nowrap py-2 px-2 w-16 bg-sky-800">실현성</th>
                       <th className="whitespace-nowrap py-2 px-2 w-16 bg-sky-800">효과성</th>
                       <th className="whitespace-nowrap py-2 px-2 w-16 bg-sky-800">전파성</th>
                       <th className="whitespace-nowrap py-2 px-2 w-16 bg-amber-600 font-bold">총점</th>
                       <th className="whitespace-nowrap py-2 px-4 text-left">의견</th>
+                      <th className="whitespace-nowrap py-2 px-2 w-24">제출관리</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-[15px]">
-                    {scores.map((score, idx) => (
+                    {scores.map((score, idx) => {
+                      const hasScoreData = Boolean(score.submitted_at || editedJudges.has(score.judge_name));
+                      const isJudgeSubmitted = Boolean(score.submitted_at && !score.is_draft);
+                      const isJudgeDraft = Boolean(score.submitted_at && score.is_draft);
+                      return (
                       <tr key={score.id || idx} className="hover:bg-slate-50 transition text-center text-slate-700">
                         <td className="py-2 px-2 font-mono text-slate-400">{idx + 1}</td>
                         <td className="py-2 px-2 text-slate-500">{score.judge_title || '제안1차심사자'}</td>
                         <td className="py-2 px-3 font-medium text-slate-800">{score.judge_dept}</td>
                         <td className="py-2 px-2 font-bold text-slate-900">{score.judge_name}</td>
+                        <td className="py-2 px-2">
+                          {isJudgeSubmitted ? (
+                            <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-xs">
+                              제출완료
+                            </span>
+                          ) : isJudgeDraft ? (
+                            <span className="px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 font-bold text-xs">
+                              임시저장
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-400 font-medium text-xs">
+                              미채점
+                            </span>
+                          )}
+                        </td>
 
                         {/* 창의성 */}
                         <td className="py-1 px-1 bg-sky-50/30">
@@ -826,7 +919,7 @@ function AdminStage1Content() {
                               className="w-12 text-center bg-white border border-slate-300 rounded p-1 text-xs font-bold"
                             />
                           ) : (
-                            <span className="font-semibold text-slate-800">{score.creativity}</span>
+                            <span className="font-semibold text-slate-800">{hasScoreData ? score.creativity : 0}</span>
                           )}
                         </td>
 
@@ -842,7 +935,7 @@ function AdminStage1Content() {
                               className="w-12 text-center bg-white border border-slate-300 rounded p-1 text-xs font-bold"
                             />
                           ) : (
-                            <span className="font-semibold text-slate-800">{score.feasibility}</span>
+                            <span className="font-semibold text-slate-800">{hasScoreData ? score.feasibility : 0}</span>
                           )}
                         </td>
 
@@ -858,7 +951,7 @@ function AdminStage1Content() {
                               className="w-12 text-center bg-white border border-slate-300 rounded p-1 text-xs font-bold"
                             />
                           ) : (
-                            <span className="font-semibold text-slate-800">{score.effectiveness}</span>
+                            <span className="font-semibold text-slate-800">{hasScoreData ? score.effectiveness : 0}</span>
                           )}
                         </td>
 
@@ -868,19 +961,19 @@ function AdminStage1Content() {
                             <input
                               type="number"
                               min={0}
-                              max={15}
+                              max={10}
                               value={score.dissemination}
                               onChange={(e) => handleScoreChange(idx, 'dissemination', e.target.value)}
                               className="w-12 text-center bg-white border border-slate-300 rounded p-1 text-xs font-bold"
                             />
                           ) : (
-                            <span className="font-semibold text-slate-800">{score.dissemination}</span>
+                            <span className="font-semibold text-slate-800">{hasScoreData ? score.dissemination : 0}</span>
                           )}
                         </td>
 
                         {/* 총점 */}
                         <td className="py-2 px-2 bg-amber-50 font-bold text-amber-900">
-                          {score.submitted_at || editedJudges.has(score.judge_name) ? score.total_score : '—'}
+                          {hasScoreData ? score.total_score : '—'}
                         </td>
 
                         {/* 의견 */}
@@ -896,14 +989,33 @@ function AdminStage1Content() {
                             <span className="text-slate-600 line-clamp-1">{score.opinion || '-'}</span>
                           )}
                         </td>
+
+                        {/* 제출 취소 처리 버튼 */}
+                        <td className="py-1.5 px-2 text-center">
+                          {isJudgeSubmitted ? (
+                            <button
+                              type="button"
+                              disabled={savingScores}
+                              onClick={() => handleAdminCancelJudgeSubmit(score.judge_name)}
+                              className="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs transition disabled:opacity-50 whitespace-nowrap"
+                            >
+                              제출 취소
+                            </button>
+                          ) : isJudgeDraft ? (
+                            <span className="text-xs text-sky-700 font-semibold">임시저장됨</span>
+                          ) : (
+                            <span className="text-xs text-slate-300">-</span>
+                          )}
+                        </td>
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
 
                   {/* 하단 평균 행 (이미지 2의 '평균' 요약 행 완벽 일치) */}
                   <tfoot className="bg-slate-200 border-t-2 border-slate-400 font-bold text-[15px] text-center text-slate-900 sticky bottom-0">
                     <tr>
-                      <td colSpan={4} className="py-2.5 px-3 text-center uppercase tracking-wider bg-slate-300">
+                      <td colSpan={5} className="py-2.5 px-3 text-center uppercase tracking-wider bg-slate-300">
                         평균 (Average)
                       </td>
                       <td className="py-2.5 px-2 bg-sky-100 text-sky-900">{averages.c}</td>
@@ -913,7 +1025,7 @@ function AdminStage1Content() {
                       <td className="py-2.5 px-2 bg-amber-200 text-amber-950 font-extrabold text-sm">
                         {averages.total}
                       </td>
-                      <td className="py-2.5 px-4 text-left text-sky-900">
+                      <td colSpan={2} className="py-2.5 px-4 text-left text-sky-900">
                         판정 결과: <strong className="text-base ml-1 text-sky-950">{finalDecision}</strong>
                       </td>
                     </tr>
@@ -925,16 +1037,24 @@ function AdminStage1Content() {
             {/* Footer Buttons */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
               <span className="text-[15px] text-slate-500">
-                * 과천도시공사 제안관리 규정에 따라 11인 심사위원의 평균 점수가 60점 이상일 경우 채택 제안으로 의결됩니다.
+                * 심사위원 총점 평균 50점 이상 시 채택 (단, 50점 미만 부여 위원이 3명 이상이면 불채택)
               </span>
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setSelectedProposal(null)}
                   className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold text-xs"
                 >
                   닫기
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleAdminCancelProposalSubmit()}
+                  disabled={savingScores}
+                  className="px-4 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs transition disabled:opacity-50"
+                >
+                  제출 취소 처리 (심사중 전환)
                 </button>
                 <button
                   type="button"

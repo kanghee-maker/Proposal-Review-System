@@ -30,6 +30,7 @@ function Stage1EvaluateProposalContent() {
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [saveToast, setSaveToast] = useState<string>('');
   const [hasLocalScore, setHasLocalScore] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
 
   const totalScore = Number(creativity || 0) + Number(feasibility || 0) + Number(effectiveness || 0) + Number(dissemination || 0);
   const sessionId = proposal?.session_id || searchParams.get('session_id') || '';
@@ -83,12 +84,13 @@ function Stage1EvaluateProposalContent() {
             }
           }
           const existing = savedScore ?? localScore;
+          setIsSubmitted(Boolean(finalScore));
           setHasLocalScore(Boolean(localScore));
           setCreativity(existing?.creativity ?? 15);
           setFeasibility(existing?.feasibility ?? 15);
           setEffectiveness(existing?.effectiveness ?? 15);
           setDissemination(existing?.dissemination ?? 5);
-          setOpinion(existing?.opinion ?? '');
+          setOpinion(existing?.opinion && existing.opinion !== '-' ? existing.opinion : '');
         }
         setLoading(false);
       })
@@ -130,9 +132,11 @@ function Stage1EvaluateProposalContent() {
       if (res.ok && data.success) {
         setHasLocalScore(false);
         if (isFinal) {
+          setIsSubmitted(true);
           alert(`[${data.score.judge_name} 위원] 1차 제안심사 채점 결과(총점 ${data.score.total_score}점)가 최종 제출되었습니다!`);
           router.push(returnLink);
         } else {
+          setIsSubmitted(false);
           setSaveToast('임시저장 완료되었습니다.');
           setTimeout(() => setSaveToast(''), 2500);
         }
@@ -140,6 +144,47 @@ function Stage1EvaluateProposalContent() {
         alert(data.error || '채점 저장 중 오류가 발생했습니다.');
       }
     } catch (err) {
+      alert('서버 통신 중 오류가 발생했습니다.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleCancelSubmission = async () => {
+    if (!proposal || !judgeName) return;
+    if (!window.confirm('제출 완료 상태를 취소하고 임시저장(작성중) 상태로 되돌리시겠습니까?\n(현재 입력된 점수와 검토 의견은 그대로 유지됩니다.)')) {
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const payload = {
+        proposal_id: proposal.id,
+        session_id: proposal.session_id,
+        judge_name: judgeName,
+        judge_dept: judgeDept,
+        judge_title: judgeTitle,
+        creativity: Number(creativity || 0),
+        feasibility: Number(feasibility || 0),
+        effectiveness: Number(effectiveness || 0),
+        dissemination: Number(dissemination || 0),
+        opinion: opinion.trim() || '-',
+        is_draft: true
+      };
+
+      const res = await fetch('/api/stage1/scores', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setIsSubmitted(false);
+        setSaveToast('제출이 취소되어 임시저장 상태로 전환되었습니다.');
+        setTimeout(() => setSaveToast(''), 3000);
+      } else {
+        alert(data.error || '제출 취소 중 오류가 발생했습니다.');
+      }
+    } catch {
       alert('서버 통신 중 오류가 발생했습니다.');
     } finally {
       setSubmitting(false);
@@ -548,24 +593,39 @@ function Stage1EvaluateProposalContent() {
               </div>
             </div>
 
-            <div className="pt-3 border-t border-slate-100 flex gap-2.5">
-              <button
-                type="button"
-                disabled={submitting}
-                onClick={() => handleSaveScore(false)}
-                className="w-1/3 py-3 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition disabled:opacity-50"
-              >
-                임시저장
-              </button>
-              <button
-                type="button"
-                disabled={submitting}
-                onClick={() => handleSaveScore(true)}
-                className="w-2/3 py-3 px-4 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold text-xs shadow-lg shadow-amber-600/25 flex items-center justify-center gap-1.5 transition disabled:opacity-50"
-              >
-                <Send className="w-3.5 h-3.5" />
-                <span>{submitting ? '제출 중...' : `1차 심사 채점 제출 (${totalScore}점)`}</span>
-              </button>
+            <div className="pt-3 border-t border-slate-100 space-y-2.5">
+              {isSubmitted && (
+                <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-amber-50 border border-amber-200 text-xs">
+                  <span className="font-bold text-amber-900">✓ 현재 최종 제출 완료 상태입니다.</span>
+                  <button
+                    type="button"
+                    disabled={submitting}
+                    onClick={handleCancelSubmission}
+                    className="px-3 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs transition disabled:opacity-50"
+                  >
+                    제출 취소 (임시저장 전환)
+                  </button>
+                </div>
+              )}
+              <div className="flex gap-2.5">
+                <button
+                  type="button"
+                  disabled={submitting}
+                  onClick={() => handleSaveScore(false)}
+                  className="w-1/3 py-3 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition disabled:opacity-50"
+                >
+                  임시저장
+                </button>
+                <button
+                  type="button"
+                  disabled={submitting}
+                  onClick={() => handleSaveScore(true)}
+                  className="w-2/3 py-3 px-4 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold text-xs shadow-lg shadow-amber-600/25 flex items-center justify-center gap-1.5 transition disabled:opacity-50"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>{submitting ? '제출 중...' : `1차 심사 채점 제출 (${totalScore}점)`}</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>

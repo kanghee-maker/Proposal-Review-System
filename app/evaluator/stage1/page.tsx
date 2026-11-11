@@ -78,7 +78,7 @@ function Stage1EvaluatorDashboardContent() {
       const requestOptions = { cache: 'no-store' as const, signal: controller.signal };
       Promise.all([
         fetch(`/api/proposals?session_id=${encodeURIComponent(selectedSessionId)}`, requestOptions),
-        fetch(`/api/stage1/scores?session_id=${encodeURIComponent(selectedSessionId)}`, requestOptions)
+        fetch(`/api/stage1/scores?session_id=${encodeURIComponent(selectedSessionId)}&include_draft=1`, requestOptions)
       ])
         .then(async ([proposalsResponse, scoresResponse]) => {
           if (!proposalsResponse.ok || !scoresResponse.ok) throw new Error('제안 또는 점수 조회 실패');
@@ -89,7 +89,10 @@ function Stage1EvaluatorDashboardContent() {
           if (Array.isArray(sList)) {
             sList.forEach((sc: CommitteeScore) => {
               if (sc.judge_name === jName) {
-                scoreMap.set(sc.proposal_id, sc);
+                const prev = scoreMap.get(sc.proposal_id);
+                if (!prev || (!sc.is_draft && prev.is_draft) || Date.parse(sc.submitted_at || '') >= Date.parse(prev.submitted_at || '')) {
+                  scoreMap.set(sc.proposal_id, sc);
+                }
               }
             });
           }
@@ -108,8 +111,54 @@ function Stage1EvaluatorDashboardContent() {
     return () => controller.abort();
   }, [searchParams, selectedSessionId]);
 
-  const completedCount = proposals.filter(p => myScoresMap.has(p.id)).length;
+  const completedCount = proposals.filter(p => {
+    const sc = myScoresMap.get(p.id);
+    return Boolean(sc && !sc.is_draft);
+  }).length;
+  const draftCount = proposals.filter(p => {
+    const sc = myScoresMap.get(p.id);
+    return Boolean(sc && sc.is_draft);
+  }).length;
   const pendingCount = proposals.length - completedCount;
+
+  const [unsubmittingId, setUnsubmittingId] = useState<string>('');
+
+  const handleCancelSubmission = async (proposalId: string) => {
+    if (!selectedSessionId || !proposalId) return;
+    if (!window.confirm('제출 완료 상태를 취소하고 임시저장(작성중) 상태로 되돌리시겠습니까?\n(입력하신 점수와 의견은 그대로 유지됩니다.)')) {
+      return;
+    }
+    setUnsubmittingId(proposalId);
+    try {
+      const res = await fetch('/api/stage1/scores', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'unsubmit',
+          session_id: selectedSessionId,
+          proposal_id: proposalId,
+          judge_name: judgeName
+        })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setMyScoresMap(prev => {
+          const next = new Map(prev);
+          const existing = next.get(proposalId);
+          if (existing) {
+            next.set(proposalId, { ...existing, is_draft: true });
+          }
+          return next;
+        });
+      } else {
+        alert(data.error || '제출 취소 처리에 실패했습니다.');
+      }
+    } catch {
+      alert('서버 통신 중 오류가 발생했습니다.');
+    } finally {
+      setUnsubmittingId('');
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -158,8 +207,13 @@ function Stage1EvaluatorDashboardContent() {
             <div className="bg-amber-100 border border-amber-300 text-amber-900 rounded-xl px-3 py-2">
               채점 완료: <strong className="font-bold">{loading || loadError ? '—' : `${completedCount}건`}</strong>
             </div>
+            {draftCount > 0 && (
+              <div className="bg-sky-50 border border-sky-200 text-sky-800 rounded-xl px-3 py-2">
+                임시저장(작성중): <strong className="font-bold">{loading || loadError ? '—' : `${draftCount}건`}</strong>
+              </div>
+            )}
             <div className="bg-white border border-slate-200 text-slate-600 rounded-xl px-3 py-2">
-              미채점: <strong className="font-bold">{loading || loadError ? '—' : `${pendingCount}건`}</strong>
+              미제출: <strong className="font-bold">{loading || loadError ? '—' : `${pendingCount}건`}</strong>
             </div>
           </div>
         </div>
@@ -195,7 +249,8 @@ function Stage1EvaluatorDashboardContent() {
         ) : (
           proposals.map((p) => {
             const myScore = myScoresMap.get(p.id);
-            const isCompleted = Boolean(myScore);
+            const isCompleted = Boolean(myScore && !myScore.is_draft);
+            const isDraft = Boolean(myScore && myScore.is_draft);
 
             return (
               <div
@@ -238,16 +293,22 @@ function Stage1EvaluatorDashboardContent() {
                     </span>
                   </div>
 
-                  {/* 본인 1차 채점 완료 시 점수 표시 */}
-                  {isCompleted && myScore && (
-                    <div className="text-xs bg-amber-50/80 p-2.5 rounded-xl border border-amber-200 flex flex-wrap items-center gap-2.5">
-                      <span className="px-2 py-0.5 rounded-md bg-amber-600 text-white font-bold">
-                        ✓ 내 채점 총점: {myScore.total_score}점
+                  {/* 본인 1차 채점 완료 또는 임시저장 시 점수 표시 */}
+                  {myScore && (
+                    <div className={`text-xs p-2.5 rounded-xl border flex flex-wrap items-center gap-2.5 ${
+                      isCompleted
+                        ? 'bg-amber-50/80 border-amber-200'
+                        : 'bg-sky-50/80 border-sky-200'
+                    }`}>
+                      <span className={`px-2 py-0.5 rounded-md text-white font-bold ${
+                        isCompleted ? 'bg-amber-600' : 'bg-sky-600'
+                      }`}>
+                        {isCompleted ? `✓ 내 채점 총점: ${myScore.total_score}점 (제출완료)` : `임시저장(작성중): ${myScore.total_score}점`}
                       </span>
-                      <span className="text-amber-900 font-medium">
+                      <span className={isCompleted ? 'text-amber-900 font-medium' : 'text-sky-900 font-medium'}>
                         (창의성 {myScore.creativity} / 실현성 {myScore.feasibility} / 효과성 {myScore.effectiveness} / 전파성 {myScore.dissemination})
                       </span>
-                      {myScore.opinion && (
+                      {myScore.opinion && myScore.opinion !== '-' && (
                         <span className="text-slate-600 truncate max-w-md">
                           &ldquo;{myScore.opinion}&rdquo;
                         </span>
@@ -256,16 +317,34 @@ function Stage1EvaluatorDashboardContent() {
                   )}
                 </div>
 
-                <div className="flex items-center gap-3 flex-shrink-0 self-end md:self-center">
+                <div className="flex items-center gap-2 flex-shrink-0 self-end md:self-center">
+                  {isCompleted && (
+                    <button
+                      type="button"
+                      disabled={unsubmittingId === p.id}
+                      onClick={() => handleCancelSubmission(p.id)}
+                      className="px-3.5 py-2.5 rounded-xl font-semibold text-xs bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 transition disabled:opacity-50"
+                    >
+                      {unsubmittingId === p.id ? '취소 중...' : '제출 취소'}
+                    </button>
+                  )}
                   <Link
                     href={`/evaluator/stage1/${p.id}?${new URLSearchParams({ judge: judgeName, session_id: selectedSessionId })}`}
                     className={`px-4 py-2.5 rounded-xl font-semibold text-xs transition flex items-center gap-1.5 shadow-sm ${
                       isCompleted
                         ? 'bg-slate-100 hover:bg-slate-200 text-slate-700'
-                        : 'bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white shadow-amber-600/20'
+                        : isDraft
+                          ? 'bg-sky-600 hover:bg-sky-500 text-white shadow-sky-600/20'
+                          : 'bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white shadow-amber-600/20'
                     }`}
                   >
-                    <span>{isCompleted ? '1차 채점내용 수정' : '1차 제안심사 채점하기'}</span>
+                    <span>
+                      {isCompleted
+                        ? '1차 채점내용 수정'
+                        : isDraft
+                          ? '임시저장 이어서 채점'
+                          : '1차 제안심사 채점하기'}
+                    </span>
                     <ChevronRight className="w-4 h-4" />
                   </Link>
                 </div>

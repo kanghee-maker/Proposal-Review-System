@@ -44,4 +44,44 @@ export async function saveCommitteeScoresAsync(scores: CommitteeScore[]) {
   }));
   const { data, error } = await supabase.from('evaluations').upsert(records).select('id');
   if (error || data?.length !== records.length) throw error ?? new Error('Stage 1 score write was not confirmed');
+
+  // 최종 제출 시 기존 임시저장 레코드 정리 / 임시저장 전환 시 기존 최종 제출 레코드 정리
+  const oppositeIds = scores.map(score =>
+    prefix + JSON.stringify([score.session_id, score.proposal_id, score.judge_name, !Boolean(score.is_draft)])
+  );
+  if (oppositeIds.length > 0) {
+    await supabase.from('evaluations').delete().in('id', oppositeIds);
+  }
+}
+
+export async function unsubmitCommitteeScoresAsync(
+  sessionId: string,
+  proposalId: string,
+  judgeNames?: string[]
+): Promise<CommitteeScore[]> {
+  const existing = await getCommitteeScoresAsync(sessionId, proposalId, undefined, true);
+  const targetJudges = judgeNames && judgeNames.length > 0 ? new Set(judgeNames) : null;
+
+  // 위원별로 최신 점수(제출본 우선)를 선택하여 임시저장(is_draft: true) 상태로 전환
+  const byJudge = new Map<string, CommitteeScore>();
+  for (const s of existing) {
+    if (targetJudges && !targetJudges.has(s.judge_name)) continue;
+    const prev = byJudge.get(s.judge_name);
+    if (!prev || (!s.is_draft && prev.is_draft) || Date.parse(s.submitted_at || '') >= Date.parse(prev.submitted_at || '')) {
+      byJudge.set(s.judge_name, s);
+    }
+  }
+
+  const draftsToSave: CommitteeScore[] = Array.from(byJudge.values()).map(score => ({
+    ...score,
+    id: `cs-${proposalId}-${score.judge_name}-draft`,
+    is_draft: true,
+    submitted_at: new Date().toISOString()
+  }));
+
+  if (draftsToSave.length > 0) {
+    await saveCommitteeScoresAsync(draftsToSave);
+  }
+
+  return draftsToSave;
 }

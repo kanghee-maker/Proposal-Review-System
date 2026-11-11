@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { accessDenied, getAccess } from '@/lib/accessSession';
-import { getCommitteeScoresAsync, saveCommitteeScoresAsync } from '@/lib/committeeScores';
+import { getCommitteeScoresAsync, saveCommitteeScoresAsync, unsubmitCommitteeScoresAsync } from '@/lib/committeeScores';
 import { getProposalsAsync, getSessionsAsync, updateProposalAsync } from '@/lib/store';
 import { CommitteeJudge, CommitteeScore, DEFAULT_STAGE1_JUDGES } from '@/lib/types';
 
@@ -18,7 +18,7 @@ export async function GET(req: Request) {
   const proposalId = params.get('proposal_id') || undefined;
   try {
     const judge = access.role === 'judge' ? access.judge : undefined;
-    const includeDrafts = Boolean(judge && proposalId && params.get('include_draft') === '1');
+    const includeDrafts = params.get('include_draft') === '1';
     const scores = await getCommitteeScoresAsync(sessionId, proposalId, judge, includeDrafts);
     return NextResponse.json(scores, { headers: noStore });
   } catch (error) {
@@ -61,6 +61,36 @@ export async function POST(req: Request) {
     const proposal = (await getProposalsAsync(sessionId)).find(p => p.id === proposalId);
     if (!proposal) return accessDenied(access);
 
+    if (body.action === 'unsubmit') {
+      if (access.role === 'judge') {
+        const drafts = await unsubmitCommitteeScoresAsync(sessionId, proposalId, [access.judge]);
+        return NextResponse.json({ success: true, drafts }, { headers: noStore });
+      }
+      if (access.role === 'admin') {
+        const targetJudges = typeof body.judge_name === 'string' && body.judge_name
+          ? [body.judge_name]
+          : undefined;
+        const drafts = await unsubmitCommitteeScoresAsync(sessionId, proposalId, targetJudges);
+
+        if (body.reopen_proposal || !targetJudges) {
+          const saved = await getCommitteeScoresAsync(sessionId, proposalId);
+          const totalAvg = saved.length
+            ? Math.round(saved.reduce((sum, s) => sum + s.total_score, 0) / saved.length)
+            : undefined;
+          await updateProposalAsync({
+            ...proposal,
+            stage1_avg_score: totalAvg,
+            stage1_is_closed: false,
+            stage1_decision: '심사대기',
+            stage1_review_date: undefined,
+            status: '평가작성중'
+          });
+        }
+        return NextResponse.json({ success: true, drafts }, { headers: noStore });
+      }
+      return accessDenied(access);
+    }
+
     if (Array.isArray(body.scores)) {
       if (access.role !== 'admin') return accessDenied(access);
       const judges = session.judges?.length && !session.judges.some(j => j.name === '박민호')
@@ -68,7 +98,7 @@ export async function POST(req: Request) {
       const scores: CommitteeScore[] = [];
       for (const input of body.scores) {
         const judge = judges.find(j => j.name === input?.judge_name);
-        const score = judge && toScore(input, judge, proposalId, sessionId, false);
+        const score = judge && toScore(input, judge, proposalId, sessionId, Boolean(input?.is_draft));
         if (!score) return failure('심사위원 또는 점수 범위를 확인해 주세요.', 400);
         scores.push(score);
       }
@@ -76,13 +106,16 @@ export async function POST(req: Request) {
 
       const saved = await getCommitteeScoresAsync(sessionId, proposalId);
       const totalAvg = saved.length ? Math.round(saved.reduce((sum, score) => sum + score.total_score, 0) / saved.length) : 0;
+      const isClosedNext = body.stage1_is_closed ?? proposal.stage1_is_closed ?? false;
       await updateProposalAsync({
         ...proposal,
         stage1_avg_score: totalAvg,
-        stage1_is_closed: body.stage1_is_closed ?? proposal.stage1_is_closed,
-        stage1_decision: body.stage1_decision ?? (totalAvg >= 60 ? '채택' : '미결'),
-        stage1_review_date: new Date().toISOString().split('T')[0],
-        status: '평가완료'
+        stage1_is_closed: isClosedNext,
+        stage1_decision: isClosedNext
+          ? (body.stage1_decision ?? (totalAvg >= 50 ? '채택' : '미결'))
+          : (body.stage1_decision === '미결' || body.stage1_decision === '심사대기' ? body.stage1_decision : '심사대기'),
+        stage1_review_date: isClosedNext ? new Date().toISOString().split('T')[0] : undefined,
+        status: isClosedNext ? '평가완료' : '평가작성중'
       });
       return NextResponse.json({ success: true, count: scores.length }, { headers: noStore });
     }
