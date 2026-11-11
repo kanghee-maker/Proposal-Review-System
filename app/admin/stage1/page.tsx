@@ -665,14 +665,11 @@ function AdminStage1Content() {
                     <th className="py-2.5 px-2 w-16 bg-sky-50 text-sky-900">전파성(10)</th>
                     <th className="py-2.5 px-2 w-20 bg-amber-100 text-amber-950">위원 총점</th>
                     <th className="py-2.5 px-3 text-left min-w-[180px]">위원 검토의견</th>
-                    <th className="py-2.5 px-3 w-28">전체 진행상태</th>
-                    <th className="py-2.5 px-3 w-44">제출/초기화 관리</th>
                     <th className="py-2.5 px-3 w-28">상세보기</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-[14px]">
                   {judgeCompletedItems.map(({ proposal: p, score }, idx) => {
-                    const prog = getProposalProgress(p.id);
                     return (
                       <tr key={p.id} className="hover:bg-amber-50/30 transition text-center text-slate-700">
                         <td className="py-2.5 px-3 font-mono text-slate-400">{idx + 1}</td>
@@ -693,37 +690,6 @@ function AdminStage1Content() {
                         <td className="py-2.5 px-2 bg-amber-50 font-extrabold text-amber-800">{score.total_score}점</td>
                         <td className="py-2.5 px-3 text-left text-slate-600">
                           <span className="line-clamp-1">{score.opinion && score.opinion !== '-' ? score.opinion : '-'}</span>
-                        </td>
-                        <td className="py-2.5 px-3">
-                          <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold whitespace-nowrap ${
-                            prog.status === '심사완료'
-                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                              : prog.status === '심사중'
-                                ? 'bg-amber-100 text-amber-800 border border-amber-300'
-                                : 'bg-slate-100 text-slate-500 border border-slate-200'
-                          }`}>
-                            {prog.status} ({prog.count}/{prog.total})
-                          </span>
-                        </td>
-                        <td className="py-2 px-2">
-                          <div className="flex items-center justify-center gap-1.5">
-                            <button
-                              type="button"
-                              disabled={savingScores}
-                              onClick={() => handleAdminCancelJudgeSubmit(selectedJudgeFilter, p.id)}
-                              className="px-2.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs transition disabled:opacity-50 whitespace-nowrap"
-                            >
-                              제출 취소
-                            </button>
-                            <button
-                              type="button"
-                              disabled={savingScores}
-                              onClick={() => handleAdminResetJudgeScore(selectedJudgeFilter, p.id)}
-                              className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 font-bold text-xs transition disabled:opacity-50 whitespace-nowrap"
-                            >
-                              내용 초기화
-                            </button>
-                          </div>
                         </td>
                         <td className="py-2 px-2">
                           <button
