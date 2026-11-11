@@ -362,8 +362,9 @@ function AdminStage1Content() {
   };
 
   // 관리자: 특정 심사위원 제출 취소 처리 (점수·의견은 임시저장으로 보존)
-  const handleAdminCancelJudgeSubmit = async (judgeName: string) => {
-    if (!selectedProposal || !selectedSessionId) return;
+  const handleAdminCancelJudgeSubmit = async (judgeName: string, targetProposalId?: string) => {
+    const propId = targetProposalId || selectedProposal?.id;
+    if (!propId || !selectedSessionId) return;
     if (!window.confirm(`[${judgeName} 위원]의 최종 제출을 취소하고 임시저장(작성중) 상태로 전환하시겠습니까?\n(입력된 점수와 의견 데이터는 그대로 보존됩니다.)`)) {
       return;
     }
@@ -375,13 +376,17 @@ function AdminStage1Content() {
         body: JSON.stringify({
           action: 'unsubmit',
           session_id: selectedSessionId,
-          proposal_id: selectedProposal.id,
+          proposal_id: propId,
           judge_name: judgeName
         })
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        setScores(prev => prev.map(s => s.judge_name === judgeName ? { ...s, is_draft: true } : s));
+        if (selectedProposal?.id === propId) {
+          setIsClosed(false);
+          setScores(prev => prev.map(s => s.judge_name === judgeName ? { ...s, is_draft: true } : s));
+        }
+        fetchProposals(selectedSessionId);
         const updated = await fetch(`/api/stage1/scores?session_id=${encodeURIComponent(selectedSessionId)}`, { cache: 'no-store' });
         if (updated.ok) setRoundScores(await updated.json());
       } else {
@@ -394,11 +399,11 @@ function AdminStage1Content() {
     }
   };
 
-  // 관리자: 제안 건 전체 제출/마감 취소 처리 (점수·의견 데이터는 임시저장으로 보존하고 심사대기로 전환)
-  const handleAdminCancelProposalSubmit = async (targetProp?: Proposal) => {
-    const prop = targetProp || selectedProposal;
-    if (!prop || !selectedSessionId) return;
-    if (!window.confirm(`해당 제안의 완료(제출) 상태를 취소하고 '심사대기(임시저장)' 상태로 되돌리시겠습니까?\n(심사위원들이 입력한 점수와 의견 데이터는 모두 그대로 유지됩니다.)`)) {
+  // 관리자: 특정 심사위원 채점 내용 초기화 (최초 미채점 상태로 삭제)
+  const handleAdminResetJudgeScore = async (judgeName: string, targetProposalId?: string) => {
+    const propId = targetProposalId || selectedProposal?.id;
+    if (!propId || !selectedSessionId) return;
+    if (!window.confirm(`[${judgeName} 위원]이 입력한 채점 점수와 검토 의견을 모두 삭제하고 최초 상태(미채점)로 초기화하시겠습니까?`)) {
       return;
     }
     setSavingScores(true);
@@ -407,23 +412,44 @@ function AdminStage1Content() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          action: 'unsubmit',
+          action: 'reset',
           session_id: selectedSessionId,
-          proposal_id: prop.id,
-          reopen_proposal: true
+          proposal_id: propId,
+          judge_name: judgeName
         })
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        setIsClosed(false);
-        setFinalDecision('심사대기');
-        setScores(prev => prev.map(s => s.submitted_at ? { ...s, is_draft: true } : s));
+        if (selectedProposal?.id === propId) {
+          setIsClosed(false);
+          setEditedJudges(prev => {
+            const next = new Set(prev);
+            next.delete(judgeName);
+            return next;
+          });
+          setScores(prev =>
+            prev.map(s =>
+              s.judge_name === judgeName
+                ? {
+                    ...s,
+                    creativity: 0,
+                    feasibility: 0,
+                    effectiveness: 0,
+                    dissemination: 0,
+                    total_score: 0,
+                    opinion: '미채점',
+                    submitted_at: undefined,
+                    is_draft: undefined
+                  }
+                : s
+            )
+          );
+        }
         fetchProposals(selectedSessionId);
         const updated = await fetch(`/api/stage1/scores?session_id=${encodeURIComponent(selectedSessionId)}`, { cache: 'no-store' });
         if (updated.ok) setRoundScores(await updated.json());
-        alert('제출 취소 처리가 완료되었습니다. 입력된 점수는 임시저장 상태로 보존됩니다.');
       } else {
-        alert(data.error || '제출 취소 처리 실패');
+        alert(data.error || '내용 초기화 처리 실패');
       }
     } catch {
       alert('서버 통신 중 오류가 발생했습니다.');
@@ -640,6 +666,7 @@ function AdminStage1Content() {
                     <th className="py-2.5 px-2 w-20 bg-amber-100 text-amber-950">위원 총점</th>
                     <th className="py-2.5 px-3 text-left min-w-[180px]">위원 검토의견</th>
                     <th className="py-2.5 px-3 w-28">전체 진행상태</th>
+                    <th className="py-2.5 px-3 w-44">제출/초기화 관리</th>
                     <th className="py-2.5 px-3 w-28">상세보기</th>
                   </tr>
                 </thead>
@@ -677,6 +704,26 @@ function AdminStage1Content() {
                           }`}>
                             {prog.status} ({prog.count}/{prog.total})
                           </span>
+                        </td>
+                        <td className="py-2 px-2">
+                          <div className="flex items-center justify-center gap-1.5">
+                            <button
+                              type="button"
+                              disabled={savingScores}
+                              onClick={() => handleAdminCancelJudgeSubmit(selectedJudgeFilter, p.id)}
+                              className="px-2.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs transition disabled:opacity-50 whitespace-nowrap"
+                            >
+                              제출 취소
+                            </button>
+                            <button
+                              type="button"
+                              disabled={savingScores}
+                              onClick={() => handleAdminResetJudgeScore(selectedJudgeFilter, p.id)}
+                              className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 font-bold text-xs transition disabled:opacity-50 whitespace-nowrap"
+                            >
+                              내용 초기화
+                            </button>
+                          </div>
                         </td>
                         <td className="py-2 px-2">
                           <button
@@ -1055,7 +1102,7 @@ function AdminStage1Content() {
                       <th className="whitespace-nowrap py-2 px-2 w-16 bg-sky-800">전파성</th>
                       <th className="whitespace-nowrap py-2 px-2 w-16 bg-amber-600 font-bold">총점</th>
                       <th className="whitespace-nowrap py-2 px-4 text-left">의견</th>
-                      <th className="whitespace-nowrap py-2 px-2 w-24">제출관리</th>
+                      <th className="whitespace-nowrap py-2 px-2 w-40">제출/초기화 관리</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-[15px]">
@@ -1168,19 +1215,36 @@ function AdminStage1Content() {
                           )}
                         </td>
 
-                        {/* 제출 취소 처리 버튼 */}
+                        {/* 제출 취소 및 내용 초기화 버튼 */}
                         <td className="py-1.5 px-2 text-center">
                           {isJudgeSubmitted ? (
+                            <div className="flex items-center justify-center gap-1">
+                              <button
+                                type="button"
+                                disabled={savingScores}
+                                onClick={() => handleAdminCancelJudgeSubmit(score.judge_name)}
+                                className="px-2 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs transition disabled:opacity-50 whitespace-nowrap"
+                              >
+                                제출 취소
+                              </button>
+                              <button
+                                type="button"
+                                disabled={savingScores}
+                                onClick={() => handleAdminResetJudgeScore(score.judge_name)}
+                                className="px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 font-bold text-xs transition disabled:opacity-50 whitespace-nowrap"
+                              >
+                                내용 초기화
+                              </button>
+                            </div>
+                          ) : isJudgeDraft || hasScoreData ? (
                             <button
                               type="button"
                               disabled={savingScores}
-                              onClick={() => handleAdminCancelJudgeSubmit(score.judge_name)}
-                              className="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs transition disabled:opacity-50 whitespace-nowrap"
+                              onClick={() => handleAdminResetJudgeScore(score.judge_name)}
+                              className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 font-bold text-xs transition disabled:opacity-50 whitespace-nowrap"
                             >
-                              제출 취소
+                              내용 초기화
                             </button>
-                          ) : isJudgeDraft ? (
-                            <span className="text-xs text-sky-700 font-semibold">임시저장됨</span>
                           ) : (
                             <span className="text-xs text-slate-300">-</span>
                           )}
@@ -1225,14 +1289,6 @@ function AdminStage1Content() {
                   className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold text-xs"
                 >
                   닫기
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleAdminCancelProposalSubmit()}
-                  disabled={savingScores}
-                  className="px-4 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs transition disabled:opacity-50"
-                >
-                  제출 취소 처리 (심사중 전환)
                 </button>
                 <button
                   type="button"

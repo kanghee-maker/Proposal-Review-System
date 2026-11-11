@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import { accessDenied, getAccess } from '@/lib/accessSession';
-import { getCommitteeScoresAsync, saveCommitteeScoresAsync, unsubmitCommitteeScoresAsync } from '@/lib/committeeScores';
+import { getCommitteeScoresAsync, resetCommitteeScoresAsync, saveCommitteeScoresAsync, unsubmitCommitteeScoresAsync } from '@/lib/committeeScores';
 import { getProposalsAsync, getSessionsAsync, updateProposalAsync } from '@/lib/store';
 import { CommitteeJudge, CommitteeScore, DEFAULT_STAGE1_JUDGES } from '@/lib/types';
+
 
 const noStore = { 'Cache-Control': 'private, no-store' };
 
@@ -61,34 +62,41 @@ export async function POST(req: Request) {
     const proposal = (await getProposalsAsync(sessionId)).find(p => p.id === proposalId);
     if (!proposal) return accessDenied(access);
 
-    if (body.action === 'unsubmit') {
+    if (body.action === 'unsubmit' || body.action === 'reset') {
+      let targetJudges: string[] | undefined;
       if (access.role === 'judge') {
-        const drafts = await unsubmitCommitteeScoresAsync(sessionId, proposalId, [access.judge]);
-        return NextResponse.json({ success: true, drafts }, { headers: noStore });
-      }
-      if (access.role === 'admin') {
-        const targetJudges = typeof body.judge_name === 'string' && body.judge_name
-          ? [body.judge_name]
-          : undefined;
-        const drafts = await unsubmitCommitteeScoresAsync(sessionId, proposalId, targetJudges);
-
-        if (body.reopen_proposal || !targetJudges) {
-          const saved = await getCommitteeScoresAsync(sessionId, proposalId);
-          const totalAvg = saved.length
-            ? Math.round(saved.reduce((sum, s) => sum + s.total_score, 0) / saved.length)
-            : undefined;
-          await updateProposalAsync({
-            ...proposal,
-            stage1_avg_score: totalAvg,
-            stage1_is_closed: false,
-            stage1_decision: '심사대기',
-            stage1_review_date: undefined,
-            status: '평가작성중'
-          });
+        targetJudges = [access.judge];
+      } else if (access.role === 'admin') {
+        if (typeof body.judge_name === 'string' && body.judge_name) {
+          targetJudges = [body.judge_name];
+        } else if (body.action === 'reset') {
+          return failure('내용을 초기화할 심사위원을 선택해 주세요.', 400);
         }
-        return NextResponse.json({ success: true, drafts }, { headers: noStore });
+      } else {
+        return accessDenied(access);
       }
-      return accessDenied(access);
+
+      let drafts: CommitteeScore[] = [];
+      if (body.action === 'reset') {
+        await resetCommitteeScoresAsync(sessionId, proposalId, targetJudges || []);
+      } else {
+        drafts = await unsubmitCommitteeScoresAsync(sessionId, proposalId, targetJudges);
+      }
+
+      const saved = await getCommitteeScoresAsync(sessionId, proposalId);
+      const totalAvg = saved.length
+        ? Math.round(saved.reduce((sum, s) => sum + s.total_score, 0) / saved.length)
+        : undefined;
+      await updateProposalAsync({
+        ...proposal,
+        stage1_avg_score: totalAvg,
+        stage1_is_closed: false,
+        stage1_decision: '심사대기',
+        stage1_review_date: undefined,
+        status: '평가작성중'
+      });
+
+      return NextResponse.json({ success: true, drafts }, { headers: noStore });
     }
 
     if (Array.isArray(body.scores)) {

@@ -11,6 +11,17 @@ export function readLocalScores(sessionId: string, judgeName?: string): Committe
   return saved ? JSON.parse(saved) : [];
 }
 
+export function removeLocalScore(sessionId: string, proposalId: string, judgeName?: string) {
+  try {
+    const existing = readLocalScores(sessionId, judgeName);
+    const filtered = existing.filter(score => score.proposal_id !== proposalId);
+    localStorage.setItem(storageId(sessionId, judgeName), JSON.stringify(filtered));
+  } catch {
+    // Ignore localStorage errors
+  }
+}
+
+
 export function storeLocalScores(sessionId: string, scores: CommitteeScore[], judgeName?: string) {
   const records = new Map<string, CommitteeScore>();
   for (const score of [...readLocalScores(sessionId, judgeName), ...scores]) {

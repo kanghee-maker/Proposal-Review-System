@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Award, CheckCircle2, Clock, ChevronRight, Layers, Building2 } from 'lucide-react';
 import { Proposal, EvaluationSession, CommitteeScore, DEFAULT_STAGE1_JUDGES } from '@/lib/types';
+import { removeLocalScore } from '@/lib/stage1LocalScores';
 import AdoptionCriteria from './AdoptionCriteria';
 
 function Stage1EvaluatorDashboardContent() {
@@ -122,6 +123,7 @@ function Stage1EvaluatorDashboardContent() {
   const pendingCount = proposals.length - completedCount;
 
   const [unsubmittingId, setUnsubmittingId] = useState<string>('');
+  const [resettingId, setResettingId] = useState<string>('');
 
   const handleCancelSubmission = async (proposalId: string) => {
     if (!selectedSessionId || !proposalId) return;
@@ -157,6 +159,41 @@ function Stage1EvaluatorDashboardContent() {
       alert('서버 통신 중 오류가 발생했습니다.');
     } finally {
       setUnsubmittingId('');
+    }
+  };
+
+  const handleResetScore = async (proposalId: string) => {
+    if (!selectedSessionId || !proposalId) return;
+    if (!window.confirm('해당 제안에 입력하신 채점 점수와 검토 의견을 모두 삭제하고 최초 상태(미채점)로 초기화하시겠습니까?')) {
+      return;
+    }
+    setResettingId(proposalId);
+    try {
+      const res = await fetch('/api/stage1/scores', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'reset',
+          session_id: selectedSessionId,
+          proposal_id: proposalId,
+          judge_name: judgeName
+        })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        removeLocalScore(selectedSessionId, proposalId, judgeName);
+        setMyScoresMap(prev => {
+          const next = new Map(prev);
+          next.delete(proposalId);
+          return next;
+        });
+      } else {
+        alert(data.error || '내용 초기화 처리에 실패했습니다.');
+      }
+    } catch {
+      alert('서버 통신 중 오류가 발생했습니다.');
+    } finally {
+      setResettingId('');
     }
   };
 
@@ -317,15 +354,25 @@ function Stage1EvaluatorDashboardContent() {
                   )}
                 </div>
 
-                <div className="flex items-center gap-2 flex-shrink-0 self-end md:self-center">
+                <div className="flex flex-wrap items-center gap-2 flex-shrink-0 self-end md:self-center">
                   {isCompleted && (
                     <button
                       type="button"
-                      disabled={unsubmittingId === p.id}
+                      disabled={unsubmittingId === p.id || resettingId === p.id}
                       onClick={() => handleCancelSubmission(p.id)}
                       className="px-3.5 py-2.5 rounded-xl font-semibold text-xs bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 transition disabled:opacity-50"
                     >
                       {unsubmittingId === p.id ? '취소 중...' : '제출 취소'}
+                    </button>
+                  )}
+                  {(isCompleted || isDraft) && (
+                    <button
+                      type="button"
+                      disabled={unsubmittingId === p.id || resettingId === p.id}
+                      onClick={() => handleResetScore(p.id)}
+                      className="px-3.5 py-2.5 rounded-xl font-semibold text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition disabled:opacity-50"
+                    >
+                      {resettingId === p.id ? '초기화 중...' : '내용 초기화'}
                     </button>
                   )}
                   <Link

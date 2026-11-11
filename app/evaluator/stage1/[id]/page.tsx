@@ -6,7 +6,7 @@ import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { ArrowLeft, Award, Send, AlertCircle, FileText, Check, Paperclip, Download, Building2 } from 'lucide-react';
 import { Proposal, CommitteeScore, DEFAULT_STAGE1_JUDGES } from '@/lib/types';
 import AdoptionCriteria from '../AdoptionCriteria';
-import { readLocalScores } from '@/lib/stage1LocalScores';
+import { readLocalScores, removeLocalScore } from '@/lib/stage1LocalScores';
 
 function Stage1EvaluateProposalContent() {
   const router = useRouter();
@@ -183,6 +183,45 @@ function Stage1EvaluateProposalContent() {
         setTimeout(() => setSaveToast(''), 3000);
       } else {
         alert(data.error || '제출 취소 중 오류가 발생했습니다.');
+      }
+    } catch {
+      alert('서버 통신 중 오류가 발생했습니다.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleResetScore = async () => {
+    if (!proposal || !judgeName) return;
+    if (!window.confirm('입력하신 채점 점수와 검토 의견을 모두 삭제하고 최초 상태(미채점 기본값)로 초기화하시겠습니까?')) {
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const res = await fetch('/api/stage1/scores', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'reset',
+          proposal_id: proposal.id,
+          session_id: proposal.session_id,
+          judge_name: judgeName
+        })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        removeLocalScore(proposal.session_id, proposal.id, judgeName);
+        setHasLocalScore(false);
+        setIsSubmitted(false);
+        setCreativity(15);
+        setFeasibility(15);
+        setEffectiveness(15);
+        setDissemination(5);
+        setOpinion('');
+        setSaveToast('내용이 최초 상태(미채점)로 초기화되었습니다.');
+        setTimeout(() => setSaveToast(''), 3000);
+      } else {
+        alert(data.error || '내용 초기화 중 오류가 발생했습니다.');
       }
     } catch {
       alert('서버 통신 중 오류가 발생했습니다.');
@@ -595,24 +634,44 @@ function Stage1EvaluateProposalContent() {
 
             <div className="pt-3 border-t border-slate-100 space-y-2.5">
               {isSubmitted && (
-                <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-amber-50 border border-amber-200 text-xs">
+                <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 rounded-xl bg-amber-50 border border-amber-200 text-xs">
                   <span className="font-bold text-amber-900">✓ 현재 최종 제출 완료 상태입니다.</span>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      disabled={submitting}
+                      onClick={handleCancelSubmission}
+                      className="px-3 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs transition disabled:opacity-50"
+                    >
+                      제출 취소 (임시저장 전환)
+                    </button>
+                    <button
+                      type="button"
+                      disabled={submitting}
+                      onClick={handleResetScore}
+                      className="px-3 py-1 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 font-bold text-xs transition disabled:opacity-50"
+                    >
+                      내용 초기화
+                    </button>
+                  </div>
+                </div>
+              )}
+              <div className="flex gap-2">
+                {!isSubmitted && (
                   <button
                     type="button"
                     disabled={submitting}
-                    onClick={handleCancelSubmission}
-                    className="px-3 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs transition disabled:opacity-50"
+                    onClick={handleResetScore}
+                    className="py-3 px-3 rounded-xl bg-white hover:bg-slate-100 text-slate-600 border border-slate-300 font-semibold text-xs transition disabled:opacity-50 whitespace-nowrap"
                   >
-                    제출 취소 (임시저장 전환)
+                    내용 초기화
                   </button>
-                </div>
-              )}
-              <div className="flex gap-2.5">
+                )}
                 <button
                   type="button"
                   disabled={submitting}
                   onClick={() => handleSaveScore(false)}
-                  className="w-1/3 py-3 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition disabled:opacity-50"
+                  className="flex-1 py-3 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition disabled:opacity-50 whitespace-nowrap"
                 >
                   임시저장
                 </button>
@@ -620,7 +679,7 @@ function Stage1EvaluateProposalContent() {
                   type="button"
                   disabled={submitting}
                   onClick={() => handleSaveScore(true)}
-                  className="w-2/3 py-3 px-4 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold text-xs shadow-lg shadow-amber-600/25 flex items-center justify-center gap-1.5 transition disabled:opacity-50"
+                  className="flex-[2] py-3 px-4 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold text-xs shadow-lg shadow-amber-600/25 flex items-center justify-center gap-1.5 transition disabled:opacity-50 whitespace-nowrap"
                 >
                   <Send className="w-3.5 h-3.5" />
                   <span>{submitting ? '제출 중...' : `1차 심사 채점 제출 (${totalScore}점)`}</span>

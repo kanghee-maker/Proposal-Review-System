@@ -85,3 +85,24 @@ export async function unsubmitCommitteeScoresAsync(
 
   return draftsToSave;
 }
+
+export async function resetCommitteeScoresAsync(
+  sessionId: string,
+  proposalId: string,
+  judgeNames: string[]
+): Promise<void> {
+  if (judgeNames.length === 0) return;
+  const idsToDelete: string[] = [];
+  for (const judgeName of judgeNames) {
+    idsToDelete.push(
+      prefix + JSON.stringify([sessionId, proposalId, judgeName, false]),
+      prefix + JSON.stringify([sessionId, proposalId, judgeName, true])
+    );
+  }
+  const { error } = await supabase
+    .from('evaluations')
+    .delete()
+    .in('id', idsToDelete);
+  if (error) throw error;
+}
+
