@@ -3,11 +3,21 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { stage1Maintenance, stage1MaintenanceMessage } from '@/lib/stage1Maintenance';
 import { Shield, Users, CheckCircle, Award, ChevronRight, KeyRound, Lock, AlertCircle, X, Check, Building2, ExternalLink, ArrowRight, Sparkles } from 'lucide-react';
 import { Department, DEFAULT_STAGE1_JUDGES } from '@/lib/types';
 
 export default function Home() {
   const router = useRouter();
+
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (stage1Maintenance && url.searchParams.get('stage1') === 'maintenance') {
+      url.searchParams.delete('stage1');
+      window.history.replaceState(window.history.state, '', url);
+      window.alert(stage1MaintenanceMessage);
+    }
+  }, []);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [selectedDept, setSelectedDept] = useState<string>('');
   const [selectedJudge, setSelectedJudge] = useState<string>(DEFAULT_STAGE1_JUDGES[0]?.name || '박종용');
@@ -142,6 +152,10 @@ export default function Home() {
   // 3. 1차 제안심사 평가함 진입 요청
   const handleStage1EvaluatorCheck = (e: React.FormEvent) => {
     e.preventDefault();
+    if (stage1Maintenance) {
+      window.alert(stage1MaintenanceMessage);
+      return;
+    }
     if (!selectedJudge) {
       alert('1차 제안심사 평가자를 선택해 주세요.');
       return;
