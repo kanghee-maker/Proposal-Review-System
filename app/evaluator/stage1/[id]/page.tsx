@@ -6,7 +6,7 @@ import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { ArrowLeft, Award, Send, AlertCircle, FileText, Check, Paperclip, Download, Building2 } from 'lucide-react';
 import { Proposal, CommitteeScore, DEFAULT_STAGE1_JUDGES } from '@/lib/types';
 import AdoptionCriteria from '../AdoptionCriteria';
-import { readLocalScores, storeLocalScores } from '@/lib/stage1LocalScores';
+import { readLocalScores } from '@/lib/stage1LocalScores';
 
 function Stage1EvaluateProposalContent() {
   const router = useRouter();
@@ -29,6 +29,7 @@ function Stage1EvaluateProposalContent() {
   const [opinion, setOpinion] = useState<string>('');
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [saveToast, setSaveToast] = useState<string>('');
+  const [hasLocalScore, setHasLocalScore] = useState(false);
 
   const totalScore = Number(creativity || 0) + Number(feasibility || 0) + Number(effectiveness || 0) + Number(dissemination || 0);
   const sessionId = proposal?.session_id || searchParams.get('session_id') || '';
@@ -37,49 +38,75 @@ function Stage1EvaluateProposalContent() {
   const returnLink = `/evaluator/stage1?${returnParams}`;
 
   useEffect(() => {
-    const jName = localStorage.getItem('gcuc_dept_name') || searchParams.get('judge') || '';
+    setHasLocalScore(false);
+    let jName = searchParams.get('judge') || '';
+    if (!jName && typeof window !== 'undefined') {
+      jName = localStorage.getItem('gcuc_dept_name') || DEFAULT_STAGE1_JUDGES[0]?.name || '박종용';
+    }
     const matched = DEFAULT_STAGE1_JUDGES.find(j => j.name === jName);
     setJudgeName(jName);
     setJudgeDept(matched?.dept || (typeof window !== 'undefined' ? localStorage.getItem('gcuc_judge_dept') || '' : ''));
     setJudgeTitle(matched?.title || '제안1차심사자');
 
-    fetch(`/api/proposals?id=${encodeURIComponent(proposalId)}`, { cache: 'no-store' })
-      .then(r => {
-        if (!r.ok) throw new Error('제안과 연결된 평가 자료를 불러오지 못했습니다.');
-        return r.json();
+    const controller = new AbortController();
+    setLoading(true);
+    setLoadError('');
+    setProposal(null);
+    const requestOptions = { cache: 'no-store' as const, signal: controller.signal };
+    fetch(`/api/proposals?id=${encodeURIComponent(proposalId)}`, requestOptions)
+      .then(async response => {
+        if (!response.ok) throw new Error('제안과 연결된 평가 자료를 불러오지 못했습니다.');
+        const prop: Proposal | null = await response.json();
+        if (!prop) return [null, []] as const;
+        const query = new URLSearchParams({ session_id: prop.session_id, proposal_id: proposalId, include_draft: '1' });
+        const scoresResponse = await fetch(`/api/stage1/scores?${query}`, requestOptions);
+        if (!scoresResponse.ok) throw new Error('기존 심사 점수를 불러오지 못했습니다.');
+        const scoreList: CommitteeScore[] = await scoresResponse.json();
+        return [prop, scoreList] as const;
       })
-      .then((prop: Proposal | null) => {
-        if (prop && jName) {
-          const scoreList = readLocalScores(prop.session_id, jName).filter(score => score.proposal_id === proposalId);
+      .then(([prop, scoreList]) => {
+        if (controller.signal.aborted) return;
+        setProposal(prop || null);
+        if (prop && Array.isArray(scoreList) && jName) {
           const finalScore = scoreList.find((s: CommitteeScore) => s.judge_name === jName && !s.is_draft);
           const draft = scoreList.find((s: CommitteeScore) => s.judge_name === jName && s.is_draft);
-          const existing = draft && (!finalScore || Date.parse(draft.submitted_at || '') > Date.parse(finalScore.submitted_at || ''))
+          const savedScore = draft && (!finalScore || Date.parse(draft.submitted_at || '') > Date.parse(finalScore.submitted_at || ''))
             ? draft : finalScore;
-          if (existing) {
-            setCreativity(Number(existing.creativity || 0));
-            setFeasibility(Number(existing.feasibility || 0));
-            setEffectiveness(Number(existing.effectiveness || 0));
-            setDissemination(Number(existing.dissemination || 0));
-            setOpinion(existing.opinion || '');
+          let localScore: CommitteeScore | undefined;
+          if (!savedScore) {
+            try {
+              localScore = readLocalScores(prop.session_id, jName)
+                .filter(score => score.proposal_id === proposalId)
+                .sort((a, b) => Date.parse(b.submitted_at || '') - Date.parse(a.submitted_at || ''))[0];
+            } catch {
+              // Browser storage can be unavailable even when database access works.
+            }
           }
+          const existing = savedScore ?? localScore;
+          setHasLocalScore(Boolean(localScore));
+          setCreativity(existing?.creativity ?? 15);
+          setFeasibility(existing?.feasibility ?? 15);
+          setEffectiveness(existing?.effectiveness ?? 15);
+          setDissemination(existing?.dissemination ?? 5);
+          setOpinion(existing?.opinion ?? '');
         }
-        setProposal(prop);
         setLoading(false);
       })
       .catch(err => {
+        if (controller.signal.aborted) return;
         console.error(err);
         setLoadError('제안 또는 저장된 심사 점수를 불러오지 못했습니다. 다시 시도해 주세요.');
         setLoading(false);
       });
+    return () => controller.abort();
   }, [proposalId, searchParams]);
 
-  const handleSaveScore = (isFinal: boolean) => {
-    if (!proposal || !DEFAULT_STAGE1_JUDGES.some(judge => judge.name === judgeName)) return;
+  const handleSaveScore = async (isFinal: boolean) => {
+    if (!proposal || !judgeName) return;
 
     setSubmitting(true);
     try {
-      const payload: CommitteeScore = {
-        id: `cs-${proposal.id}-${judgeName}${isFinal ? '' : '-draft'}`,
+      const payload = {
         proposal_id: proposal.id,
         session_id: proposal.session_id,
         judge_name: judgeName,
@@ -89,22 +116,31 @@ function Stage1EvaluateProposalContent() {
         feasibility: Number(feasibility || 0),
         effectiveness: Number(effectiveness || 0),
         dissemination: Number(dissemination || 0),
-        total_score: totalScore,
         opinion: opinion.trim() || '-',
-        submitted_at: new Date().toISOString(),
         is_draft: !isFinal
       };
 
-      storeLocalScores(proposal.session_id, [payload], judgeName);
-      if (isFinal) {
-        alert(`총점 ${totalScore}점을 이 브라우저에 저장했습니다. 심사를 마친 뒤 목록에서 결과 파일을 내려받아 관리자에게 전달해 주세요.`);
-        router.push(returnLink);
+      const res = await fetch('/api/stage1/scores', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        setHasLocalScore(false);
+        if (isFinal) {
+          alert(`[${data.score.judge_name} 위원] 1차 제안심사 채점 결과(총점 ${data.score.total_score}점)가 최종 제출되었습니다!`);
+          router.push(returnLink);
+        } else {
+          setSaveToast('임시저장 완료되었습니다.');
+          setTimeout(() => setSaveToast(''), 2500);
+        }
       } else {
-        setSaveToast('이 브라우저에 임시저장했습니다.');
-        setTimeout(() => setSaveToast(''), 2500);
+        alert(data.error || '채점 저장 중 오류가 발생했습니다.');
       }
     } catch (err) {
-      alert('브라우저에 저장하지 못했습니다. 저장 공간과 브라우저 설정을 확인한 뒤 다시 시도해 주세요.');
+      alert('서버 통신 중 오류가 발생했습니다.');
     } finally {
       setSubmitting(false);
     }
@@ -137,6 +173,11 @@ function Stage1EvaluateProposalContent() {
           <span>1차 제안심사 대상 목록으로 돌아가기</span>
         </Link>
 
+        {hasLocalScore && (
+          <p role="status" className="rounded-xl bg-amber-50 p-3 text-sm text-amber-900">
+            이 브라우저에 남아 있던 점수를 불러왔습니다. 내용을 확인한 뒤 저장하면 DB에 반영됩니다.
+          </p>
+        )}
         {saveToast && (
           <span className="text-xs text-amber-800 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-xl font-semibold flex items-center gap-1 animate-pulse">
             <Check className="w-3.5 h-3.5" />
@@ -378,7 +419,6 @@ function Stage1EvaluateProposalContent() {
             </div>
 
             <AdoptionCriteria />
-            <p className="text-sm text-slate-700">점수는 이 브라우저에 저장됩니다. 심사를 마친 뒤 목록에서 결과 파일을 내려받아 관리자에게 전달해 주세요.</p>
 
             <div className="space-y-4 text-xs">
               {/* 1. 창의성 */}
@@ -524,7 +564,7 @@ function Stage1EvaluateProposalContent() {
                 className="w-2/3 py-3 px-4 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold text-xs shadow-lg shadow-amber-600/25 flex items-center justify-center gap-1.5 transition disabled:opacity-50"
               >
                 <Send className="w-3.5 h-3.5" />
-                <span>{submitting ? '저장 중...' : `점수 확정·저장 (${totalScore}점)`}</span>
+                <span>{submitting ? '제출 중...' : `1차 심사 채점 제출 (${totalScore}점)`}</span>
               </button>
             </div>
           </div>

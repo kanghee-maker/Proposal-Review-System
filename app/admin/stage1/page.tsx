@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useRef, Suspense } from 'react';
+import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
@@ -28,7 +28,6 @@ import {
   DownloadCloud
 } from 'lucide-react';
 import { Proposal, EvaluationSession, CommitteeScore, DEFAULT_STAGE1_JUDGES } from '@/lib/types';
-import { downloadStage1Results, parseStage1Results, readLocalScores, storeLocalScores } from '@/lib/stage1LocalScores';
 
 function AdminStage1Content() {
   const router = useRouter();
@@ -60,8 +59,8 @@ function AdminStage1Content() {
   const [modalLoading, setModalLoading] = useState<boolean>(false);
   const [isEditingScores, setIsEditingScores] = useState<boolean>(false);
   const [savingScores, setSavingScores] = useState<boolean>(false);
-  const activeSession = useRef(selectedSessionId);
-  activeSession.current = selectedSessionId;
+  const [isClosed, setIsClosed] = useState<boolean>(true); // 1차마감여부(Y/N)
+  const [finalDecision, setFinalDecision] = useState<string>('채택');
 
   // 1. 회차 목록 로드 (오직 1차 심사로 연계 생성된 STAGE_1 회차만 표시)
   useEffect(() => {
@@ -129,13 +128,19 @@ function AdminStage1Content() {
 
   useEffect(() => {
     if (!selectedSessionId) return;
+    const controller = new AbortController();
     setRoundScores(null);
     setScoreLoadError(false);
-    try {
-      setRoundScores(readLocalScores(selectedSessionId));
-    } catch {
-      setScoreLoadError(true);
-    }
+    fetch(`/api/stage1/scores?session_id=${encodeURIComponent(selectedSessionId)}`, {
+      cache: 'no-store', signal: controller.signal
+    })
+      .then(response => {
+        if (!response.ok) throw new Error('심사위원 제출 현황 조회 실패');
+        return response.json();
+      })
+      .then(data => { if (!controller.signal.aborted) setRoundScores(data); })
+      .catch(() => { if (!controller.signal.aborted) setScoreLoadError(true); });
+    return () => controller.abort();
   }, [selectedSessionId]);
 
   const handleSessionChange = (newSessionId: string) => {
@@ -193,15 +198,19 @@ function AdminStage1Content() {
   }, [proposals, filterType, filterDept, filterStatus, searchKeyword]);
 
   // 3. 심사내역보기 모달 열기 (이미지 2 데이터 로드)
-  const handleOpenDetailModal = (proposal: Proposal) => {
+  const handleOpenDetailModal = async (proposal: Proposal) => {
     setSelectedProposal(proposal);
     setScores([]);
     setEditedJudges(new Set());
     setModalScoreError(false);
+    setIsClosed(proposal.stage1_is_closed ?? true);
+    setFinalDecision(proposal.stage1_decision || '채택');
     setModalLoading(true);
 
     try {
-      const existingScores = readLocalScores(selectedSessionId).filter(score => score.proposal_id === proposal.id);
+      const res = await fetch(`/api/stage1/scores?session_id=${encodeURIComponent(selectedSessionId)}&proposal_id=${encodeURIComponent(proposal.id)}`, { cache: 'no-store' });
+      if (!res.ok) throw new Error('심사 점수 조회 실패');
+      const existingScores: CommitteeScore[] = await res.json();
 
       // 12명 심사위원과 매핑
       const mappedScores: CommitteeScore[] = judges.map((judge, idx) => {
@@ -274,67 +283,44 @@ function AdminStage1Content() {
     };
   }, [scores, editedJudges]);
 
-  // 취합한 점수 수정
-  const handleSaveScores = () => {
+  // 점수 및 마감여부 저장
+  const handleSaveScores = async () => {
     if (!selectedProposal || !selectedSessionId) return;
     setSavingScores(true);
 
     try {
-      const changed = scores.filter(score => editedJudges.has(score.judge_name)).map(score => ({
-        ...score, submitted_at: new Date().toISOString()
-      }));
-      setRoundScores(storeLocalScores(selectedSessionId, changed));
-      setIsEditingScores(false);
-      handleOpenDetailModal(selectedProposal);
-      alert('수정 점수를 이 브라우저에 저장했습니다.');
+      const res = await fetch('/api/stage1/scores', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          session_id: selectedSessionId,
+          proposal_id: selectedProposal.id,
+          scores: scores.filter(score => editedJudges.has(score.judge_name)),
+          stage1_is_closed: isClosed,
+          stage1_decision: finalDecision
+        })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        alert('1차 심사위원 다면 채점 결과가 성공적으로 저장되었습니다.');
+        setIsEditingScores(false);
+        fetchProposals(selectedSessionId);
+        void handleOpenDetailModal(selectedProposal);
+        const updated = await fetch(`/api/stage1/scores?session_id=${encodeURIComponent(selectedSessionId)}`, { cache: 'no-store' });
+        if (updated.ok) setRoundScores(await updated.json());
+      } else {
+        alert(data.error || '저장 실패');
+      }
     } catch (err) {
-      alert('브라우저에 점수를 저장하지 못했습니다.');
+      alert('서버 저장 중 오류가 발생했습니다.');
     } finally {
       setSavingScores(false);
     }
   };
 
-  const importResults = async (files: File[]) => {
-    if (!selectedSessionId || !files.length || loading) return;
-    const proposalIds = new Set(proposals.filter(proposal => proposal.session_id === selectedSessionId).map(proposal => proposal.id));
-    const judgeNames = new Set(judges.map(judge => judge.name));
-    try {
-      const incoming = await Promise.all(Array.from(files, async file =>
-        parseStage1Results(await file.text(), selectedSessionId, proposalIds, judgeNames)));
-      const merged = storeLocalScores(selectedSessionId, incoming.flat());
-      if (activeSession.current === selectedSessionId) {
-        setRoundScores(merged);
-        setScoreLoadError(false);
-      }
-      alert(`결과 파일 ${files.length}개를 이 브라우저에 가져왔습니다.`);
-    } catch (error) {
-      alert(error instanceof Error ? error.message : '심사 결과 파일을 가져오지 못했습니다.');
-    }
-  };
-
-  const downloadExcel = async () => {
-    if (!roundScores?.length) return;
-    try {
-      const xlsx = await import('xlsx');
-      const proposalById = new Map(proposals.map(proposal => [proposal.id, proposal]));
-      const rows = roundScores.map(score => ({
-        제안번호: proposalById.get(score.proposal_id)?.board_no || score.proposal_id,
-        제안명: proposalById.get(score.proposal_id)?.title || '',
-        심사위원: score.judge_name,
-        창의성: score.creativity,
-        실현성: score.feasibility,
-        효과성: score.effectiveness,
-        전파성: score.dissemination,
-        총점: score.total_score,
-        의견: score.opinion,
-        확정일시: score.submitted_at
-      }));
-      const book = xlsx.utils.book_new();
-      xlsx.utils.book_append_sheet(book, xlsx.utils.json_to_sheet(rows), '1차 심사 점수');
-      xlsx.writeFile(book, `1차심사-취합-${selectedSessionId}.xlsx`);
-    } catch {
-      alert('엑셀 파일을 내려받지 못했습니다.');
-    }
+  const handleDownloadExcel = () => {
+    if (!selectedSessionId) return;
+    window.location.href = `/api/export?session_id=${encodeURIComponent(selectedSessionId)}&stage=STAGE_1`;
   };
 
   return (
@@ -398,25 +384,21 @@ function AdminStage1Content() {
         <div>
           <h2 className="text-lg sm:text-xl font-bold text-slate-900 flex items-center gap-2">
             <DownloadCloud className="w-5 h-5 text-amber-600 flex-shrink-0" />
-            <span>[{currentSession?.title || '1차 제안심사'}] 제안 심사(1차 평가) 임시 취합</span>
+            <span>[{currentSession?.title || '1차 제안심사'}] 제안 심사(1차 평가) 취합 및 엑셀 다운로드</span>
           </h2>
           <p className="text-[15px] sm:text-xs text-slate-500 mt-1">
-            심사위원에게 받은 결과 파일을 가져오면 이 브라우저에서만 집계됩니다. 취합 파일을 내려받아 보관해 주세요.
+            선택된 1차 심사 회차의 12인 심사위원 채점 결과(창의성·실현성·효과성·전파성·총점·의견), 평균 총점 및 부서이동 이력을 보고용 엑셀로 내보냅니다.
           </p>
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">
           <button
-            onClick={() => downloadStage1Results(selectedSessionId, roundScores || [])}
-            disabled={!roundScores?.length}
+            onClick={handleDownloadExcel}
+            disabled={!selectedSessionId}
             className="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs sm:text-sm shadow-md shadow-emerald-600/25 transition whitespace-nowrap disabled:opacity-50"
           >
             <ArrowDownToLine className="w-4 h-4" />
-            <span>취합 결과 파일 내려받기</span>
-          </button>
-          <button type="button" disabled={!roundScores?.length} onClick={downloadExcel}
-            className="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 disabled:opacity-50">
-            점수 엑셀 내려받기
+            <span>종합 결과 엑셀 다운로드</span>
           </button>
         </div>
       </div>
@@ -450,16 +432,6 @@ function AdminStage1Content() {
       {selectedSessionId && (
         <section className="rounded-2xl border border-sky-200 bg-white p-4">
           <h3 className="font-bold text-slate-900">심사위원별 제출 현황</h3>
-          <label className="mt-2 block text-sm text-slate-700">
-            심사 결과 파일 가져오기
-            <input type="file" accept=".json,application/json" multiple disabled={loading || proposals.length === 0}
-              className="ml-2 max-w-full"
-              onChange={event => {
-                const files = Array.from(event.currentTarget.files ?? []);
-                void importResults(files);
-                event.currentTarget.value = '';
-              }} />
-          </label>
           {scoreLoadError ? (
             <p role="alert" className="mt-2 text-sm text-red-700">제출 현황을 불러오지 못했습니다. 새로고침해 주세요.</p>
           ) : roundScores === null ? (
@@ -770,6 +742,52 @@ function AdminStage1Content() {
               </div>
             </div>
 
+            {/* 1차 마감 여부 및 결과 판정 컨트롤 (이미지 2 중간) */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-amber-50/60 rounded-xl border border-amber-200 text-xs">
+              <div className="flex items-center gap-3">
+                <span className="font-bold text-slate-800">1차마감여부 (Y/N):</span>
+                <div className="flex items-center gap-2">
+                  <label className="flex items-center gap-1 cursor-pointer font-semibold">
+                    <input
+                      type="radio"
+                      name="modal_is_closed"
+                      checked={isClosed}
+                      onChange={() => setIsClosed(true)}
+                      className="text-sky-600"
+                    />
+                    <span>YES</span>
+                  </label>
+                  <label className="flex items-center gap-1 cursor-pointer font-semibold">
+                    <input
+                      type="radio"
+                      name="modal_is_closed"
+                      checked={!isClosed}
+                      onChange={() => setIsClosed(false)}
+                      className="text-sky-600"
+                    />
+                    <span>NO</span>
+                  </label>
+                </div>
+                <span className="text-emerald-700 font-bold ml-2">
+                  {isClosed ? '※ 마감된 제안입니다.' : '※ 심사진행 중인 제안입니다.'}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-slate-700">최종 판정:</span>
+                <select
+                  value={finalDecision}
+                  onChange={(e) => setFinalDecision(e.target.value)}
+                  className="bg-white border border-slate-300 font-bold text-xs rounded-lg px-2.5 py-1 text-sky-800"
+                >
+                  <option value="채택">채택</option>
+                  <option value="조건부채택">조건부채택</option>
+                  <option value="불채택">불채택</option>
+                  <option value="미결">미결</option>
+                </select>
+              </div>
+            </div>
+
             {/* 심사위원별 다면 평가 테이블 (첨부 이미지 2 하단 테이블 완벽 복원) */}
             <div className="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
               <div className="max-h-80 overflow-y-auto">
@@ -896,7 +914,7 @@ function AdminStage1Content() {
                         {averages.total}
                       </td>
                       <td className="py-2.5 px-4 text-left text-sky-900">
-                        집계 대상 <strong>{scores.filter(score => score.submitted_at || editedJudges.has(score.judge_name)).length}명</strong>
+                        판정 결과: <strong className="text-base ml-1 text-sky-950">{finalDecision}</strong>
                       </td>
                     </tr>
                   </tfoot>
@@ -907,7 +925,7 @@ function AdminStage1Content() {
             {/* Footer Buttons */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
               <span className="text-[15px] text-slate-500">
-                평균 50점 이상이면 채택하며, 총점 50점 미만을 부여한 심사위원이 3명 이상이면 불채택합니다.
+                * 과천도시공사 제안관리 규정에 따라 11인 심사위원의 평균 점수가 60점 이상일 경우 채택 제안으로 의결됩니다.
               </span>
 
               <div className="flex items-center gap-2">
@@ -921,11 +939,11 @@ function AdminStage1Content() {
                 <button
                   type="button"
                   onClick={handleSaveScores}
-                  disabled={savingScores || editedJudges.size === 0}
+                  disabled={savingScores}
                   className="px-5 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs shadow-md shadow-sky-600/20 flex items-center gap-1.5 disabled:opacity-50"
                 >
                   <Save className="w-4 h-4" />
-                  <span>{savingScores ? '저장 중...' : '수정 점수 저장'}</span>
+                  <span>{savingScores ? '저장 중...' : '심사 점수 및 마감여부 저장'}</span>
                 </button>
               </div>
             </div>
