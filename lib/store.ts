@@ -1012,7 +1012,7 @@ export function updateProposal(updated: Proposal): void {
 // 5. 0차 부서평가 결과 (Evaluations)
 export async function getEvaluationsAsync(sessionId?: string): Promise<Evaluation[]> {
   try {
-    let query = supabase.from('evaluations').select('*');
+    let query = supabase.from('evaluations').select('*').not('id', 'like', 'stage1-score-%');
     if (sessionId) query = query.eq('session_id', sessionId);
     const { data } = await query;
     if (data && data.length > 0) {
