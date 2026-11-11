@@ -13,6 +13,7 @@ export default function Home() {
   const [selectedJudge, setSelectedJudge] = useState<string>(DEFAULT_STAGE1_JUDGES[0]?.name || '박종용');
 
   // Modals state
+  const [noticeModalOpen, setNoticeModalOpen] = useState(true);
   const [adminModalOpen, setAdminModalOpen] = useState(false);
   const [adminPassword, setAdminPassword] = useState('');
   const [adminError, setAdminError] = useState('');
@@ -484,6 +485,54 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      {/* --- 모달 0: 최초 접속 안내 팝업 (빨간색 테마) --- */}
+      {noticeModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white border-2 border-red-300 w-full max-w-md rounded-2xl shadow-2xl p-6 relative text-slate-800">
+            <button
+              onClick={() => setNoticeModalOpen(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-1 rounded-lg"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-red-50 text-red-600 border border-red-200 flex items-center justify-center shrink-0">
+                <AlertCircle className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-red-700">1차 제안 심사 안내</h3>
+                <p className="text-xs text-red-500 font-medium">시스템 장애 복구 및 심사 재개 공지</p>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-xl bg-red-50/70 border border-red-200 text-sm text-slate-800 space-y-3 leading-relaxed">
+              <p className="font-semibold text-red-900">
+                2026년 11월 11일까지 진행하신 1차 제안 심사 결과가<br />
+                DB에 저장 되지 못하는 오류가 있었습니다.
+              </p>
+              <p className="text-slate-800 font-medium">
+                현재는 모든 장애가 수정되어 정상적으로 기록이 되고 있습니다.
+              </p>
+              <p className="font-bold text-red-700">
+                불편을 드려 죄송합니다. 양해 부탁 드리며, 11월 12일 부터 제안 심사 재개 부탁 드립니다.
+              </p>
+            </div>
+
+            <div className="pt-4">
+              <button
+                type="button"
+                autoFocus
+                onClick={() => setNoticeModalOpen(false)}
+                className="w-full py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-xs font-bold text-white shadow-lg shadow-red-500/20 transition flex items-center justify-center gap-2"
+              >
+                <Check className="w-4 h-4" />
+                <span>확인</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* --- 모달 1: 관리자 비밀번호 입력 (Clean White Modal) --- */}
       {adminModalOpen && (
