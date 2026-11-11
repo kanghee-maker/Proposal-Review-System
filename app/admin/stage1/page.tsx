@@ -1311,7 +1311,7 @@ function AdminStage1Content() {
             {/* Footer Buttons */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
               <span className="text-[15px] text-slate-500">
-                * 심사위원 총점 평균 50점 이상 시 채택 (단, 50점 미만 부여 위원이 3명 이상이면 과락 불채택 자동 지정)
+                * 심사위원 총점 평균 50점 이상이면 채택. 평균 50점 미만이면 불채택. (단, 50점 미만을 준 위원이 3명 이상이면 평균 50점 이상이라 하더라도, &ldquo;과락 불채택&rdquo;!)
               </span>
 
               <div className="flex flex-wrap items-center gap-2">
