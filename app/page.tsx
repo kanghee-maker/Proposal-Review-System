@@ -401,13 +401,13 @@ export default function Home() {
           </div>
 
           {/* 3. 1차 제안심사 평가자 (Stage 1 Judge) 카드 - 주황색 계열 신설 */}
-          <div className="bg-white rounded-2xl border-2 border-amber-300 p-6 sm:p-7 flex flex-col justify-between shadow-lg shadow-amber-100/60 hover:border-amber-600 transition group relative overflow-hidden">
+          <div className="bg-slate-50 rounded-2xl border-2 border-slate-200 p-6 sm:p-7 flex flex-col justify-between shadow-sm transition group relative overflow-hidden">
             <div>
               <div className="flex items-center justify-between mb-5">
-                <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 border border-amber-200 flex items-center justify-center group-hover:scale-105 transition">
+                <div className="w-12 h-12 rounded-2xl bg-slate-200 text-slate-500 border border-slate-200 flex items-center justify-center group-hover:scale-105 transition">
                   <Award className="w-6 h-6" />
                 </div>
-                <span className="px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 border border-amber-300 text-xs font-bold">
+                <span className="px-2.5 py-1 rounded-full bg-slate-200 text-slate-500 border border-slate-300 text-xs font-bold">
                   1차 심사위원 전용 (12인)
                 </span>
               </div>
@@ -419,12 +419,12 @@ export default function Home() {
               <form onSubmit={handleStage1EvaluatorCheck} className="space-y-4 mb-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                    담당 부서(1차 심사위원) 선택 <span className="text-amber-600">*</span>
+                    담당 부서(1차 심사위원) 선택 <span className="text-slate-500">*</span>
                   </label>
                   <select
                     value={selectedJudge}
                     onChange={(e) => setSelectedJudge(e.target.value)}
-                    className="w-full bg-amber-50/40 border border-amber-300 text-slate-900 font-semibold rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    className="w-full bg-slate-200/60 border border-slate-300 text-slate-600 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none"
                   >
                     {DEFAULT_STAGE1_JUDGES.map((judge) => (
                       <option key={judge.id} value={judge.name}>
@@ -437,17 +437,17 @@ export default function Home() {
                 <button
                   type="submit"
                   disabled={stage1Loading}
-                  className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 font-semibold text-white shadow-lg shadow-amber-600/25 flex items-center justify-center gap-2 transition mt-2 disabled:opacity-50 text-sm"
+                  className="w-full py-3.5 px-4 rounded-xl bg-slate-400 hover:bg-slate-500 font-semibold text-white shadow-sm flex items-center justify-center gap-2 transition mt-2 disabled:opacity-50 text-sm"
                 >
                   <KeyRound className="w-4 h-4" />
-                  <span>{stage1Loading ? '심사위원 확인 중...' : '1차 제안심사 완료'}</span>
+                  <span>{stage1Loading ? '심사위원 확인 중...' : '1차 제안 심사 완료(종료)'}</span>
                   <ChevronRight className="w-4 h-4 ml-auto" />
                 </button>
               </form>
             </div>
 
             {/* 안내 문구 */}
-            <div className="mt-2 p-3 rounded-xl bg-amber-50/60 border border-amber-200/80 text-xs text-slate-700 leading-relaxed text-left">
+            <div className="mt-2 p-3 rounded-xl bg-slate-200/60 border border-slate-200/80 text-xs text-slate-700 leading-relaxed text-left">
               <p className="text-[14px]">
                 ※ 1차 제안심사가 완료되어 추가 평가 및 제출이 마감되었습니다.
               </p>
