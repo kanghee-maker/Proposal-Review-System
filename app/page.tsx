@@ -264,10 +264,10 @@ export default function Home() {
               <span className="text-xs sm:text-sm font-bold text-slate-900">2026 과천도시공사 혁신 제안 심사 절차</span>
             </div>
             <span className="text-[15px] leading-relaxed text-slate-500">
-              * 부서 평가(0차 평가)와 1차 제안심사가 모두 완료되었습니다.
+              * 부서 평가(0차 평가)와 1차 제안심사가 완료되었으며, 2차 제안심사를 준비 중입니다.
             </span>
           </div>
-          <div className="grid sm:grid-cols-2 gap-3 text-xs">
+          <div className="grid md:grid-cols-3 gap-3 text-xs">
             {/* Step 1 */}
             <div className="bg-slate-100/90 p-4 rounded-xl border-2 border-slate-200/90 text-slate-500 flex flex-col">
               <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
@@ -285,17 +285,26 @@ export default function Home() {
             </div>
 
             {/* Step 2 */}
-            <div className="bg-white p-4 rounded-xl border-2 border-amber-500/70 shadow-sm flex flex-col">
-              <span className="self-start mb-3 text-[14px] px-2 py-1 rounded-md bg-amber-600 text-white font-bold border border-transparent whitespace-nowrap">
+            <div className="bg-slate-100/90 p-4 rounded-xl border-2 border-slate-200/90 text-slate-500 flex flex-col">
+              <span className="self-start mb-3 text-[14px] px-2 py-1 rounded-md bg-slate-200/80 text-slate-600 font-bold border border-slate-300 whitespace-nowrap">
                 1차 제안심사 완료
               </span>
               <div className="flex flex-wrap items-center gap-2 mb-2">
-                <span className="w-5 h-5 rounded-full bg-amber-100 text-amber-800 font-bold text-xs flex items-center justify-center">2</span>
-                <strong className="text-slate-900 font-bold text-sm">제안 심사(1차 평가)</strong>
+                <span className="w-5 h-5 rounded-full bg-slate-200 text-slate-600 font-bold text-xs flex items-center justify-center">2</span>
+                <strong className="text-slate-600 font-bold text-sm">제안 심사(1차 평가)</strong>
               </div>
-              <p className="text-slate-600 text-[15px] leading-relaxed">
+              <p className="text-slate-500 text-[15px] leading-relaxed">
                 <strong>부서 평가(0차 평가)</strong> 완결 후 채택(Yes) 제안을 연계하여 제안심사위원회 12인 심사위원이 창의성·실현성·효과성·전파성을 다면 평가합니다.
               </p>
+            </div>
+            {/* Step 3 */}
+            <div className="bg-white p-4 rounded-xl border-2 border-amber-500/70 shadow-sm flex flex-col">
+              <span className="self-start mb-3 text-[14px] px-2 py-1 rounded-md bg-amber-600 text-white font-bold whitespace-nowrap">2차 제안심사 준비 중</span>
+              <div className="flex flex-wrap items-center gap-2 mb-2">
+                <span className="w-5 h-5 rounded-full bg-amber-100 text-amber-800 font-bold text-xs flex items-center justify-center">3</span>
+                <strong className="text-slate-900 font-bold text-sm">제안심사(2차 평가)</strong>
+              </div>
+              <p className="text-slate-600 text-[15px] leading-relaxed">1차 제안심사 결과를 바탕으로 2차 제안심사를 준비하고 있습니다.</p>
             </div>
           </div>
         </div>
