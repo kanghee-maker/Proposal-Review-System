@@ -144,13 +144,7 @@ export default function Home() {
   // 3. 1차 제안심사 평가함 진입 요청
   const handleStage1EvaluatorCheck = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedJudge) {
-      alert('1차 제안심사 평가자를 선택해 주세요.');
-      return;
-    }
-    setStage1Password('');
-    setStage1Error('');
-    setStage1LoginModalOpen(true);
+    window.alert('1차 제안심사 완료되었습니다.');
   };
 
   const selectedJudgeInfo = DEFAULT_STAGE1_JUDGES.find(j => j.name === selectedJudge) || DEFAULT_STAGE1_JUDGES[0];
@@ -239,7 +233,7 @@ export default function Home() {
           </div>
           <div className="text-xs font-bold text-amber-800 bg-amber-50 px-3.5 py-1.5 rounded-full border border-amber-300 hidden sm:flex items-center gap-1.5 shadow-xs">
             <Award className="w-3.5 h-3.5 text-amber-600" />
-            <span>2026년도 제안심사 (1차 평가) 진행 중</span>
+            <span>2026년도 1차 제안심사 완료</span>
           </div>
         </div>
       </header>
@@ -249,7 +243,7 @@ export default function Home() {
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-50 border border-amber-300 text-amber-800 text-xs font-bold mb-3 shadow-sm">
             <Award className="w-4 h-4 text-amber-600" />
-            2026년도 제안심사 (1차 평가) 진행 중
+            2026년도 1차 제안심사 완료
           </div>
           <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-slate-900 mb-3 text-balance">
             과천도시공사 <span className="text-[#1768d5]">제안 평가 시스템</span>
@@ -270,7 +264,7 @@ export default function Home() {
               <span className="text-xs sm:text-sm font-bold text-slate-900">2026 과천도시공사 혁신 제안 심사 절차</span>
             </div>
             <span className="text-[15px] leading-relaxed text-slate-500">
-              * 부서 평가(0차 평가) 완료 후 현재 제안 심사(1차 평가)가 진행 중입니다.
+              * 부서 평가(0차 평가)와 1차 제안심사가 모두 완료되었습니다.
             </span>
           </div>
           <div className="grid sm:grid-cols-2 gap-3 text-xs">
@@ -293,7 +287,7 @@ export default function Home() {
             {/* Step 2 */}
             <div className="bg-white p-4 rounded-xl border-2 border-amber-500/70 shadow-sm flex flex-col">
               <span className="self-start mb-3 text-[14px] px-2 py-1 rounded-md bg-amber-600 text-white font-bold border border-transparent whitespace-nowrap">
-                1차 제안심사 진행 중
+                1차 제안심사 완료
               </span>
               <div className="flex flex-wrap items-center gap-2 mb-2">
                 <span className="w-5 h-5 rounded-full bg-amber-100 text-amber-800 font-bold text-xs flex items-center justify-center">2</span>
@@ -401,7 +395,7 @@ export default function Home() {
             {/* 안내 문구 */}
             <div className="mt-2 p-3 rounded-xl bg-slate-200/50 border border-slate-200 text-xs text-slate-500 leading-relaxed text-left">
               <p className="text-[14px]">
-                ※ 0차 부서 평가는 마감되었으며, 현재 <strong className="text-slate-600 font-bold">1차 제안심사</strong>가 진행 중입니다.
+                ※ 0차 부서 평가는 마감되었으며, 현재 <strong className="text-slate-600 font-bold">1차 제안심사</strong>가 완료되었습니다.
               </p>
             </div>
           </div>
@@ -417,9 +411,9 @@ export default function Home() {
                   1차 심사위원 전용 (12인)
                 </span>
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-2">1차 제안심사 평가자 로그인</h3>
+              <h3 className="text-xl font-bold text-slate-900 mb-2">1차 제안심사 완료</h3>
               <p className="text-xs sm:text-sm text-slate-600 mb-6 leading-6 md:min-h-[4.5rem]">
-                1차 제안심사위원(12명)을 선택하여 상정된 제안의 부서 검토의견을 확인하고, 항목별 점수(창의성·실현성·효과성·전파성) 및 심사 의견을 입력합니다.
+                2026년도 1차 제안심사가 완료되어 평가자 로그인이 마감되었습니다.
               </p>
 
               <form onSubmit={handleStage1EvaluatorCheck} className="space-y-4 mb-4">
@@ -446,7 +440,7 @@ export default function Home() {
                   className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 font-semibold text-white shadow-lg shadow-amber-600/25 flex items-center justify-center gap-2 transition mt-2 disabled:opacity-50 text-sm"
                 >
                   <KeyRound className="w-4 h-4" />
-                  <span>{stage1Loading ? '심사위원 확인 중...' : '1차 제안심사 평가함 입장'}</span>
+                  <span>{stage1Loading ? '심사위원 확인 중...' : '1차 제안심사 완료'}</span>
                   <ChevronRight className="w-4 h-4 ml-auto" />
                 </button>
               </form>
@@ -455,7 +449,7 @@ export default function Home() {
             {/* 안내 문구 */}
             <div className="mt-2 p-3 rounded-xl bg-amber-50/60 border border-amber-200/80 text-xs text-slate-700 leading-relaxed text-left">
               <p className="text-[14px]">
-                ※ 1차 제안심사위원 접속 비밀번호는 소속 부서 비밀번호와 동일하거나 <strong className="text-orange-600 font-bold">관리자(총무행정부 우세림) - 1192(내선번호)</strong>가 발급한 번호를 사용합니다.
+                ※ 1차 제안심사가 완료되어 추가 평가 및 제출이 마감되었습니다.
               </p>
             </div>
           </div>
@@ -568,7 +562,7 @@ export default function Home() {
               0차 심사는 종료 되었습니다.
             </h3>
             <p className="text-xs text-slate-500 leading-relaxed mb-6">
-              2026년도 부서 평가(0차 평가)가 마감되어 현재 1차 제안심사가 진행 중입니다.
+              2026년도 부서 평가(0차 평가)가 마감되어 현재 1차 제안심사가 완료되었습니다.
             </p>
             <button
               type="button"
@@ -640,7 +634,7 @@ export default function Home() {
                   className="w-2/3 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-xs font-semibold text-white shadow-lg shadow-amber-600/20 transition disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   <KeyRound className="w-3.5 h-3.5" />
-                  <span>{stage1Loading ? '확인 중...' : '1차 제안심사 평가함 입장'}</span>
+                  <span>{stage1Loading ? '확인 중...' : '1차 제안심사 완료'}</span>
                 </button>
               </div>
 
