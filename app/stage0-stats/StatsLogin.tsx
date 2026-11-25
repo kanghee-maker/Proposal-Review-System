@@ -32,7 +32,7 @@ export default function StatsLogin() {
       <form onSubmit={submit} className="space-y-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <h1 className="text-xl font-bold text-slate-900">0차 부서 평가 통계 조회</h1>
         <label className="block space-y-2 text-sm font-semibold text-slate-700">
-          <span>통계 조회 비밀번호</span>
+          <span>관리자 비밀번호</span>
           <input type="password" autoComplete="current-password" required value={password} onChange={e => setPassword(e.target.value)} className="block w-full rounded-xl border border-slate-300 px-3 py-2" />
         </label>
         {error && <p role="alert" className="text-sm text-rose-700">{error}</p>}

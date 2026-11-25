@@ -14,6 +14,7 @@ export default function Home() {
 
   // Modals state
   const [noticeModalOpen, setNoticeModalOpen] = useState(true);
+  const [adminDestination, setAdminDestination] = useState('/admin');
   const [adminModalOpen, setAdminModalOpen] = useState(false);
   const [adminPassword, setAdminPassword] = useState('');
   const [adminError, setAdminError] = useState('');
@@ -45,6 +46,7 @@ export default function Home() {
 
   // 1. 관리자 모드 진입 요청 (모달 띄우기)
   const openAdminModal = () => {
+    setAdminDestination('/admin');
     setAdminPassword('');
     setAdminError('');
     setAdminModalOpen(true);
@@ -76,7 +78,7 @@ export default function Home() {
           localStorage.setItem('gcuc_user_name', '총괄 관리자');
         }
         setAdminModalOpen(false);
-        router.push('/admin');
+        router.push(adminDestination);
       } else {
         setAdminError(data.message || '관리자 비밀번호가 일치하지 않습니다.');
       }
@@ -346,9 +348,9 @@ export default function Home() {
               <span>관리자 모드로 입장</span>
               <ChevronRight className="w-4 h-4 ml-auto" />
             </button>
-            <Link href="/stage0-stats" className="mt-3 flex items-center justify-center gap-2 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900 hover:bg-amber-100">
+            <button type="button" onClick={() => { openAdminModal(); setAdminDestination('/stage0-stats'); }} className="mt-3 flex items-center justify-center gap-2 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900 hover:bg-amber-100">
               <Lock className="h-4 w-4" /> 0차 평가 통계 조회
-            </Link>
+            </button>
           </div>
 
           {/* 2. 0차 부서 평가자 (Stage 0 Evaluator) 카드 - 마감 완료 (옅은 회색 톤) */}

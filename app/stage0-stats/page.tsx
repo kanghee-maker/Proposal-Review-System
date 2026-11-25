@@ -4,5 +4,5 @@ import StatsLogin from './StatsLogin';
 
 export default function Stage0StatsViewerPage() {
   const access = getAccess();
-  return access?.role === 'stats' || access?.role === 'admin' ? <Stage0StatsPage /> : <StatsLogin />;
+  return access?.role === 'admin' ? <Stage0StatsPage /> : <StatsLogin />;
 }

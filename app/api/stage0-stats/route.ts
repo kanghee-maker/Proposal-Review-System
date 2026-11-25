@@ -7,7 +7,7 @@ const headers = { 'Cache-Control': 'private, no-store' };
 
 export async function GET(req: Request) {
   const access = getAccess();
-  if (access?.role !== 'admin' && access?.role !== 'stats') return accessDenied(access);
+  if (access?.role !== 'admin') return accessDenied(access);
 
   try {
     const sessions = (await getSessionsAsync()).filter(s => !s.stage || s.stage === 'STAGE_0');
