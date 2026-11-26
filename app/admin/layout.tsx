@@ -23,7 +23,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const navItems = [
     { href: '/admin', label: '제안평가 회차', icon: Layers },
     { href: '/admin/proposals', label: '제안 목록·배정', icon: FileText },
-    { href: '/admin/stage0-stats', label: '0차 평가 통계', icon: DownloadCloud },
+    { href: '/admin/stage0-stats', label: '평가 결과·통계', icon: DownloadCloud },
     { href: '/admin/stage1', label: '제안 심사(1차)', icon: Award },
     { href: '/admin/organization', label: '2026 조직도', icon: Network },
     { href: '/admin/passwords', label: '부서 비밀번호', icon: KeyRound },

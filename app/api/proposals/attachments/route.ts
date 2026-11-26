@@ -1,3 +1,6 @@
+import { accessDenied, getAccess } from '@/lib/accessSession';
+import { reportProposals, reportSessions } from '@/lib/resultReportData';
+import { getStage0ReviewLinks } from '@/lib/stage0ReviewLinks';
 import fs from 'fs';
 import path from 'path';
 import { NextResponse } from 'next/server';
@@ -11,6 +14,8 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export async function GET(req: Request) {
+  const access = getAccess();
+  if (!access || access.role === 'stats') return accessDenied(access);
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
@@ -20,6 +25,19 @@ export async function GET(req: Request) {
       return NextResponse.json({ success: false, error: 'Attachment ID is required' }, { status: 400 });
     }
 
+    if (access.role === 'judge') {
+      const [proposals, sessions] = await Promise.all([reportProposals(), reportSessions()]);
+      const allowedIds = new Set<string>();
+      for (const session of sessions.filter(s => s.stage === 'STAGE_1' && s.judges?.some(j => j.name === access.judge))) {
+        const children = proposals.filter(p => p.session_id === session.id);
+        const links = await getStage0ReviewLinks(session.id);
+        for (const child of children) {
+          allowedIds.add(child.id);
+          if (links?.sourceProposalIds[child.id]) allowedIds.add(links.sourceProposalIds[child.id]);
+        }
+      }
+      if (!proposals.some(p => allowedIds.has(p.id) && p.attachments?.some(a => a.id === id))) return accessDenied(access);
+    }
     const attachment = await getAttachmentFileAsync(id);
     if (!attachment) {
       return NextResponse.json({ success: false, error: '첨부파일을 찾을 수 없습니다.' }, { status: 404 });
@@ -75,6 +93,8 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  const access = getAccess();
+  if (access?.role !== 'admin') return accessDenied(access);
   try {
     const body = await req.json();
     const { proposal_id, name, size, type, data_url } = body;
@@ -104,6 +124,8 @@ export async function POST(req: Request) {
 }
 
 export async function DELETE(req: Request) {
+  const access = getAccess();
+  if (access?.role !== 'admin') return accessDenied(access);
   try {
     const body = await req.json();
     const { proposal_id, attachment_id } = body;
