@@ -1,3 +1,4 @@
+import { wideResultRows } from './wideResultRows';
 import * as XLSX from 'xlsx';
 import { departmentStatistics, finalScores, initialDepartment, judgeStatistics, reportLabels, ResultReport, ResultRow, resultSummary } from './resultReports';
 
@@ -27,6 +28,7 @@ export function buildResultWorkbook(report: ResultReport, rows: ResultRow[], con
     worksheet['!autofilter'] = { ref: worksheet['!ref'] || 'A1' };
     XLSX.utils.book_append_sheet(workbook, worksheet, name);
   }
+  sheet('제안별 종합 결과', wideResultRows(report, rows));
   const summary = resultSummary(rows);
   sheet('통합 요약', [
     { 항목: '평가 단계', 값: reportLabels[report.mode] },
@@ -40,13 +42,6 @@ export function buildResultWorkbook(report: ResultReport, rows: ResultRow[], con
     })[key] || key, 값 })),
     ...report.warnings.map(값 => ({ 항목: '집계 기준', 값 }))
   ]);
-  sheet('제안별 종합 결과', rows.map(r => ({ ...identity(r), 현재부서: r.proposal.assigned_department,
-    연결근거: r.linkMethod, 최초배정부서: initialDepartment(r), '0차수용여부': r.stage0Result, '0차완료': r.stage0Complete,
-    상태: r.state, 최종제출인원: finalScores(r).length, 대상인원: r.judges.length,
-    미제출위원: r.missingJudges.join('\n'), 평균: r.average, 순위: r.rank,
-    기존최종판정: r.stage1.map(p => p.stage1_decision || missing).join('\n'),
-    마감상태: r.stage1.map(p => String(p.stage1_is_closed ?? missing)).join('\n'), 연결확인: r.linkIssue || '확인'
-  })));
   sheet('제안 원문', rows.flatMap(r => [r.proposal, ...r.stage1.filter(p => p.id !== r.proposal.id)].map(p => ({ ...identity(r), 자료ID: p.id,
     제안자: p.proposer_name, 직급: p.proposer_rank, 소속: p.proposer_department || p.proposer_raw_dept,
     접수일: p.submitted_at, 추진배경: p.background, 제안내용: p.content, 기대효과: p.expected_effect,
