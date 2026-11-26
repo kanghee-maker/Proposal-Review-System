@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { EvaluationSession } from '@/lib/types';
-import { departmentStatistics, emptyReportFilters, filterResultRows, finalScores, initialDepartment, judgeStatistics, orderDepartments, reportLabels, ReportFilters, ReportMode, ResultReport, ResultRow, resultSummary } from '@/lib/resultReports';
+import { resultDecision, departmentStatistics, emptyReportFilters, filterResultRows, finalScores, initialDepartment, judgeStatistics, orderDepartments, reportLabels, ReportFilters, ReportMode, ResultReport, ResultRow, resultSummary } from '@/lib/resultReports';
 import { buildResultWorkbook } from '@/lib/resultReportWorkbook';
 import { ReportZip } from '@/lib/reportZip';
 
@@ -54,13 +54,13 @@ export default function ResultStatistics() {
   const summary = resultSummary(rows), departments = departmentStatistics(rows), judges = judgeStatistics(rows);
   const selected = rows.find(r => r.proposal.id === openId || r.stage1.some(p => p.id === openId));
   const all = report?.rows || [];
-  const filterLabel: Record<keyof ReportFilters, string> = { search: '관리번호·제목·본문 검색', proposer: '제안자 소속', initial: '최초 배정 부서', department: '현재 담당 부서', result: '0차 수용 여부', transfer: '부서 이동', state: '연계·제출 상태', judge: '심사위원', decision: '기존 최종 판정' };
+  const filterLabel: Record<keyof ReportFilters, string> = { search: '관리번호·제목·본문 검색', proposer: '제안자 소속', initial: '최초 배정 부서', department: '현재 담당 부서', result: '0차 수용 여부', transfer: '부서 이동', state: '연계·제출 상태', judge: '심사위원', decision: '1차 판정' };
   const choices: Partial<Record<keyof ReportFilters, string[]>> = {
     proposer: orderDepartments(all.map(r => r.proposal.proposer_department || r.proposal.proposer_raw_dept)),
     initial: orderDepartments(all.map(initialDepartment)), department: orderDepartments(all.map(r => r.proposal.assigned_department)),
     result: Array.from(new Set(all.map(r => r.stage0Result))), transfer: ['이력 있음', '이력 없음', 'REQUEST', 'APPROVE', 'REJECT', 'CANCEL', 'NOTE', 'LEGACY'],
     state: [...Array.from(new Set(all.map(r => r.state))), '연결 확인 필요'], judge: Array.from(new Set(all.flatMap(r => [...r.judges.map(j => j.name), ...r.scores.map(s => s.judge_name)]))),
-    decision: Array.from(new Set(all.flatMap(r => r.stage1.map(p => p.stage1_decision).filter(Boolean))))
+    decision: Array.from(new Set(['채택', '조건부채택', '과락', '불채택', ...all.filter(r => r.stage1.length).map(resultDecision)]))
   };
   const filename = `${reportLabels[mode]}_${selectedId}_${new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Seoul' })}`;
   async function download(includeAttachments: boolean) {
@@ -137,7 +137,7 @@ export default function ResultStatistics() {
           '승인 이력 있는 제안': summary.transferred, '이관 승인 횟수': summary.moves, '연결 확인 필요': summary.issues }).map(([label, value]) => <div className="bg-slate-50 rounded p-3" key={label}>{label}<strong className="block text-xl">{value}</strong></div>)}
       </div><p className="report-note">1차 심사위원 제출 {summary.submitted}/{summary.required}건 ({summary.required ? (summary.submitted / summary.required * 100).toFixed(1) : '0'}%) · 제안 수와 평가 건수를 구분합니다.</p>
       <p className="report-note">0차 제출률 {summary.stage0Complete}/{summary.proposals}건 ({summary.proposals ? (summary.stage0Complete / summary.proposals * 100).toFixed(1) : '0'}%) · 채택률 {summary.accepted}/{summary.proposals}건 ({summary.proposals ? (summary.accepted / summary.proposals * 100).toFixed(1) : '0'}%)</p>
-      <h3>기존 최종 판정 현황</h3>{Array.from(new Set(rows.flatMap(r => r.stage1.map(p => p.stage1_decision || '기록 없음')))).map(decision => <div key={decision}>{decision} · {rows.filter(r => r.stage1.some(p => (p.stage1_decision || '기록 없음') === decision)).length}건</div>)}
+      <h3>1차 판정 현황</h3><p>과락: 50점 미만 평가위원 3명 이상. 불채택 건수에는 과락을 포함하지 않습니다. 0차 불채택은 별도 집계합니다.</p>{Array.from(new Set(['채택', '과락', '불채택', ...rows.filter(r => r.stage1.length).map(resultDecision)])).map(decision => <div key={decision}>{decision} · {rows.filter(r => r.stage1.length && resultDecision(r) === decision).length}건</div>)}
       <h3>1차 평균점수 분포</h3>{[0,20,40,60,80].map(low => { const count = rows.filter(r => r.average !== null && r.average >= low && (low === 80 ? r.average <= 100 : r.average < low + 20)).length; return <div key={low}>{low}~{low === 80 ? 100 : low + 19.99}점 · {count}건 <progress value={count} max={Math.max(1, summary.targets)} className="w-40" /></div>; })}
       </section>
       <section><h2>부서별 결과</h2><div className="table-wrap"><table><thead><tr><th>현재 실행부서</th><th>접수 소속 제안</th><th>배정 제안</th><th>0차 완료</th><th>채택 / 불채택</th><th>1차 연계</th><th>부서평가 기록 수</th></tr></thead><tbody>{departments.map(d => <tr key={d.name}><td>{d.name}</td><td>{d.proposed}</td><td>{d.proposals}</td><td>{d.stage0Complete}</td><td>{d.accepted} / {d.rejected}</td><td>{d.linked}</td><td>{d.departmentEvaluations}</td></tr>)}</tbody></table></div></section>
@@ -145,7 +145,7 @@ export default function ResultStatistics() {
       <section><h2>제안별 결과</h2><div className="table-wrap"><table className="result-list"><thead><tr><th>관리번호</th><th>제안 제목</th><th>현재 부서</th><th>0차 결과</th><th>1차 제출</th><th>평균 / 순위</th><th>상태·기존 판정</th></tr></thead><tbody>{rows.map((r, i) => <tr key={r.proposal.id + i}>
         <td>{r.proposal.board_no || r.proposal.seq_no}</td><td><button className="text-blue-700" onClick={() => setOpenId(r.proposal.id)}>{r.proposal.title}</button></td><td>{r.proposal.assigned_department}</td><td>{r.stage0Result}</td>
         <td>{finalScores(r).length}/{r.judges.length}{filters.judge && <div>{filters.judge} {display(r.scores.find(s => s.judge_name === filters.judge && !s.is_draft)?.total_score)}</div>}</td>
-        <td>{r.average === null ? '미산출' : r.average.toFixed(2)} / {r.rank ?? '미부여'}</td><td>{r.state}<br />{r.linkIssue && <strong className="text-red-700">{r.linkIssue}<br /></strong>}{r.stage1.map(p => p.stage1_decision || '기록 없음').join(', ')}</td>
+        <td>{r.average === null ? '미산출' : r.average.toFixed(2)} / {r.rank ?? '미부여'}</td><td>{r.state}<br />{r.linkIssue && <strong className="text-red-700">{r.linkIssue}<br /></strong>}{resultDecision(r)}</td>
       </tr>)}</tbody></table></div>{!rows.length && <p>조회 조건에 해당하는 자료가 없습니다.</p>}</section>
       {selected && <section className="report-detail"><h2>{selected.proposal.title}</h2>
         <button className="report-no-print" onClick={() => setOpenId('')}>상세 닫기</button>
@@ -159,7 +159,7 @@ export default function ResultStatistics() {
         <h3>1차 심사위원별 평가</h3><div className="table-wrap"><table><thead><tr><th>위원·소속·직위</th><th>창의성</th><th>실현성</th><th>효과성</th><th>전파성</th><th>총점</th><th>의견·제출상태</th></tr></thead><tbody>{selected.scores.filter(s => !filters.judge || s.judge_name === filters.judge).map(s => <tr key={s.id}><td>{s.judge_name}<br />{s.judge_dept}<br />{s.judge_title}</td><td>{s.creativity}</td><td>{s.feasibility}</td><td>{s.effectiveness}</td><td>{s.dissemination}</td><td>{s.total_score}</td><td>{display(s.opinion)}<br />{s.is_draft ? '임시저장' : '최종제출'}<br />{display(s.submitted_at)}</td></tr>)}</tbody></table></div>
         <p>미제출 {selected.missingJudges.join(', ') || '없음'}</p>
         <p>항목별 평균 · 창의성 {scoreAverage(selected, 'creativity')} / 실현성 {scoreAverage(selected, 'feasibility')} / 효과성 {scoreAverage(selected, 'effectiveness')} / 전파성 {scoreAverage(selected, 'dissemination')}</p>
-        <h3>종합 결과</h3>{fields({ 상태: selected.state, 평균: selected.average, 순위: selected.rank, 연결근거: selected.linkMethod, 연결확인: selected.linkIssue || '확인', '1차자료ID': selected.stage1.map(p => p.id).join(', '), '기존최종판정': selected.stage1.map(p => p.stage1_decision || '기록 없음').join(', '), '마감상태': selected.stage1.map(p => p.stage1_is_closed ? '마감' : '미마감').join(', ') })}
+        <h3>종합 결과</h3>{fields({ 상태: selected.state, 평균: selected.average, 순위: selected.rank, 연결근거: selected.linkMethod, 연결확인: selected.linkIssue || '확인', '1차자료ID': selected.stage1.map(p => p.id).join(', '), '1차판정': resultDecision(selected), '마감상태': selected.stage1.map(p => p.stage1_is_closed ? '마감' : '미마감').join(', ') })}
         <h3>첨부파일</h3>{[selected.proposal, ...selected.stage1.filter(p => p.id !== selected.proposal.id)].flatMap(p => p.attachments || []).map(a => <div key={a.id}><a className="text-blue-700" href={`/api/proposals/attachments?id=${encodeURIComponent(a.id)}&download=1`}>{a.name}</a></div>)}
       </section>}
       <section><h2>집계 기준·자료 범위</h2>{report.warnings.map(text => <p className="report-note" key={text}>{text}</p>)}</section>

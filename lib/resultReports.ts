@@ -1,4 +1,5 @@
 import { CommitteeJudge, CommitteeScore, Evaluation, EvaluationSession, Proposal, TransferHistoryEntry } from './types';
+import { stage1Decision } from './stage1Decision';
 
 export type ReportMode = 'stage0' | 'stage1' | 'combined';
 export interface ResultRow {
@@ -27,6 +28,9 @@ export interface ResultReport {
   warnings: string[];
 }
 export const reportLabels = { stage0: '0차 부서평가', stage1: '1차 제안심사', combined: '0차·1차 통합 결과' };
+export function resultDecision(row: ResultRow) {
+  return stage1Decision(row.stage1.length === 1 ? row.stage1[0] : undefined, finalScores(row), row.judges.length, Boolean(row.linkIssue));
+}
 export const departmentOrder = ['청렴감사단', '안전총괄단', '사업계획부', '판매·보상부', '개발1부', '개발2부', '기술지원부', '시설기획부', '시설운영부', '주차관리부', '여가체육부', '수영부', '빙상부', '볼링골프부', '공원운영부', '시설지원부', '수련관운영부', '총무행정부', '재무부', '회계부', '인사부', '미래혁신부', '스마트정보부'];
 export function orderDepartments(values: string[]) {
   return Array.from(new Set(values.filter(Boolean))).sort((a, b) => {
@@ -54,7 +58,7 @@ export function filterResultRows(rows: ResultRow[], filters: ReportFilters) {
       (!filters.transfer || (filters.transfer === '이력 있음' ? r.transfers.length > 0 : filters.transfer === '이력 없음' ? r.transfers.length === 0 : r.transfers.some(t => t.action === filters.transfer))) &&
       (!filters.state || (filters.state === '연결 확인 필요' ? Boolean(r.linkIssue) : filters.state === r.state)) &&
       (!filters.judge || r.judges.some(j => j.name === filters.judge) || r.scores.some(s => s.judge_name === filters.judge)) &&
-      (!filters.decision || r.stage1.some(s => s.stage1_decision === filters.decision));
+      (!filters.decision || resultDecision(r) === filters.decision);
   });
 }
 export function finalScores(row: ResultRow) { return row.scores.filter(s => !s.is_draft); }
@@ -66,6 +70,8 @@ export function resultSummary(rows: ResultRow[]) {
   return {
     proposals: originals.length, stage0Complete: originals.filter(r => r.stage0Complete).length,
     accepted: originals.filter(r => r.stage0Result === 'Yes').length, rejected: originals.filter(r => r.stage0Result === 'No').length,
+    stage1Disqualified: linked.filter(r => resultDecision(r) === '과락').length,
+    stage1Rejected: linked.filter(r => resultDecision(r) === '불채택').length,
     linked: linked.filter(r => !r.linkIssue).length, targets: linked.length, unlinked: rows.filter(r => r.unlinkedTarget).length, complete: linked.filter(r => r.state === '1차 심사 완료').length,
     partial: linked.filter(r => r.missingJudges.length && finalScores(r).length).length,
     unsubmitted: linked.filter(r => !finalScores(r).length).length,

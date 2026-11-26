@@ -949,7 +949,7 @@ function AdminStage1Content() {
                       <td className="py-2.5 px-3 font-bold whitespace-nowrap">
                         {decision === '과락 불채택' ? (
                           <span className="px-2 py-0.5 rounded-md bg-rose-50 text-rose-700 border border-rose-200 text-xs font-extrabold">
-                            과락 불채택
+                            과락
                           </span>
                         ) : decision === '불채택' ? (
                           <span className="text-rose-600">{decision}</span>
@@ -1093,7 +1093,7 @@ function AdminStage1Content() {
               <div className="flex flex-wrap items-center gap-2">
                 {modalUnder50Count >= 3 && (
                   <span className="px-2.5 py-1 rounded-lg bg-rose-100 text-rose-800 border border-rose-300 font-bold text-xs">
-                    ⚠️ 50점 미만 평가자 {modalUnder50Count}명 (과락 불채택 자동 지정)
+                    ⚠️ 50점 미만 평가자 {modalUnder50Count}명 (과락 자동 지정)
                   </span>
                 )}
                 <span className="font-bold text-slate-700">최종 판정:</span>
@@ -1109,7 +1109,7 @@ function AdminStage1Content() {
                   <option value="채택">채택</option>
                   <option value="조건부채택">조건부채택</option>
                   <option value="불채택">불채택</option>
-                  <option value="과락 불채택">과락 불채택</option>
+                  <option value="과락 불채택">과락</option>
                   <option value="미결">미결</option>
                 </select>
               </div>
@@ -1311,7 +1311,7 @@ function AdminStage1Content() {
             {/* Footer Buttons */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
               <span className="text-[15px] text-slate-500">
-                * 심사위원 총점 평균 50점 이상이면 채택. 평균 50점 미만이면 불채택. (단, 50점 미만을 준 위원이 3명 이상이면 평균 50점 이상이라 하더라도, &ldquo;과락 불채택&rdquo;!)
+                * 심사위원 총점 평균 50점 이상이면 채택. 평균 50점 미만이면 불채택. (단, 50점 미만을 준 위원이 3명 이상이면 평균 50점 이상이라 하더라도, &ldquo;과락&rdquo;!)
               </span>
 
               <div className="flex flex-wrap items-center gap-2">

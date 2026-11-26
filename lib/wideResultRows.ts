@@ -1,5 +1,5 @@
 import { DEFAULT_STAGE1_JUDGES } from './types';
-import { finalScores, initialDepartment, ResultReport, ResultRow } from './resultReports';
+import { finalScores, initialDepartment, resultDecision, ResultReport, ResultRow } from './resultReports';
 
 export function wideResultRows(report: ResultReport, rows: ResultRow[]) {
   const judges = [...DEFAULT_STAGE1_JUDGES];
@@ -21,7 +21,7 @@ export function wideResultRows(report: ResultReport, rows: ResultRow[]) {
       '제안제목': p.title, '0차_부서평가_검토결과': row.stage0Result,
       '0차_부서평가_검토의견': submitted.length === 1 ? submitted[0].answers.opinion ?? '' : submitted.map(e => `[${e.department_name}]\n${e.answers.opinion ?? ''}`).join('\n\n') || p.stage0_opinion || '기록 없음',
       '1차심사_마감여부': child ? child.stage1_is_closed === undefined ? '기록 없음' : child.stage1_is_closed ? 'Y (마감완료)' : 'N (심사중)' : '1차 미연계',
-      '1차심사_최종판정': child?.stage1_decision || (child ? '기록 없음' : '1차 미연계'),
+      '1차심사_최종판정': resultDecision(row),
       '1차심사_심사일자': child?.stage1_review_date || '', '기여율(%)': child?.contribution_rate ?? '',
       '채점참여_위원수': `${scores.length}/${row.judges.length}명`,
       '평균_창의성(30)': average('creativity'), '평균_실현성(30)': average('feasibility'),

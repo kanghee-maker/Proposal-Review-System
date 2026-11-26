@@ -1,3 +1,4 @@
+import { stage1Decision } from '@/lib/stage1Decision';
 import { NextResponse } from 'next/server';
 import { accessDenied, getAccess } from '@/lib/accessSession';
 import { getProposalsAsync, getEvaluationsAsync, getSessionsAsync } from '@/lib/store';
@@ -125,15 +126,7 @@ export async function GET(req: Request) {
             : p.stage1_avg_score !== undefined
               ? p.stage1_avg_score
               : '';
-        const under50Count = propScores.filter(s => Number(s.total_score) < 50).length;
-        const autoDecision =
-          under50Count >= 3
-            ? '과락 불채택'
-            : p.stage1_decision && p.stage1_decision !== '심사대기' && p.stage1_decision !== '과락 불채택'
-              ? p.stage1_decision
-              : scoredCount >= judges.length && typeof avgTotal === 'number'
-                ? (avgTotal >= 50 ? '채택' : '불채택')
-                : (p.stage1_is_closed ? '채택' : '심사대기');
+        const autoDecision = stage1Decision(p, propScores, judges.length);
 
         const history: TransferHistoryEntry[] = Array.isArray(p.transfer_history) ? p.transfer_history : [];
         const transferStatusLabel = p.transfer_requested
