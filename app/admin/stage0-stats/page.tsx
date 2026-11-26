@@ -585,6 +585,7 @@ function Stage0StatsContent() {
                   <DownloadCloud className="w-4 h-4" /> 엑셀 다운로드
                 </a>
                 <Link href={`/admin/result-reports?${sessionQuery}`} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-700">0차·1차 통합 결과·다운로드</Link>
+                <Link href="/stage1-stats" className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-amber-800">1차 심사 대시보드</Link>
               </div>
             )}
           </div>

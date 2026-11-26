@@ -4,7 +4,7 @@ import { FormEvent, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-export default function StatsLogin() {
+export default function StatsLogin({ title = '0차 부서 평가 통계 조회' }: { title?: string }) {
   const router = useRouter();
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -30,7 +30,7 @@ export default function StatsLogin() {
   return (
     <main className="mx-auto max-w-md px-4 py-16">
       <form onSubmit={submit} className="space-y-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h1 className="text-xl font-bold text-slate-900">0차 부서 평가 통계 조회</h1>
+        <h1 className="text-xl font-bold text-slate-900">{title}</h1>
         <label className="block space-y-2 text-sm font-semibold text-slate-700">
           <span>관리자 비밀번호</span>
           <input type="password" autoComplete="current-password" required value={password} onChange={e => setPassword(e.target.value)} className="block w-full rounded-xl border border-slate-300 px-3 py-2" />
