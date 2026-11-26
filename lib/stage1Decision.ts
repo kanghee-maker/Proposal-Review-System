@@ -1,5 +1,16 @@
 import { CommitteeScore, Proposal } from './types';
 
+/** Export-only classification. Never writes back to evaluation records. */
+export function exportStage1Decision(proposal: Proposal | undefined, scores: CommitteeScore[], required: number, uncertain = false): string {
+  if (!proposal || uncertain) return stage1Decision(proposal, scores, required, uncertain);
+  const finals = scores.filter(s => !s.is_draft);
+  if (required > 0 && finals.length === required) {
+    const average = finals.reduce((sum, s) => sum + Number(s.total_score), 0) / finals.length;
+    if (average < 50) return '불채택';
+  }
+  return stage1Decision(proposal, scores, required, uncertain);
+}
+
 /** Display categories are exclusive; stored legacy decisions remain untouched. */
 export function stage1Decision(proposal: Proposal | undefined, scores: CommitteeScore[], required: number, uncertain = false): string {
   if (!proposal) return '1차 미연계';

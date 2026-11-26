@@ -1,4 +1,4 @@
-import { stage1Decision } from '@/lib/stage1Decision';
+import { exportStage1Decision } from '@/lib/stage1Decision';
 import { NextResponse } from 'next/server';
 import { accessDenied, getAccess } from '@/lib/accessSession';
 import { getProposalsAsync, getEvaluationsAsync, getSessionsAsync } from '@/lib/store';
@@ -126,7 +126,7 @@ export async function GET(req: Request) {
             : p.stage1_avg_score !== undefined
               ? p.stage1_avg_score
               : '';
-        const autoDecision = stage1Decision(p, propScores, judges.length);
+        const autoDecision = exportStage1Decision(p, propScores, judges.length);
 
         const history: TransferHistoryEntry[] = Array.isArray(p.transfer_history) ? p.transfer_history : [];
         const transferStatusLabel = p.transfer_requested

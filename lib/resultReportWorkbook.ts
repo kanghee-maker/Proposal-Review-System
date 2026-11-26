@@ -30,13 +30,16 @@ export function buildResultWorkbook(report: ResultReport, rows: ResultRow[], con
   }
   sheet('제안별 종합 결과', wideResultRows(report, rows));
   const summary = resultSummary(rows);
+  const decisions = wideResultRows(report, rows).map(row => row['1차심사_최종판정']);
+  summary.stage1Disqualified = decisions.filter(value => value === '과락').length;
+  summary.stage1Rejected = decisions.filter(value => value === '불채택').length;
   sheet('통합 요약', [
     { 항목: '평가 단계', 값: reportLabels[report.mode] },
     { 항목: '회차', 값: report.sessions.find(s => s.id === report.sessionId)?.title },
     { 항목: '조회 조건', 값: conditions }, { 항목: '조회 시각', 값: report.generatedAt },
     ...Object.entries(summary).map(([key, 값]) => ({ 항목: ({
       proposals: '원본 제안 수', stage0Complete: '0차 완료 제안 수', accepted: '0차 채택', rejected: '0차 불채택',
-      stage1Disqualified: '1차 과락 (50점 미만 평가위원 3명 이상)', stage1Rejected: '1차 불채택 (과락 제외)',
+      stage1Disqualified: '1차 과락 (평균 50점 이상·50점 미만 위원 3명 이상)', stage1Rejected: '1차 불채택 (평균 50점 미만)',
       linked: '원본 확정 연결', targets: '1차 대상', unlinked: '별도 미연결 자료', complete: '1차 전원 제출',
       partial: '1차 일부 제출', unsubmitted: '1차 미제출', transferred: '이관 승인 이력 있는 제안', moves: '이관 승인 횟수',
       required: '심사위원 평가 대상 건수', submitted: '심사위원 최종 제출 건수', issues: '연결 확인 필요'
