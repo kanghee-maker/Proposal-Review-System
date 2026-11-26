@@ -1,8 +1,8 @@
 import { getAccess } from '@/lib/accessSession';
-import Stage0StatsPage from '../admin/stage0-stats/page';
+import UnifiedStatistics from '../admin/stage0-stats/UnifiedStatistics';
 import StatsLogin from './StatsLogin';
 
 export default function Stage0StatsViewerPage() {
   const access = getAccess();
-  return access?.role === 'admin' ? <Stage0StatsPage /> : <StatsLogin />;
+  return access?.role === 'admin' ? <UnifiedStatistics defaultStage="STAGE_0" fixedStage /> : <StatsLogin />;
 }
