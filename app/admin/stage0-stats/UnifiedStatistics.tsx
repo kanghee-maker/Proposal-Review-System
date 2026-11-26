@@ -4,6 +4,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { EvaluationSession } from '@/lib/types';
 import Stage0Visualization from './Stage0Visualization';
 import Stage1Dashboard from '../stage1-stats/Stage1Dashboard';
+import { StatisticsVisualStyles } from './StatisticsVisuals';
 function Statistics({ defaultStage }: { defaultStage: 'STAGE_0' | 'STAGE_1' }) {
   const router = useRouter(), pathname = usePathname(), query = useSearchParams();
   const [sessions, setSessions] = useState<EvaluationSession[]>([]), [error, setError] = useState('');
@@ -16,7 +17,7 @@ function Statistics({ defaultStage }: { defaultStage: 'STAGE_0' | 'STAGE_1' }) {
     return () => controller.abort();
   }, []);
   const selected = sessions.find(s => s.id === query.get('session_id')) || sessions.find(s => (s.stage || 'STAGE_0') === defaultStage && (s.proposals_count || 0) > 0) || sessions.find(s => (s.stage || 'STAGE_0') === defaultStage) || sessions[0];
-  return <><section className="round-switcher"><label htmlFor="statistics-round">평가 회차 선택 · 0차 / 1차</label>
+  return <><StatisticsVisualStyles /><section className="round-switcher"><label htmlFor="statistics-round">평가 회차 선택 · 0차 / 1차</label>
     <select id="statistics-round" value={selected?.id || ''} disabled={!sessions.length} onChange={e => router.replace(`${pathname}?session_id=${encodeURIComponent(e.target.value)}`, { scroll: false })}>
       {!sessions.length && <option>회차를 불러오는 중</option>}{sessions.map(s => <option key={s.id} value={s.id}>[{s.stage === 'STAGE_1' ? '1차 심사' : '0차 부서평가'}] {s.year}년 · {s.title} ({s.proposals_count || 0}건)</option>)}
     </select><p>회차를 바꾸면 해당 평가의 그래프·상세 결과·인쇄·엑셀 다운로드가 함께 전환됩니다.</p></section>

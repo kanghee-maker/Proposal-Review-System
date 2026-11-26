@@ -25,6 +25,8 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { Proposal, Evaluation, EvaluationSession, Department } from '@/lib/types';
+import { StatisticsDonut, StatisticsHeader, StatisticsPrintOptions } from './StatisticsVisuals';
+const printSections = { overview: '핵심 지표', decision: '판정 비율', offices: '처·실·단별 현황', assigned: '실행부서별 통계', proposers: '제안부서별 통계', category: '분야별 통계', rank: '직급별 통계', table: '부서 종합 일람표', details: '제안별 결과·검토의견' };
 
 interface AssignedDeptStat {
   dept: string;
@@ -69,6 +71,8 @@ function Stage0StatsContent({ sessionId, embedded }: { sessionId?: string; embed
   const [resultFilter, setResultFilter] = useState<'ALL' | 'Yes' | 'No' | 'TRANSFER'>('ALL');
   const [deptFilter, setDeptFilter] = useState<string>('ALL');
   const [searchKeyword, setSearchKeyword] = useState<string>('');
+  const [printParts, setPrintParts] = useState(Object.keys(printSections));
+  const [printError, setPrintError] = useState('');
 
   // 1. 0차 평가 회차 및 조직도 로드
   useEffect(() => {
@@ -154,6 +158,8 @@ function Stage0StatsContent({ sessionId, embedded }: { sessionId?: string; embed
   const currentSession = sessions.find(s => s.id === selectedSessionId);
   const sessionQuery = `session_id=${encodeURIComponent(selectedSessionId)}`;
   const handlePrint = async () => {
+    if (!printParts.length) { setPrintError('인쇄할 항목을 하나 이상 선택해 주세요.'); return; }
+    setPrintError('');
     const response = await fetch(viewer ? '/api/auth/stats' : '/api/auth/admin', { cache: 'no-store' }).catch(() => null);
     if (response?.ok) window.print();
     else if (response?.status === 401 || response?.status === 403) router.replace('/');
@@ -527,75 +533,21 @@ function Stage0StatsContent({ sessionId, embedded }: { sessionId?: string; embed
   const noStroke = noRatio * circumference;
 
   return (
-    <div className="stage0-report text-slate-900">
-      <header className="bg-white border-b border-slate-200 shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-3.5">
-            <Link
-              href={viewer ? '/' : '/admin'}
-              className="print:hidden p-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 transition"
-              title={viewer ? '홈으로 돌아가기' : '관리자 회차 목록'}
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Link>
-            <div className="p-[2px] rounded-2xl bg-gradient-to-br from-yellow-300 via-amber-500 to-amber-700 shadow-md shadow-amber-500/20">
-              <div className="w-11 h-11 rounded-[14px] bg-slate-900 text-amber-400 flex items-center justify-center">
-                <BarChart3 className="w-6 h-6" />
-              </div>
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-lg sm:text-2xl font-extrabold text-slate-900 tracking-tight">
-                  0차 부서 평가 통계 조회
-                </h1>
-                <span className="px-2.5 py-0.5 rounded-full bg-amber-50 border border-amber-300 text-amber-800 text-xs font-bold">
-                  결과 대시보드
-                </span>
-              </div>
-              <p className="text-xs sm:text-sm text-slate-500 font-medium">
-                {currentSession?.title}
-              </p>
-            </div>
-          </div>
-
-          {/* 0차 평가 회차 선택기 */}
-          <div className="print:hidden flex flex-wrap items-center gap-2.5 bg-slate-50 p-2 rounded-xl border border-slate-200">
-            <div className="flex items-center gap-1.5 px-2 text-xs font-bold text-slate-600 whitespace-nowrap">
-              <Layers className="w-4 h-4 text-amber-600" />
-              <span>{embedded ? "선택한 0차 부서평가" : "0차 평가 회차 선택"}</span>
-            </div>
-            <select
-              hidden={embedded}
-              aria-label="0차 평가 회차"
-              value={selectedSessionId}
-              onChange={(e) => handleSessionChange(e.target.value)}
-              className="bg-white border-2 border-amber-400 text-slate-900 font-bold text-xs sm:text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer shadow-xs"
-            >
-              {sessions.map((s) => (
-                <option key={s.id} value={s.id}>
-                  [{s.year}년] {s.title} ({s.proposals_count}건)
-                </option>
-              ))}
-            </select>
-            {viewer && <button type="button" onClick={handleViewerLogout} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700">로그아웃</button>}
-            {currentSession && !loading && !loadError && proposals.length > 0 && (
-              <div className="flex flex-wrap gap-2 text-xs font-bold">
-                <button type="button" onClick={handlePrint} className="inline-flex items-center gap-1.5 rounded-lg bg-sky-700 px-3 py-2 text-white">
-                  <Printer className="w-4 h-4" /> 통계 인쇄
-                </button>
-                <a href={`/api/export?${sessionQuery}`} className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-700 px-3 py-2 text-white">
-                  <DownloadCloud className="w-4 h-4" /> 엑셀 다운로드
-                </a>
-                <Link href={`/admin/result-reports?${sessionQuery}`} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-700">0차·1차 통합 결과·다운로드</Link>
-                <Link href="/stage1-stats" className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-amber-800">1차 심사 대시보드</Link>
-              </div>
-            )}
-          </div>
-        </div>
-      </header>
+    <div className="stage0-report statistics-view text-slate-900">
+      <StatisticsHeader title="0차 부서 평가 통계 조회" subtitle={currentSession?.title}>
+        {!embedded && <select aria-label="0차 평가 회차" value={selectedSessionId} onChange={e=>handleSessionChange(e.target.value)}>{sessions.map(s=><option key={s.id} value={s.id}>{s.title}</option>)}</select>}
+        <Link href={viewer ? '/' : '/admin'} className="rounded-lg border border-slate-300 bg-white px-3 py-2">{viewer ? '홈으로' : '관리자 홈'}</Link>
+        {viewer && <button type="button" onClick={handleViewerLogout} className="rounded-lg border border-slate-300 bg-white">로그아웃</button>}
+        <button type="button" disabled={loading||loadError||!proposals.length} onClick={handlePrint} className="bg-sky-700 text-white">선택 항목 인쇄</button>
+        <a href={`/api/export?${sessionQuery}`} className="bg-emerald-700 text-white rounded-lg">엑셀 다운로드</a>
+        <Link href={`/admin/result-reports?${sessionQuery}`} className="rounded-lg border border-slate-300 bg-white">0차·1차 통합 결과·다운로드</Link>
+      </StatisticsHeader>
+      <div className="stats-panel screen-only" style={{padding:'20px 24px',marginBottom:24}}><StatisticsPrintOptions sections={printSections} selected={printParts} onChange={setPrintParts} /></div>
+      {printError && <p role="alert" className="text-rose-700 screen-only">{printError}</p>}
+      <p className="stats-print-caption">인쇄 항목: {printParts.map(id=>printSections[id as keyof typeof printSections]).join(' · ')}</p>
 
       {/* Content Body */}
-      <section className="max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-8 space-y-6 flex-1">
+      <section className="stats-content">
         {loadError ? (
           <p role="alert" className="rounded-xl bg-white p-6 text-rose-700">평가 자료를 불러오지 못했습니다. 새로고침해 주세요.</p>
         ) : loading ? (
@@ -610,9 +562,9 @@ function Stage0StatsContent({ sessionId, embedded }: { sessionId?: string; embed
         ) : (
           <>
             {/* 1. 핵심 요약 KPI 카드 6종 */}
-            <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
+            <div data-print-section="overview" className={`grid grid-cols-2 lg:grid-cols-6 gap-4 stats-kpi-grid ${printParts.includes('overview') ? '' : 'stats-print-hidden'}`}>
               {/* KPI 1: 총 접수 제안 */}
-              <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+              <div data-metric="total" className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs flex flex-col justify-between">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-bold text-slate-500">총 접수·배정 제안</span>
                   <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
@@ -631,7 +583,7 @@ function Stage0StatsContent({ sessionId, embedded }: { sessionId?: string; embed
               </div>
 
               {/* KPI 2: 부서 평가 제출률 */}
-              <div className="bg-white rounded-2xl border border-emerald-200 p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+              <div data-metric="submitted" className="bg-white rounded-2xl border border-emerald-200 p-4 sm:p-5 shadow-xs flex flex-col justify-between">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-bold text-emerald-700">부서 평가 제출률</span>
                   <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
@@ -656,7 +608,7 @@ function Stage0StatsContent({ sessionId, embedded }: { sessionId?: string; embed
               </div>
 
               {/* KPI 3: 0차 채택률 (Yes) */}
-              <div className="bg-gradient-to-br from-amber-50/90 via-white to-yellow-50/60 rounded-2xl border-2 border-amber-300 p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+              <div data-metric="accepted" className="bg-gradient-to-br from-amber-50/90 via-white to-yellow-50/60 rounded-2xl border-2 border-amber-300 p-4 sm:p-5 shadow-xs flex flex-col justify-between">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-extrabold text-amber-800">0차 채택률 (수용 Yes)</span>
                   <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center">
@@ -664,11 +616,11 @@ function Stage0StatsContent({ sessionId, embedded }: { sessionId?: string; embed
                   </div>
                 </div>
                 <div>
-                  <div className="flex items-baseline gap-1.5">
-                    <span className="text-2xl sm:text-3xl font-extrabold text-amber-600">
+                  <div className="flex flex-wrap items-baseline gap-1.5">
+                    <span className="text-2xl sm:text-3xl font-extrabold text-amber-600 whitespace-nowrap">
                       {summary.adoptionRate}%
                     </span>
-                    <span className="text-sm font-extrabold text-slate-800">({summary.yes}건)</span>
+                    <span className="text-sm font-extrabold text-slate-800 whitespace-nowrap">({summary.yes}건)</span>
                   </div>
                   <p className="text-[12px] text-amber-800/80 font-medium mt-1">
                     1차 제안심사위원회 상정 대상
@@ -677,7 +629,7 @@ function Stage0StatsContent({ sessionId, embedded }: { sessionId?: string; embed
               </div>
 
               {/* KPI 4: 0차 불채택 (No) */}
-              <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+              <div data-metric="rejected" className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs flex flex-col justify-between">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-bold text-slate-500">불채택 (미수용 No)</span>
                   <div className="w-8 h-8 rounded-lg bg-rose-50 text-rose-500 flex items-center justify-center">
@@ -685,7 +637,7 @@ function Stage0StatsContent({ sessionId, embedded }: { sessionId?: string; embed
                   </div>
                 </div>
                 <div>
-                  <div className="flex items-baseline gap-1.5">
+                  <div className="flex flex-wrap items-baseline gap-1.5">
                     <span className="text-2xl sm:text-3xl font-extrabold text-slate-800">
                       {summary.no}
                       <span className="text-sm font-bold text-slate-500 ml-0.5">건</span>
@@ -699,7 +651,7 @@ function Stage0StatsContent({ sessionId, embedded }: { sessionId?: string; embed
               </div>
 
               {/* KPI 5: 부서 이동(소관 조정) */}
-              <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+              <div data-metric="transfers" className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs flex flex-col justify-between">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-bold text-slate-500">부서 간 이관 조정</span>
                   <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
@@ -718,7 +670,7 @@ function Stage0StatsContent({ sessionId, embedded }: { sessionId?: string; embed
               </div>
 
               {/* KPI 6: 최다 채택 / 최다 제안 부서 */}
-              <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+              <div data-metric="top" className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs flex flex-col justify-between">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-xs font-bold text-slate-500">주요 우수 부서</span>
                   <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center">
@@ -743,9 +695,9 @@ function Stage0StatsContent({ sessionId, embedded }: { sessionId?: string; embed
             </div>
 
             {/* 2. 상단 시각화 그리드: 전체 채택 도넛 차트 & 처/실/단(상위조직)별 채택 현황 */}
-            <div className="grid lg:grid-cols-12 gap-6">
+            <div className="grid lg:grid-cols-12 gap-6 stats-layout-grid">
               {/* 도넛 차트 (5 cols) */}
-              <div className="lg:col-span-5 bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs flex flex-col justify-between">
+              <div data-print-section="decision" className={`lg:col-span-5 bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs flex flex-col justify-between ${printParts.includes('decision') ? '' : 'stats-print-hidden'}`}>
                 <div>
                   <div className="flex items-center justify-between mb-4">
                     <div>
@@ -759,87 +711,9 @@ function Stage0StatsContent({ sessionId, embedded }: { sessionId?: string; embed
                     </div>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row items-center justify-center gap-6 my-4">
-                    {/* SVG Donut */}
-                    <div className="relative w-44 h-44 flex items-center justify-center">
-                      <svg className="w-44 h-44 -rotate-90" viewBox="0 0 160 160">
-                        <circle
-                          cx="80"
-                          cy="80"
-                          r={radius}
-                          fill="transparent"
-                          stroke="#e2e8f0"
-                          strokeWidth="20"
-                        />
-                        {/* No segment */}
-                        <circle
-                          cx="80"
-                          cy="80"
-                          r={radius}
-                          fill="transparent"
-                          stroke="#f43f5e"
-                          strokeWidth="20"
-                          strokeDasharray={`${noStroke} ${circumference}`}
-                          strokeDashoffset={-yesStroke}
-                        />
-                        {/* Yes segment */}
-                        <circle
-                          cx="80"
-                          cy="80"
-                          r={radius}
-                          fill="transparent"
-                          stroke="#f59e0b"
-                          strokeWidth="20"
-                          strokeDasharray={`${yesStroke} ${circumference}`}
-                          strokeDashoffset={0}
-                        />
-                      </svg>
-                      <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                        <span className="text-[11px] font-bold text-slate-400">채택률</span>
-                        <strong className="text-2xl font-extrabold text-amber-600">
-                          {summary.adoptionRate}%
-                        </strong>
-                        <span className="text-[11px] font-semibold text-slate-500">
-                          {summary.yes} / {summary.total}건
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* 범례 */}
-                    <div className="space-y-3 flex-1 w-full">
-                      <div className="p-3 rounded-xl bg-amber-50/80 border border-amber-200 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="w-3 h-3 rounded-full bg-amber-500" />
-                          <span className="text-xs font-bold text-slate-800">채택 (수용 Yes)</span>
-                        </div>
-                        <div className="text-right">
-                          <strong className="text-sm font-extrabold text-amber-700">{summary.yes}건</strong>
-                          <span className="text-xs text-slate-500 ml-1">({summary.adoptionRate}%)</span>
-                        </div>
-                      </div>
-
-                      <div className="p-3 rounded-xl bg-rose-50/60 border border-rose-200 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="w-3 h-3 rounded-full bg-rose-500" />
-                          <span className="text-xs font-bold text-slate-800">불채택 (미수용 No)</span>
-                        </div>
-                        <div className="text-right">
-                          <strong className="text-sm font-extrabold text-rose-600">{summary.no}건</strong>
-                          <span className="text-xs text-slate-500 ml-1">({summary.rejectionRate}%)</span>
-                        </div>
-                      </div>
-
-                      {summary.pending > 0 && (
-                        <div className="p-3 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <span className="w-3 h-3 rounded-full bg-slate-400" />
-                            <span className="text-xs font-bold text-slate-700">미제출 / 검토중</span>
-                          </div>
-                          <strong className="text-sm font-extrabold text-slate-700">{summary.pending}건</strong>
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                  <StatisticsDonut total={summary.total} adopted={summary.yes} segments={[
+                    {name:'채택',count:summary.yes},{name:'불채택',count:summary.no},...(summary.pending ? [{name:'미제출 / 검토중',count:summary.pending}] : [])
+                  ]} />
                 </div>
 
                 <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 leading-relaxed">
@@ -848,7 +722,7 @@ function Stage0StatsContent({ sessionId, embedded }: { sessionId?: string; embed
               </div>
 
               {/* 처/실/단(상위조직)별 배정 및 채택 현황 (7 cols) */}
-              <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs flex flex-col justify-between">
+              <div data-print-section="offices" className={`lg:col-span-7 bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs flex flex-col justify-between ${printParts.includes('offices') ? '' : 'stats-print-hidden'}`}>
                 <div>
                   <div className="flex items-center justify-between mb-4">
                     <div>
@@ -899,7 +773,7 @@ function Stage0StatsContent({ sessionId, embedded }: { sessionId?: string; embed
                               />
                               <div
                                 style={{ width: `${100 - yesShareInBar}%` }}
-                                className="h-full bg-slate-400/70"
+                                className="h-full bg-rose-500/70"
                                 title={`불채택 ${o.no}건`}
                               />
                             </div>
@@ -917,7 +791,7 @@ function Stage0StatsContent({ sessionId, embedded }: { sessionId?: string; embed
                       <span>채택(Yes) 건수 비중</span>
                     </span>
                     <span className="inline-flex items-center gap-1.5">
-                      <span className="w-2.5 h-2.5 rounded-xs bg-slate-400" />
+                      <span className="w-2.5 h-2.5 rounded-xs bg-rose-500" />
                       <span>불채택(No) 건수 비중</span>
                     </span>
                   </div>
@@ -927,9 +801,9 @@ function Stage0StatsContent({ sessionId, embedded }: { sessionId?: string; embed
             </div>
 
             {/* 3. 부서별 상세 차트 2종: (좌) 실행부서별 평가 제출률 & 채택률 / (우) 제안자 소속부서별 제안 발의(제출) 순위 & 채택률 */}
-            <div className="grid lg:grid-cols-2 gap-6">
+            <div className="grid lg:grid-cols-2 gap-6 stats-layout-grid">
               {/* 좌측: 실행부서(심사부서)별 평가 제출률 & 채택률 */}
-              <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs flex flex-col">
+              <div data-print-section="assigned" className={`bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs flex flex-col ${printParts.includes('assigned') ? '' : 'stats-print-hidden'}`}>
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 pb-3 border-b border-slate-100">
                   <div>
                     <h2 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
@@ -1005,7 +879,7 @@ function Stage0StatsContent({ sessionId, embedded }: { sessionId?: string; embed
                             />
                             <div
                               style={{ width: `${noInAssigned}%` }}
-                              className="bg-rose-400 h-full"
+                              className="bg-rose-500 h-full"
                               title={`불채택(No): ${item.no}건`}
                             />
                           </div>
@@ -1029,7 +903,7 @@ function Stage0StatsContent({ sessionId, embedded }: { sessionId?: string; embed
               </div>
 
               {/* 우측: 제안자 소속부서(발의부서)별 제안 제출 비중 & 채택 성과 */}
-              <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs flex flex-col">
+              <div data-print-section="proposers" className={`bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs flex flex-col ${printParts.includes('proposers') ? '' : 'stats-print-hidden'}`}>
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 pb-3 border-b border-slate-100">
                   <div>
                     <h2 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
@@ -1119,9 +993,9 @@ function Stage0StatsContent({ sessionId, embedded }: { sessionId?: string; embed
             </div>
 
             {/* 4. 제안 분야(Category)별 & 직급(Rank)별 통계 */}
-            <div className="grid lg:grid-cols-2 gap-6">
+            <div className="grid lg:grid-cols-2 gap-6 stats-layout-grid">
               {/* 제안 분야별 분포 */}
-              <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs">
+              <div data-print-section="category" className={`bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs ${printParts.includes('category') ? '' : 'stats-print-hidden'}`}>
                 <h2 className="text-base font-extrabold text-slate-900 mb-1 flex items-center gap-2">
                   <Sparkles className="w-5 h-5 text-amber-500" />
                   <span>제안 분야(카테고리)별 접수 및 채택률</span>
@@ -1161,7 +1035,7 @@ function Stage0StatsContent({ sessionId, embedded }: { sessionId?: string; embed
               </div>
 
               {/* 직급별 제안 참여 분포 */}
-              <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs">
+              <div data-print-section="rank" className={`bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs ${printParts.includes('rank') ? '' : 'stats-print-hidden'}`}>
                 <h2 className="text-base font-extrabold text-slate-900 mb-1 flex items-center gap-2">
                   <Award className="w-5 h-5 text-purple-600" />
                   <span>제안자 직급별 참여 비중 및 채택률</span>
@@ -1202,7 +1076,7 @@ function Stage0StatsContent({ sessionId, embedded }: { sessionId?: string; embed
             </div>
 
             {/* 5. 부서별 종합 통계 일람표 (발의 + 심사 통합 표) */}
-            <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
+            <div data-print-section="table" className={`bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs ${printParts.includes('table') ? '' : 'stats-print-hidden'}`}>
               <div className="p-5 sm:p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div>
                   <h2 className="text-base font-extrabold text-slate-900">
@@ -1285,7 +1159,7 @@ function Stage0StatsContent({ sessionId, embedded }: { sessionId?: string; embed
             </div>
 
             {/* 6. 제안별 0차 부서 평가 결과 및 검토의견 상세 조회 */}
-            <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
+            <div data-print-section="details" className={`bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs ${printParts.includes('details') ? '' : 'stats-print-hidden'}`}>
               <div className="p-5 sm:p-6 border-b border-slate-100 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 <div>
                   <h2 className="text-base font-extrabold text-slate-900">
