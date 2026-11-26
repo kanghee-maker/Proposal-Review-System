@@ -71,7 +71,7 @@ export function buildResultWorkbook(report: ResultReport, rows: ResultRow[], con
     ...identity(r), 자료ID: p.id, 첨부ID: a.id, 파일명: a.name, 크기: a.size, 업로드일: a.uploaded_at,
     링크: `/api/proposals/attachments?id=${encodeURIComponent(a.id)}&download=1`, 저장경로: a.static_url || 'DB 첨부'
   })))));
-  sheet('미완료·연결 확인 목록', rows.filter(r => !r.stage0Complete || r.state !== '1차 심사 완료' || r.linkIssue).map(r => ({
+  sheet('미완료·연결 확인 목록', rows.filter(r => !r.stage0Complete || r.linkIssue || (report.mode !== 'stage0' && (r.stage1.length ? r.state !== '1차 심사 완료' : r.stage0Result === 'Yes'))).map(r => ({
     ...identity(r), 상태: r.state, 미제출심사위원: r.missingJudges.join('\n'), 연결문제: r.linkIssue || '없음',
     '0차평가완료': r.stage0Complete, '0차결과': r.stage0Result
   })));

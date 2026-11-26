@@ -102,7 +102,7 @@ export async function loadResultReport(mode: ReportMode, sessionId: string): Pro
       scores: rowScores, transfers: history, judges, missingJudges, linkIssue,
       linkMethod: children.length ? children.map(child => links.get(child.session_id)?.sourceProposalIds[child.id] ? '저장된 원본 ID' : sourceFor(child) ? '관리번호+제안자 유일 일치' : '연결 확인 필요').join(', ') : '1차 미연계',
       stage0Result: result, stage0Complete: submitted.length > 0 && ownEvaluations.every(e => e.is_submitted),
-      state: children.length > 1 || duplicateFinal ? '연결 확인 필요' : !children.length ? result === 'No' ? '0차 불채택' : '1차 미연계' : !missingJudges.length && judges.length ? '1차 심사 완료' : finals.length ? '1차 일부 제출' : '1차 미제출',
+      state: mode === 'stage0' ? submitted.length > 0 && ownEvaluations.every(e => e.is_submitted) ? '0차 평가 완료' : '0차 평가 미완료' : children.length > 1 || duplicateFinal ? '연결 확인 필요' : !children.length ? result === 'No' ? '0차 불채택' : '1차 미연계' : !missingJudges.length && judges.length ? '1차 심사 완료' : finals.length ? '1차 일부 제출' : '1차 미제출',
       average: finals.length && !duplicateFinal && children.length === 1 ? finals.reduce((sum, s) => sum + s.total_score, 0) / finals.length : null,
       rank: null
     };
