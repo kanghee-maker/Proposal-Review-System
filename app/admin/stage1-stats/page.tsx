@@ -1,2 +1,2 @@
-import Stage1Dashboard from './Stage1Dashboard';
-export default function Page() { return <Stage1Dashboard />; }
+import UnifiedStatistics from '../stage0-stats/UnifiedStatistics';
+export default function Page() { return <UnifiedStatistics defaultStage="STAGE_1" />; }

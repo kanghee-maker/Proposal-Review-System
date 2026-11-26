@@ -4,17 +4,19 @@ import Link from 'next/link';
 import { EvaluationSession } from '@/lib/types';
 import { ResultReport } from '@/lib/resultReports';
 import { dashboardEntry, dashboardSummary, dashboardGroups, officeOrder } from '@/lib/stage1Dashboard';
-import { buildResultWorkbook } from '@/lib/resultReportWorkbook';
+import { buildDashboardWorkbook } from '@/lib/stage1DashboardWorkbook';
+import { criteriaStatistics, detailedJudgeStatistics, taskIndex, taskNotice, taskStatistics } from '@/lib/stage1Analytics';
 
 const colors: Record<string, string> = { 채택: '#10b981', 조건부채택: '#38bdf8', 불채택: '#f43f5e', 과락: '#f59e0b' };
 const format = (n: number | null) => n === null ? '미산출' : n.toFixed(2);
-const sections = { overview: '핵심 지표', charts: '판정·점수 분포', offices: '부서별 통계', judges: '심사위원별 현황', groups: '분야·직급별 통계', details: '제안별 상세' };
-export default function Stage1Dashboard() {
+const sections = { overview: '핵심 지표', charts: '판정·점수 분포', offices: '부서별 통계', judges: '심사위원별 현황', groups: '분야·직급별 통계', criteria: '평가항목별 평균', tasks: '5개 과제별 검토 통계', ranking: '고득점 상위 순위', details: '제안별 상세' };
+export default function Stage1Dashboard({ sessionId, embedded }: { sessionId?: string; embedded?: boolean }) {
   const [sessions, setSessions] = useState<EvaluationSession[]>([]), [session, setSession] = useState('');
   const [report, setReport] = useState<ResultReport | null>(null), [error, setError] = useState(''), [busy, setBusy] = useState(false);
   const [type, setType] = useState(''), [office, setOffice] = useState(''), [decision, setDecision] = useState(''), [search, setSearch] = useState('');
   const [printParts, setPrintParts] = useState(Object.keys(sections)), [open, setOpen] = useState('');
   useEffect(() => {
+    if (sessionId) { setSession(sessionId); return; }
     const controller = new AbortController();
     fetch('/api/result-reports', { cache: 'no-store', signal: controller.signal }).then(async r => {
       const body = await r.json(); if (!r.ok) throw Error(body.error || '회차 조회 실패');
@@ -22,7 +24,7 @@ export default function Stage1Dashboard() {
       setSessions(list); setSession(list[0]?.id || '');
     }).catch(e => { if (!controller.signal.aborted) setError(e.message); });
     return () => controller.abort();
-  }, []);
+  }, [sessionId]);
   useEffect(() => {
     if (!session) return;
     const controller = new AbortController(); setBusy(true); setReport(null); setError(''); setOpen('');
@@ -38,12 +40,8 @@ export default function Stage1Dashboard() {
   const stats = dashboardSummary(entries), offices = dashboardGroups(entries, 'proposer_office');
   const selected = entries.find(e => e.row.proposal.id === open);
   const complete = entries.filter(e => e.complete).sort((a, b) => b.average! - a.average!);
-  const judges = Array.from(new Set(entries.flatMap(e => e.row.judges.map(j => j.name)))).map(name => {
-    const assigned = entries.filter(e => e.row.judges.some(j => j.name === name));
-    const submitted = assigned.flatMap(e => { const matches = e.scores.filter(s => s.judge_name === name); return matches.length === 1 ? matches : []; });
-    return { name, required: assigned.length, submitted: submitted.length, draft: assigned.filter(e => e.row.scores.some(s => s.judge_name === name && s.is_draft)).length,
-      average: submitted.length ? submitted.reduce((n, s) => n + s.total_score, 0) / submitted.length : null };
-  });
+  const judges = detailedJudgeStatistics(entries), criteria = criteriaStatistics(entries), tasks = taskStatistics(entries);
+  const taskUnclassified = entries.filter(e => e.row.proposal.proposal_type === '지정제안' && taskIndex(e) === undefined).length;
   let cumulative = 0;
   const gradient = stats.decisions.filter(d => d.count).map(d => { const start = cumulative; cumulative += d.count / stats.completed * 100; return `${colors[d.name]} ${start}% ${cumulative}%`; }).join(',');
   const visible = (id: string) => 'panel ' + (printParts.includes(id) ? '' : 'skip-print');
@@ -55,16 +53,16 @@ export default function Stage1Dashboard() {
   function download() {
     if (!report) return;
     try {
-      const bytes = buildResultWorkbook(report, entries.map(e => e.row), JSON.stringify({ type: typeLabel, office, decision, search }));
+      const bytes = buildDashboardWorkbook(report, entries, JSON.stringify({ type: typeLabel, office, decision, search }));
       const url = URL.createObjectURL(new Blob([new Uint8Array(bytes)], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
       const a = document.createElement('a'); a.href = url; a.download = `1차심사_통계결과_${typeLabel}_${new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Seoul' })}.xlsx`; a.click(); setTimeout(() => URL.revokeObjectURL(url), 30000);
     } catch { setError('엑셀 생성에 실패했습니다. 다시 시도해 주세요.'); }
   }
   return <main className="stage1-dashboard">
-    <header className="panel"><div><span className="tag">1차 제안심사</span><h1>1차 제안심사 통계 조회</h1><p>{sessions.find(s => s.id === session)?.title || '평가 회차 확인 중'}</p></div>
+    <header className="panel"><div><span className="tag">1차 제안심사</span><h1>1차 제안심사 통계 조회</h1><p>{(report?.sessions || sessions).find(s => s.id === session)?.title || '평가 회차 확인 중'}</p></div>
       <nav className="screen-only"><Link href="/stage0-stats">0차 부서평가 통계</Link><Link href="/admin/result-reports">0차·1차 통합 결과</Link></nav></header>
     <section className="panel screen-only"><div className="filters">
-      <label>평가 회차<select aria-label="평가 회차" value={session} onChange={e => { setSession(e.target.value); setType(''); setOffice(''); setDecision(''); setSearch(''); }}>{sessions.map(s => <option key={s.id} value={s.id}>{s.title}</option>)}</select></label>
+      {!embedded && <label>평가 회차<select aria-label="평가 회차" value={session} onChange={e => { setSession(e.target.value); setType(''); setOffice(''); setDecision(''); setSearch(''); }}>{sessions.map(s => <option key={s.id} value={s.id}>{s.title}</option>)}</select></label>}
       <label>제안 구분<select aria-label="제안 구분" value={type} onChange={e => setType(e.target.value)}><option value="">전체 제안</option><option value="__general__">일반제안(지정제안 제외)</option>{Array.from(new Set(all.map(e => e.row.proposal.proposal_type))).filter(Boolean).map(t => <option key={t}>{t}</option>)}</select></label>
       <label>제안자 소속<select aria-label="제안자 소속" value={office} onChange={e => setOffice(e.target.value)}><option value="">전체 처·실·단</option>{Array.from(new Set([...officeOrder, ...all.map(e => e.row.proposal.proposer_office).filter(Boolean)])).map(t => <option key={t}>{t}</option>)}</select></label>
       <label>1차 판정<select aria-label="1차 판정" value={decision} onChange={e => setDecision(e.target.value)}><option value="">전체 결과</option>{['채택', '조건부채택', '불채택', '과락', '심사 중', '연결 확인 필요'].map(t => <option key={t}>{t}</option>)}</select></label>
@@ -83,8 +81,11 @@ export default function Stage1Dashboard() {
       ].map(([label, value]) => <div key={label} className="metric"><span>{label}</span><strong>{value}</strong></div>)}</div><p>{stats.submitted} / {stats.required}개 위원 평가 최종 제출 · 완료 제안 평균 {format(stats.average)}점 · 심사 중 {entries.filter(e => e.decision === '심사 중').length}건 · 연결 확인 필요 {stats.issues}건</p></section>
       <section className={visible('charts')}><div className="chart-grid"><div><h2>1차 심사 판정 비율</h2><p>분모: 전원 제출 완료 {stats.completed}건</p><div className="donut-layout"><div className="donut" role="img" aria-label={stats.decisions.map(d => `${d.name} ${d.count}건`).join(', ')} style={{ background: gradient ? `conic-gradient(${gradient})` : '#e2e8f0' }}><div><strong>{stats.completed ? (stats.decisions.find(d => d.name === '채택')!.count / stats.completed * 100).toFixed(1) : '0'}%</strong><span>채택률</span></div></div><div>{stats.decisions.map(d => <p key={d.name}><i style={{ background: colors[d.name] }} />{d.name} <b>{d.count}건</b></p>)}</div></div></div><div><h2>평균총점 분포</h2><p>반올림 전 평균 기준 · 100점 만점</p>{stats.bins.map(b => <div className="bar-row" key={b.name}><span>{b.name}</span><div className="track"><div style={{ width: `${stats.completed ? b.count / stats.completed * 100 : 0}%`, background: '#f59e0b' }} /></div><b>{b.count}건</b></div>)}</div></div></section>
       <section className={visible('offices')}><h2>처·실·단별 제출 및 판정 현황</h2><p>제안자 소속 기준 · 채택·불채택·과락은 서로 중복되지 않습니다.</p>{offices.map(o => <div className="office" key={o.name}><div><b>{o.name}</b><span>대상 {o.total}건 · 완료 {o.completed}건 · 평균 {format(o.average)}점</span></div><div className="stack">{o.decisions.map(d => <div key={d.name} title={`${d.name} ${d.count}건`} style={{ width: `${o.total ? d.count / o.total * 100 : 0}%`, background: colors[d.name] }} />)}</div><small>{o.decisions.map(d => `${d.name} ${d.count}건`).join(' / ')}</small></div>)}</section>
-      <section className={visible('judges')}><h2>심사위원별 제출 현황</h2><p>제출률 분모: 현재 조건의 위원별 배정 제안 수. 평균은 최종 제출 점수만 포함합니다.</p><div className="table-wrap"><table><thead><tr><th>심사위원</th><th>배정</th><th>최종 제출</th><th>미제출</th><th>임시저장</th><th>제출률</th><th>평균총점</th></tr></thead><tbody>{judges.map(j => <tr key={j.name}><td>{j.name}</td><td>{j.required}</td><td>{j.submitted}</td><td>{Math.max(0, j.required - j.submitted)}</td><td>{j.draft}</td><td><div className="track"><div style={{ width: `${j.required ? j.submitted / j.required * 100 : 0}%`, background: '#10b981' }} /></div>{j.required ? (j.submitted / j.required * 100).toFixed(1) : '0'}%</td><td>{format(j.average)}</td></tr>)}</tbody></table></div></section>
+      <section className={visible('judges')}><h2>심사위원별 제출 현황</h2><p>제출률 분모: 현재 조건의 위원별 배정 제안 수. 평균은 최종 제출 점수만 포함합니다.</p><div className="table-wrap"><table><thead><tr><th>심사위원</th><th>배정</th><th>최종 제출</th><th>미제출</th><th>임시저장</th><th>제출률</th><th>평균총점</th><th>최저~최고</th><th>50점 미만</th></tr></thead><tbody>{judges.map(j => <tr key={j.name}><td>{j.name}</td><td>{j.required}</td><td>{j.submitted}</td><td>{Math.max(0, j.required - j.submitted)}</td><td>{j.draft}</td><td><div className="track"><div style={{ width: `${j.required ? j.submitted / j.required * 100 : 0}%`, background: '#10b981' }} /></div>{j.required ? (j.submitted / j.required * 100).toFixed(1) : '0'}%</td><td>{format(j.average)}</td><td>{format(j.min)} ~ {format(j.max)}</td><td>{j.under50}건</td></tr>)}</tbody></table></div></section>
       <section className={visible('groups')}><div className="chart-grid">{(['category', 'proposer_rank'] as const).map(key => <div key={key}><h2>{key === 'category' ? '분야별 심사 결과' : '직급별 참여 및 심사 결과'}</h2>{key === 'proposer_rank' && <p>직급의 띄어쓰기는 제거해 합산합니다. 예: 체육 6급 = 체육6급</p>}{dashboardGroups(entries, key).map(g => <div className="group-card" key={g.name}><b>{g.name}</b><span> {g.total}건 · 평균 {format(g.average)}점</span><div className="stack">{g.decisions.map(d => <div key={d.name} style={{ width: `${d.count / g.total * 100}%`, background: colors[d.name] }} />)}</div><small>{g.decisions.filter(d => d.count).map(d => `${d.name} ${d.count}건`).join(' / ') || '최종 판정 전'}</small></div>)}</div>)}</div></section>
+      <section className={visible('criteria')}><div className="chart-grid"><div><h2>평가항목별 평균 및 달성 비율</h2><p>전원 제출 완료 제안의 위원 최종점수 기준. 항목별 배점 대비 평균 비율을 비교합니다.</p>{criteria.map(c => <div className="bar-row" key={c.name}><span>{c.name} /{c.max}</span><div className="track"><div style={{width:`${c.average === null ? 0 : c.average/c.max*100}%`,background:'#6366f1'}} /></div><b>{format(c.average)}</b></div>)}</div><div><h2>제출 진행 및 점수 요약</h2><p>현재 조건 {stats.total}개 제안 기준</p>{[['전원 제출 완료',entries.filter(e=>e.complete).length],['일부 제출',entries.filter(e=>!e.issue&&!e.complete&&e.submitted>0).length],['미제출',entries.filter(e=>!e.issue&&e.submitted===0).length],['연결 확인 필요',stats.issues]].map(([name,count])=><div className="bar-row" key={String(name)}><span>{name}</span><div className="track"><div style={{width:`${stats.total ? Number(count)/stats.total*100 : 0}%`,background:'#10b981'}} /></div><b>{count}건</b></div>)}<p>완료 제안 최고 {format(complete[0]?.average ?? null)}점 / 최저 {format(complete[complete.length-1]?.average ?? null)}점</p></div></div></section>
+      <section className={visible('tasks')}><h2>5개 지정과제별 1차 결과 검토용</h2><p><strong>{taskNotice}</strong></p><p>지정제안만 포함. 현재 조건의 지정제안 중 분류 확인 필요 {taskUnclassified}건. 일반제안은 원래 등록 분야 통계에서 확인할 수 있습니다.</p><div className="table-wrap"><table><thead><tr><th>지정과제</th><th>대상</th><th>완료</th><th>채택</th><th>불채택</th><th>과락</th><th>평균총점</th></tr></thead><tbody>{tasks.map(t=><tr key={t.name}><td>{t.name}</td><td>{t.total}</td><td>{t.completed}</td><td>{t.decisions.find(d=>d.name==='채택')!.count}</td><td>{t.decisions.find(d=>d.name==='불채택')!.count}</td><td>{t.decisions.find(d=>d.name==='과락')!.count}</td><td>{format(t.average)}</td></tr>)}</tbody></table></div></section>
+      <section className={visible('ranking')}><h2>고득점 상위 10건</h2><p>현재 조회 조건의 전원 제출 완료 제안 기준. 공동순위는 같은 순위로 표시하고, 아래 전체 상세표와 엑셀에서 나머지 순위를 확인할 수 있습니다.</p><div className="table-wrap"><table><thead><tr><th>순위</th><th>관리번호</th><th>제안명</th><th>제안자 소속</th><th>평균총점</th><th>판정</th></tr></thead><tbody>{complete.slice(0,10).map(e=><tr key={e.row.proposal.id}><td>{complete.findIndex(x=>x.average===e.average)+1}</td><td>{e.row.proposal.board_no}</td><td>{e.row.proposal.title}</td><td>{e.row.proposal.proposer_office}</td><td>{format(e.average)}</td><td style={{color:colors[e.decision]}}>{e.decision}</td></tr>)}</tbody></table></div></section>
       <section className={visible('details')}><h2>제안별 점수 및 결과 상세</h2><p>현재 조건 {entries.length}건 · 평균은 소수 둘째 자리 표시, 순위는 완료 제안의 반올림 전 평균 기준 공동순위입니다. 상세를 열면 위원별 점수·의견이 표시됩니다.</p><div className="table-wrap"><table><thead><tr><th>순위</th><th>관리번호</th><th>제안명</th><th>제안자 소속</th><th>제출</th><th>평균총점</th><th>판정</th><th className="screen-only">상세</th></tr></thead><tbody>{[...entries].sort((a, b) => (b.average ?? -1) - (a.average ?? -1)).map(e => <tr key={e.row.proposal.id}><td>{e.complete ? complete.findIndex(x => x.average === e.average) + 1 : '미부여'}</td><td>{e.row.proposal.board_no}</td><td>{e.row.proposal.title}</td><td>{e.row.proposal.proposer_office}</td><td>{e.submitted}/{e.required}</td><td>{format(e.average)}{!e.complete && e.average !== null && ' (일부 제출)'}</td><td><b style={{ color: colors[e.decision] }}>{e.decision}</b></td><td className="screen-only"><button onClick={() => setOpen(open === e.row.proposal.id ? '' : e.row.proposal.id)}>상세</button></td></tr>)}</tbody></table></div>
         {selected && <div className="detail"><h3>{selected.row.proposal.title}</h3><p>최종 제출 점수·의견 원문</p><table><thead><tr><th>심사위원</th><th>창의성 /30</th><th>실현성 /30</th><th>효과성 /30</th><th>전파성 /10</th><th>총점</th><th>의견</th></tr></thead><tbody>{selected.row.judges.map(j => { const s = selected.scores.find(s => s.judge_name === j.name); return <tr key={j.name}><td>{j.name}</td><td>{s?.creativity ?? '미제출'}</td><td>{s?.feasibility ?? '미제출'}</td><td>{s?.effectiveness ?? '미제출'}</td><td>{s?.dissemination ?? '미제출'}</td><td>{s?.total_score ?? '미제출'}</td><td className="opinion">{s ? s.opinion || '의견 없음' : '미제출'}</td></tr>; })}</tbody></table></div>}
       </section>{!entries.length && <p>현재 조건에 해당하는 제안이 없습니다.</p>}<p className="timestamp">조회 시각: {new Date(report.generatedAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}</p>

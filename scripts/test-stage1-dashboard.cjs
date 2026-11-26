@@ -1,7 +1,7 @@
 // Run with node scripts/test-stage1-dashboard.cjs. No DB reads or writes.
 const fs = require('fs'), ts = require('typescript'), assert = require('node:assert/strict');
 require.extensions['.ts'] = (module, file) => module._compile(ts.transpileModule(fs.readFileSync(file, 'utf8'), {
-  compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 }
+  compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020, esModuleInterop: true }
 }).outputText, file);
 const { dashboardEntry, dashboardSummary, dashboardGroups } = require('../lib/stage1Dashboard.ts');
 function fixture(values, rank = '체육 6급') {
@@ -23,3 +23,8 @@ assert.equal(dashboardGroups(entries, 'proposer_rank')[0].total, 2);
 const before = JSON.stringify(entries); dashboardSummary(entries); dashboardGroups(entries, 'proposer_office');
 assert.equal(JSON.stringify(entries), before);
 console.log('PASS: average cutoff, disqualification, drafts, partial submissions, duplicate judges, rank spacing, immutable input');
+const { criteriaStatistics, taskIndex } = require('../lib/stage1Analytics.ts');
+const partialEntry = dashboardEntry(partial);
+assert.equal(criteriaStatistics([partialEntry])[0].count, 0);
+assert.equal(taskIndex({ ...entries[0], row: { ...entries[0].row, proposal: { id: 'unknown', proposal_type: '지정제안' } } }), undefined);
+console.log('PASS: incomplete ratings excluded from criteria averages; unknown task IDs are not guessed');
