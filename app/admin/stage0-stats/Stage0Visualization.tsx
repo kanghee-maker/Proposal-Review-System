@@ -51,7 +51,7 @@ interface ProposerDeptStat {
   adoptionRate: number;
 }
 
-function Stage0StatsContent({ sessionId, embedded }: { sessionId?: string; embedded?: boolean }) {
+function Stage0StatsContent({ sessionId, embedded, designatedOnly }: { sessionId?: string; embedded?: boolean; designatedOnly?: boolean }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -137,8 +137,10 @@ function Stage0StatsContent({ sessionId, embedded }: { sessionId?: string; embed
     data
       .then(([pData, eData]) => {
         if (controller.signal.aborted) return;
-        setProposals(Array.isArray(pData) ? pData : []);
-        setEvaluations(Array.isArray(eData) ? eData : []);
+        const scoped = (Array.isArray(pData) ? pData : []).filter((p: Proposal) => !designatedOnly || p.proposal_type === '지정제안');
+        const ids = new Set(scoped.map((p: Proposal) => p.id));
+        setProposals(scoped);
+        setEvaluations((Array.isArray(eData) ? eData : []).filter((e: Evaluation) => ids.has(e.proposal_id)));
         setLoading(false);
       })
       .catch(() => {
@@ -147,7 +149,7 @@ function Stage0StatsContent({ sessionId, embedded }: { sessionId?: string; embed
         setLoading(false);
       });
     return () => controller.abort();
-  }, [selectedSessionId, router, viewer]);
+  }, [selectedSessionId, router, viewer, designatedOnly]);
 
   const handleSessionChange = (newId: string) => {
     setSelectedSessionId(newId);
@@ -156,7 +158,7 @@ function Stage0StatsContent({ sessionId, embedded }: { sessionId?: string; embed
   };
 
   const currentSession = sessions.find(s => s.id === selectedSessionId);
-  const sessionQuery = `session_id=${encodeURIComponent(selectedSessionId)}`;
+  const sessionQuery = `session_id=${encodeURIComponent(selectedSessionId)}${designatedOnly ? '&proposal_type=designated' : ''}`;
   const handlePrint = async () => {
     if (!printParts.length) { setPrintError('인쇄할 항목을 하나 이상 선택해 주세요.'); return; }
     setPrintError('');
@@ -534,7 +536,7 @@ function Stage0StatsContent({ sessionId, embedded }: { sessionId?: string; embed
 
   return (
     <div className="stage0-report statistics-view text-slate-900">
-      <StatisticsHeader title="0차 부서 평가 통계 조회" subtitle={currentSession?.title}>
+      <StatisticsHeader title={designatedOnly ? '0차 지정제안평가 통계' : '0차 부서 평가 통계 조회'} subtitle={`${currentSession?.title || ''} · ${designatedOnly ? '지정제안만 집계' : '전체 제안'}`}>
         {!embedded && <select aria-label="0차 평가 회차" value={selectedSessionId} onChange={e=>handleSessionChange(e.target.value)}>{sessions.map(s=><option key={s.id} value={s.id}>{s.title}</option>)}</select>}
         <Link href={viewer ? '/' : '/admin'} className="rounded-lg border border-slate-300 bg-white px-3 py-2">{viewer ? '홈으로' : '관리자 홈'}</Link>
         {viewer && <button type="button" onClick={handleViewerLogout} className="rounded-lg border border-slate-300 bg-white">로그아웃</button>}
@@ -1299,7 +1301,7 @@ function Stage0StatsContent({ sessionId, embedded }: { sessionId?: string; embed
   );
 }
 
-export default function Stage0StatsPage(props: { sessionId?: string; embedded?: boolean }) {
+export default function Stage0StatsPage(props: { sessionId?: string; embedded?: boolean; designatedOnly?: boolean }) {
   return (
     <Suspense fallback={<div className="p-20 text-center text-slate-500 text-sm">통계 대시보드 로딩 중...</div>}>
       <Stage0StatsContent {...props} />

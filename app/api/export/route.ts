@@ -53,6 +53,7 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const sessionId = searchParams.get('session_id') || undefined;
+    const designatedOnly = searchParams.get('proposal_type') === 'designated';
     if (!sessionId) return NextResponse.json({ error: '평가 회차를 선택해 주세요.' }, { status: 400 });
 
     const [sessions, rawProposals, evaluations, transfers] = await Promise.all([
@@ -89,7 +90,7 @@ export async function GET(req: Request) {
         ...(fallbackTransfer || {}),
         ...(directTransfer || {}),
       };
-    });
+    }).filter(p => !designatedOnly || p.proposal_type === '지정제안');
 
     const transferHistoryRows: Record<string, string | number>[] = [];
 
@@ -268,7 +269,7 @@ export async function GET(req: Request) {
         headers: {
           'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
           'Cache-Control': 'private, no-store',
-          'Content-Disposition': `attachment; filename="2026_GCUC_Proposal_Stage1_Results.xlsx"`,
+          'Content-Disposition': `attachment; filename="2026_GCUC_Proposal_Stage1${designatedOnly ? '_Designated' : ''}_Results.xlsx"`,
         },
       });
     }
@@ -383,7 +384,7 @@ export async function GET(req: Request) {
       headers: {
         'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         'Cache-Control': 'private, no-store',
-        'Content-Disposition': `attachment; filename="2026_GCUC_Proposal_Stage0_Results.xlsx"`,
+        'Content-Disposition': `attachment; filename="2026_GCUC_Proposal_Stage0${designatedOnly ? '_Designated' : ''}_Results.xlsx"`,
       },
     });
   } catch (err: any) {

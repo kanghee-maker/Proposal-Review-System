@@ -10,10 +10,10 @@ import { criteriaStatistics, detailedJudgeStatistics, taskIndex, taskNotice, tas
 import { statisticsColors as colors, StatisticsHeader, StatisticsDonut, StatisticsPrintOptions } from '../stage0-stats/StatisticsVisuals';
 const format = (n: number | null) => n === null ? '미산출' : n.toFixed(2);
 const sections = { overview: '핵심 지표', charts: '판정·점수 분포', offices: '부서별 통계', judges: '심사위원별 현황', groups: '분야·직급별 통계', criteria: '평가항목별 평균', tasks: '5개 과제별 검토 통계', ranking: '고득점 상위 순위', details: '제안별 상세' };
-export default function Stage1Dashboard({ sessionId, embedded }: { sessionId?: string; embedded?: boolean }) {
+export default function Stage1Dashboard({ sessionId, embedded, designatedOnly }: { sessionId?: string; embedded?: boolean; designatedOnly?: boolean }) {
   const [sessions, setSessions] = useState<EvaluationSession[]>([]), [session, setSession] = useState('');
   const [report, setReport] = useState<ResultReport | null>(null), [error, setError] = useState(''), [busy, setBusy] = useState(false);
-  const [type, setType] = useState(''), [office, setOffice] = useState(''), [decision, setDecision] = useState(''), [search, setSearch] = useState('');
+  const [type, setType] = useState(designatedOnly ? '지정제안' : ''), [office, setOffice] = useState(''), [decision, setDecision] = useState(''), [search, setSearch] = useState('');
   const [printParts, setPrintParts] = useState(Object.keys(sections)), [open, setOpen] = useState('');
   useEffect(() => {
     if (sessionId) { setSession(sessionId); return; }
@@ -34,9 +34,9 @@ export default function Stage1Dashboard({ sessionId, embedded }: { sessionId?: s
     return () => controller.abort();
   }, [session]);
   const all = useMemo(() => (report?.rows || []).map(dashboardEntry), [report]);
-  const typeLabel = type === '__general__' ? '일반제안(지정제안 제외)' : type || '전체 제안';
-  const entries = useMemo(() => all.filter(e => (!type || (type === '__general__' ? e.row.proposal.proposal_type !== '지정제안' : e.row.proposal.proposal_type === type)) && (!office || e.row.proposal.proposer_office === office) &&
-    (!decision || e.decision === decision) && (!search.trim() || [e.row.proposal.board_no, e.row.proposal.title, e.row.proposal.proposer_name].join(' ').toLowerCase().includes(search.trim().toLowerCase()))), [all, type, office, decision, search]);
+  const typeLabel = designatedOnly ? '지정제안' : type === '__general__' ? '일반제안(지정제안 제외)' : type || '전체 제안';
+  const entries = useMemo(() => all.filter(e => (!designatedOnly || e.row.proposal.proposal_type === '지정제안') && (!type || (type === '__general__' ? e.row.proposal.proposal_type !== '지정제안' : e.row.proposal.proposal_type === type)) && (!office || e.row.proposal.proposer_office === office) &&
+    (!decision || e.decision === decision) && (!search.trim() || [e.row.proposal.board_no, e.row.proposal.title, e.row.proposal.proposer_name].join(' ').toLowerCase().includes(search.trim().toLowerCase()))), [all, type, office, decision, search, designatedOnly]);
   const stats = dashboardSummary(entries), offices = dashboardGroups(entries, 'proposer_office');
   const selected = entries.find(e => e.row.proposal.id === open);
   const complete = entries.filter(e => e.complete).sort((a, b) => b.average! - a.average!);
@@ -59,16 +59,16 @@ export default function Stage1Dashboard({ sessionId, embedded }: { sessionId?: s
     } catch { setError('엑셀 생성에 실패했습니다. 다시 시도해 주세요.'); }
   }
   return <main className="stage1-dashboard statistics-view">
-    <StatisticsHeader title="1차 제안심사 통계 조회" subtitle={(report?.sessions || sessions).find(s=>s.id===session)?.title || '평가 회차 확인 중'}>
+    <StatisticsHeader title={designatedOnly ? '지정제안 1차 평가 통계' : '1차 제안심사 통계 조회'} subtitle={`${(report?.sessions || sessions).find(s=>s.id===session)?.title || '평가 회차 확인 중'} · ${typeLabel}`}>
       <Link href="/stage0-stats">0차 부서평가 통계</Link><Link href="/admin/result-reports">0차·1차 통합 결과</Link>
     </StatisticsHeader>
     <section className="panel screen-only"><div className="filters">
-      {!embedded && <label>평가 회차<select aria-label="평가 회차" value={session} onChange={e => { setSession(e.target.value); setType(''); setOffice(''); setDecision(''); setSearch(''); }}>{sessions.map(s => <option key={s.id} value={s.id}>{s.title}</option>)}</select></label>}
-      <label>제안 구분<select aria-label="제안 구분" value={type} onChange={e => setType(e.target.value)}><option value="">전체 제안</option><option value="__general__">일반제안(지정제안 제외)</option>{Array.from(new Set(all.map(e => e.row.proposal.proposal_type))).filter(Boolean).map(t => <option key={t}>{t}</option>)}</select></label>
+      {!embedded && <label>평가 회차<select aria-label="평가 회차" value={session} onChange={e => { setSession(e.target.value); setType(designatedOnly ? '지정제안' : ''); setOffice(''); setDecision(''); setSearch(''); }}>{sessions.map(s => <option key={s.id} value={s.id}>{s.title}</option>)}</select></label>}
+      <label>제안 구분<select disabled={designatedOnly} aria-label="제안 구분" value={type} onChange={e => setType(e.target.value)}><option value="">전체 제안</option><option value="__general__">일반제안(지정제안 제외)</option>{Array.from(new Set(all.map(e => e.row.proposal.proposal_type))).filter(Boolean).map(t => <option key={t}>{t}</option>)}</select></label>
       <label>제안자 소속<select aria-label="제안자 소속" value={office} onChange={e => setOffice(e.target.value)}><option value="">전체 처·실·단</option>{Array.from(new Set([...officeOrder, ...all.map(e => e.row.proposal.proposer_office).filter(Boolean)])).map(t => <option key={t}>{t}</option>)}</select></label>
       <label>1차 판정<select aria-label="1차 판정" value={decision} onChange={e => setDecision(e.target.value)}><option value="">전체 결과</option>{['채택', '조건부채택', '불채택', '과락', '심사 중', '연결 확인 필요'].map(t => <option key={t}>{t}</option>)}</select></label>
       <label>제안 검색<input placeholder="관리번호·제안명·제안자" value={search} onChange={e => setSearch(e.target.value)} /></label>
-      <button onClick={() => { setType(''); setOffice(''); setDecision(''); setSearch(''); }}>조회 조건 초기화</button>
+      <button onClick={() => { setType(designatedOnly ? '지정제안' : ''); setOffice(''); setDecision(''); setSearch(''); }}>조회 조건 초기화</button>
       <button disabled={!report || busy} className="green" onClick={download}>현재 조건 엑셀 다운로드</button>
       <button disabled={!report || busy} className="blue" onClick={print}>선택 항목 인쇄</button>
     </div><StatisticsPrintOptions sections={sections} selected={printParts} onChange={setPrintParts} /></section>
