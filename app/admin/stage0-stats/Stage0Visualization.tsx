@@ -26,6 +26,8 @@ import {
 } from 'lucide-react';
 import { Proposal, Evaluation, EvaluationSession, Department } from '@/lib/types';
 import { StatisticsDonut, StatisticsHeader, StatisticsPrintOptions } from './StatisticsVisuals';
+import StatisticsReportStudio from './StatisticsReportStudio';
+import { stage0ReportModel } from '@/lib/statisticsReportModel';
 const printSections = { overview: '핵심 지표', decision: '판정 비율', offices: '처·실·단별 현황', assigned: '실행부서별 통계', proposers: '제안부서별 통계', category: '분야별 통계', rank: '직급별 통계', table: '부서 종합 일람표', details: '제안별 결과·검토의견' };
 
 interface AssignedDeptStat {
@@ -73,6 +75,7 @@ function Stage0StatsContent({ sessionId, embedded, designatedOnly }: { sessionId
   const [searchKeyword, setSearchKeyword] = useState<string>('');
   const [printParts, setPrintParts] = useState(Object.keys(printSections));
   const [printError, setPrintError] = useState('');
+  const [retrievedAt, setRetrievedAt] = useState('');
 
   // 1. 0차 평가 회차 및 조직도 로드
   useEffect(() => {
@@ -140,6 +143,7 @@ function Stage0StatsContent({ sessionId, embedded, designatedOnly }: { sessionId
         const scoped = (Array.isArray(pData) ? pData : []).filter((p: Proposal) => !designatedOnly || p.proposal_type === '지정제안');
         const ids = new Set(scoped.map((p: Proposal) => p.id));
         setProposals(scoped);
+        setRetrievedAt(new Date().toISOString());
         setEvaluations((Array.isArray(eData) ? eData : []).filter((e: Evaluation) => ids.has(e.proposal_id)));
         setLoading(false);
       })
@@ -163,7 +167,7 @@ function Stage0StatsContent({ sessionId, embedded, designatedOnly }: { sessionId
     if (!printParts.length) { setPrintError('인쇄할 항목을 하나 이상 선택해 주세요.'); return; }
     setPrintError('');
     const response = await fetch(viewer ? '/api/auth/stats' : '/api/auth/admin', { cache: 'no-store' }).catch(() => null);
-    if (response?.ok) window.print();
+    if (response?.ok) window.dispatchEvent(new Event('statistics-print-request'));
     else if (response?.status === 401 || response?.status === 403) router.replace('/');
     else alert('인쇄 권한을 확인하지 못했습니다. 다시 시도해 주세요.');
   };
@@ -544,10 +548,6 @@ function Stage0StatsContent({ sessionId, embedded, designatedOnly }: { sessionId
         <a href={`/api/export?${sessionQuery}`} className="bg-emerald-700 text-white rounded-lg">엑셀 다운로드</a>
         <Link href={`/admin/result-reports?${sessionQuery}`} className="rounded-lg border border-slate-300 bg-white">0차·1차 통합 결과·다운로드</Link>
       </StatisticsHeader>
-      <div className="stats-panel screen-only" style={{padding:'20px 24px',marginBottom:24}}><StatisticsPrintOptions sections={printSections} selected={printParts} onChange={setPrintParts} /></div>
-      {printError && <p role="alert" className="text-rose-700 screen-only">{printError}</p>}
-      <p className="stats-print-caption">인쇄 항목: {printParts.map(id=>printSections[id as keyof typeof printSections]).join(' · ')}</p>
-
       {/* Content Body */}
       <section className="stats-content">
         {loadError ? (
@@ -696,386 +696,7 @@ function Stage0StatsContent({ sessionId, embedded, designatedOnly }: { sessionId
               </div>
             </div>
 
-            {/* 2. 상단 시각화 그리드: 전체 채택 도넛 차트 & 처/실/단(상위조직)별 채택 현황 */}
-            <div className="grid lg:grid-cols-12 gap-6 stats-layout-grid">
-              {/* 도넛 차트 (5 cols) */}
-              <div data-print-section="decision" className={`lg:col-span-5 bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs flex flex-col justify-between ${printParts.includes('decision') ? '' : 'stats-print-hidden'}`}>
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <h2 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
-                        <PieChart className="w-5 h-5 text-amber-600" />
-                        <span>0차 부서 평가 종합 판정 비율</span>
-                      </h2>
-                      <p className="text-xs text-slate-500 mt-0.5">
-                        전체 {summary.total}건 제안에 대한 수용(Yes) / 미수용(No) 분포
-                      </p>
-                    </div>
-                  </div>
-
-                  <StatisticsDonut total={summary.total} adopted={summary.yes} segments={[
-                    {name:'채택',count:summary.yes},{name:'불채택',count:summary.no},...(summary.pending ? [{name:'미제출 / 검토중',count:summary.pending}] : [])
-                  ]} />
-                </div>
-
-                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 leading-relaxed">
-                  💡 0차 부서 평가에서 <strong className="text-amber-700 font-bold">채택(Yes)된 {summary.yes}건</strong>의 제안이 1차 제안심사위원회 본심사 안건으로 상정되었습니다.
-                </div>
-              </div>
-
-              {/* 처/실/단(상위조직)별 배정 및 채택 현황 (7 cols) */}
-              <div data-print-section="offices" className={`lg:col-span-7 bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs flex flex-col justify-between ${printParts.includes('offices') ? '' : 'stats-print-hidden'}`}>
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <h2 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
-                        <Building2 className="w-5 h-5 text-blue-600" />
-                        <span>처·실·단(상위조직)별 심사 배정 및 채택률</span>
-                      </h2>
-                      <p className="text-xs text-slate-500 mt-0.5">
-                        소관 처·실·단 단위의 제안 배정 규모, 평가 제출률 및 채택 비율 비교
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3.5">
-                    {officeStats.map((o) => {
-                      const maxOfficeAssigned = Math.max(1, ...officeStats.map(x => x.assigned));
-                      const barWidth = Math.round((o.assigned / maxOfficeAssigned) * 100);
-                      const yesShareInBar = o.assigned > 0 ? Math.round((o.yes / o.assigned) * 100) : 0;
-
-                      return (
-                        <div key={o.office} className="space-y-1.5">
-                          <div className="flex items-center justify-between text-xs">
-                            <div className="flex items-center gap-2">
-                              <span className="font-extrabold text-slate-800 text-sm">{o.office}</span>
-                              <span className="text-slate-400 font-medium">
-                                배정 {o.assigned}건 · 제출률 {o.submissionRate}%
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <span className="px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200 font-bold">
-                                채택 {o.yes}건 ({o.adoptionRate}%)
-                              </span>
-                              <span className="text-slate-500 font-semibold">
-                                불채택 {o.no}건
-                              </span>
-                            </div>
-                          </div>
-
-                          <div className="w-full bg-slate-100 h-3.5 rounded-full overflow-hidden flex">
-                            <div
-                              style={{ width: `${barWidth}%` }}
-                              className="h-full bg-slate-300 rounded-full overflow-hidden flex transition-all duration-500"
-                            >
-                              <div
-                                style={{ width: `${yesShareInBar}%` }}
-                                className="h-full bg-gradient-to-r from-amber-500 to-orange-500"
-                                title={`채택 ${o.yes}건`}
-                              />
-                              <div
-                                style={{ width: `${100 - yesShareInBar}%` }}
-                                className="h-full bg-rose-500/70"
-                                title={`불채택 ${o.no}건`}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-                  <div className="flex items-center gap-4">
-                    <span className="inline-flex items-center gap-1.5">
-                      <span className="w-2.5 h-2.5 rounded-xs bg-amber-500" />
-                      <span>채택(Yes) 건수 비중</span>
-                    </span>
-                    <span className="inline-flex items-center gap-1.5">
-                      <span className="w-2.5 h-2.5 rounded-xs bg-rose-500" />
-                      <span>불채택(No) 건수 비중</span>
-                    </span>
-                  </div>
-                  <span>전체 막대 길이 = 처·실·단별 배정 건수 규모</span>
-                </div>
-              </div>
-            </div>
-
-            {/* 3. 부서별 상세 차트 2종: (좌) 실행부서별 평가 제출률 & 채택률 / (우) 제안자 소속부서별 제안 발의(제출) 순위 & 채택률 */}
-            <div className="grid lg:grid-cols-2 gap-6 stats-layout-grid">
-              {/* 좌측: 실행부서(심사부서)별 평가 제출률 & 채택률 */}
-              <div data-print-section="assigned" className={`bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs flex flex-col ${printParts.includes('assigned') ? '' : 'stats-print-hidden'}`}>
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 pb-3 border-b border-slate-100">
-                  <div>
-                    <h2 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
-                      <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                      <span>실행부서(심사부서)별 제출률 &amp; 채택률</span>
-                    </h2>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      소관 제안을 배정받아 0차 타당성 평가를 수행한 부서별 통계
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg text-[11px] font-bold self-start">
-                    <button
-                      onClick={() => setAssignedSortBy('assigned')}
-                      className={`px-2 py-1 rounded ${assignedSortBy === 'assigned' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'}`}
-                    >
-                      배정건수순
-                    </button>
-                    <button
-                      onClick={() => setAssignedSortBy('adoptionRate')}
-                      className={`px-2 py-1 rounded ${assignedSortBy === 'adoptionRate' ? 'bg-white text-amber-700 shadow-xs' : 'text-slate-500 hover:text-slate-800'}`}
-                    >
-                      채택률순
-                    </button>
-                    <button
-                      onClick={() => setAssignedSortBy('yes')}
-                      className={`px-2 py-1 rounded ${assignedSortBy === 'yes' ? 'bg-white text-emerald-700 shadow-xs' : 'text-slate-500 hover:text-slate-800'}`}
-                    >
-                      채택건수순
-                    </button>
-                  </div>
-                </div>
-
-                <div className="space-y-3 max-h-[520px] overflow-y-auto pr-1">
-                  {assignedDeptStats.map((item, idx) => {
-                    const scalePercent = Math.round((item.assigned / maxAssigned) * 100);
-                    const yesInAssigned = item.assigned > 0 ? (item.yes / item.assigned) * 100 : 0;
-                    const noInAssigned = item.assigned > 0 ? (item.no / item.assigned) * 100 : 0;
-
-                    return (
-                      <div
-                        key={item.dept}
-                        className="p-3 rounded-xl bg-slate-50/80 border border-slate-200/80 hover:border-amber-300 transition space-y-2"
-                      >
-                        <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-                          <div className="flex items-center gap-2">
-                            <span className="w-5 h-5 rounded-full bg-slate-200 text-slate-700 font-extrabold text-[11px] flex items-center justify-center">
-                              {idx + 1}
-                            </span>
-                            <span className="text-[11px] text-slate-400 font-semibold">[{item.office}]</span>
-                            <strong className="text-slate-900 font-extrabold text-sm">{item.dept}</strong>
-                            <span className="text-slate-500 font-semibold">배정 {item.assigned}건</span>
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold text-[11px]">
-                              제출률 {item.submissionRate}%
-                            </span>
-                            <span className="px-2 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-300 font-extrabold text-[11px]">
-                              채택률 {item.adoptionRate}% ({item.yes}건)
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* 시각 막대 */}
-                        <div className="w-full bg-slate-200/70 h-3 rounded-full overflow-hidden">
-                          <div
-                            style={{ width: `${scalePercent}%` }}
-                            className="h-full flex rounded-full overflow-hidden"
-                          >
-                            <div
-                              style={{ width: `${yesInAssigned}%` }}
-                              className="bg-amber-500 h-full"
-                              title={`채택(Yes): ${item.yes}건`}
-                            />
-                            <div
-                              style={{ width: `${noInAssigned}%` }}
-                              className="bg-rose-500 h-full"
-                              title={`불채택(No): ${item.no}건`}
-                            />
-                          </div>
-                        </div>
-
-                        <div className="flex items-center justify-between text-[11px] text-slate-500">
-                          <span>
-                            채택 <strong className="text-amber-700">{item.yes}건</strong> · 불채택 <strong className="text-rose-600">{item.no}건</strong>
-                            {item.pending > 0 && ` · 미제출 ${item.pending}건`}
-                          </span>
-                          {item.transferredIn > 0 && (
-                            <span className="text-indigo-600 font-semibold">
-                              🔄 부서이동 이력 {item.transferredIn}건 포함
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* 우측: 제안자 소속부서(발의부서)별 제안 제출 비중 & 채택 성과 */}
-              <div data-print-section="proposers" className={`bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs flex flex-col ${printParts.includes('proposers') ? '' : 'stats-print-hidden'}`}>
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 pb-3 border-b border-slate-100">
-                  <div>
-                    <h2 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
-                      <Users className="w-5 h-5 text-indigo-600" />
-                      <span>제안자 소속부서(발의부서)별 제출 비중 &amp; 채택률</span>
-                    </h2>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      임직원이 아이디어를 발의·제출한 소속 부서별 참여도 및 채택 성과
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg text-[11px] font-bold self-start">
-                    <button
-                      onClick={() => setProposerSortBy('proposed')}
-                      className={`px-2 py-1 rounded ${proposerSortBy === 'proposed' ? 'bg-white text-indigo-700 shadow-xs' : 'text-slate-500 hover:text-slate-800'}`}
-                    >
-                      제출건수순
-                    </button>
-                    <button
-                      onClick={() => setProposerSortBy('yes')}
-                      className={`px-2 py-1 rounded ${proposerSortBy === 'yes' ? 'bg-white text-amber-700 shadow-xs' : 'text-slate-500 hover:text-slate-800'}`}
-                    >
-                      채택건수순
-                    </button>
-                    <button
-                      onClick={() => setProposerSortBy('adoptionRate')}
-                      className={`px-2 py-1 rounded ${proposerSortBy === 'adoptionRate' ? 'bg-white text-emerald-700 shadow-xs' : 'text-slate-500 hover:text-slate-800'}`}
-                    >
-                      채택성공률순
-                    </button>
-                  </div>
-                </div>
-
-                <div className="space-y-3 max-h-[520px] overflow-y-auto pr-1">
-                  {proposerDeptStats.map((item, idx) => {
-                    const scalePercent = Math.round((item.proposed / maxProposed) * 100);
-                    const yesInProposed = item.proposed > 0 ? (item.yes / item.proposed) * 100 : 0;
-
-                    return (
-                      <div
-                        key={item.dept}
-                        className="p-3 rounded-xl bg-slate-50/80 border border-slate-200/80 hover:border-indigo-300 transition space-y-2"
-                      >
-                        <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-                          <div className="flex items-center gap-2">
-                            <span className="w-5 h-5 rounded-full bg-indigo-100 text-indigo-700 font-extrabold text-[11px] flex items-center justify-center">
-                              {idx + 1}
-                            </span>
-                            <span className="text-[11px] text-slate-400 font-semibold">[{item.office}]</span>
-                            <strong className="text-slate-900 font-extrabold text-sm">{item.dept}</strong>
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <span className="px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200 font-bold text-[11px]">
-                              발의 {item.proposed}건 (비중 {item.shareRate}%)
-                            </span>
-                            <span className="px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200 font-bold text-[11px]">
-                              채택 {item.yes}건 ({item.adoptionRate}%)
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="w-full bg-slate-200/70 h-3 rounded-full overflow-hidden">
-                          <div
-                            style={{ width: `${scalePercent}%` }}
-                            className="h-full bg-indigo-300 flex rounded-full overflow-hidden"
-                          >
-                            <div
-                              style={{ width: `${yesInProposed}%` }}
-                              className="bg-indigo-600 h-full"
-                              title={`채택 성공: ${item.yes}건`}
-                            />
-                          </div>
-                        </div>
-
-                        <div className="flex items-center justify-between text-[11px] text-slate-500">
-                          <span>
-                            전체 제안 대비 제출 점유율 <strong className="text-indigo-700">{item.shareRate}%</strong>
-                          </span>
-                          <span>
-                            발의 제안 중 채택 <strong className="text-amber-700">{item.yes}건</strong> / 불채택 {item.no}건
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-
-            {/* 4. 제안 분야(Category)별 & 직급(Rank)별 통계 */}
-            <div className="grid lg:grid-cols-2 gap-6 stats-layout-grid">
-              {/* 제안 분야별 분포 */}
-              <div data-print-section="category" className={`bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs ${printParts.includes('category') ? '' : 'stats-print-hidden'}`}>
-                <h2 className="text-base font-extrabold text-slate-900 mb-1 flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-amber-500" />
-                  <span>제안 분야(카테고리)별 접수 및 채택률</span>
-                </h2>
-                <p className="text-xs text-slate-500 mb-4">
-                  제안 성격·분야별 접수 건수 및 0차 심사 통과(Yes) 비율
-                </p>
-                <div className="grid sm:grid-cols-2 gap-3">
-                  {categoryStats.map((cat) => (
-                    <div
-                      key={cat.category}
-                      className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex flex-col justify-between gap-2"
-                    >
-                      <div className="flex items-center justify-between">
-                        <strong className="text-xs sm:text-sm font-extrabold text-slate-800 truncate">
-                          {cat.category}
-                        </strong>
-                        <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-bold text-[11px]">
-                          채택률 {cat.adoptionRate}%
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between text-xs text-slate-500">
-                        <span>총 {cat.count}건 접수</span>
-                        <span>
-                          채택 <strong className="text-emerald-700">{cat.yes}</strong> · 불채택 <strong className="text-rose-600">{cat.no}</strong>
-                        </span>
-                      </div>
-                      <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-amber-500 rounded-full"
-                          style={{ width: `${Math.min(100, cat.adoptionRate)}%` }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* 직급별 제안 참여 분포 */}
-              <div data-print-section="rank" className={`bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs ${printParts.includes('rank') ? '' : 'stats-print-hidden'}`}>
-                <h2 className="text-base font-extrabold text-slate-900 mb-1 flex items-center gap-2">
-                  <Award className="w-5 h-5 text-purple-600" />
-                  <span>제안자 직급별 참여 비중 및 채택률</span>
-                </h2>
-                <p className="text-xs text-slate-500 mb-4">
-                  직급별 혁신 제안 참여 건수 점유율 및 부서 채택률 현황
-                </p>
-                <div className="grid sm:grid-cols-2 gap-3">
-                  {rankStats.map((rk) => (
-                    <div
-                      key={rk.rank}
-                      className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex flex-col justify-between gap-2"
-                    >
-                      <div className="flex items-center justify-between">
-                        <strong className="text-xs sm:text-sm font-extrabold text-slate-800">
-                          {rk.rank}
-                        </strong>
-                        <span className="px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 font-bold text-[11px]">
-                          비중 {rk.shareRate}% ({rk.count}건)
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between text-xs text-slate-500">
-                        <span>채택률 {rk.adoptionRate}%</span>
-                        <span>
-                          채택 <strong className="text-emerald-700">{rk.yes}건</strong> · 불채택 {rk.no}건
-                        </span>
-                      </div>
-                      <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-purple-500 rounded-full"
-                          style={{ width: `${Math.min(100, rk.shareRate)}%` }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+            <StatisticsReportStudio model={stage0ReportModel(proposals, getProposalResult, getProposalOpinion, currentSession?.title || selectedSessionId, designatedOnly ? '지정제안' : '전체 제안', retrievedAt || new Date().toISOString())} />
 
             {/* 5. 부서별 종합 통계 일람표 (발의 + 심사 통합 표) */}
             <div data-print-section="table" className={`bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs ${printParts.includes('table') ? '' : 'stats-print-hidden'}`}>

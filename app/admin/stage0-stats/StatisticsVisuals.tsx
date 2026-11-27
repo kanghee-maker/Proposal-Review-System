@@ -17,9 +17,9 @@ export function StatisticsDonut({ segments, total, adopted }: { segments: { name
   return <div className="stats-donut-layout"><div className="stats-donut-chart" role="img" aria-label={segments.map(s => `${s.name} ${s.count}건`).join(', ')}>
     <svg viewBox="0 0 160 160" width="160" height="160" aria-hidden="true"><g transform="rotate(-90 80 80)"><circle cx="80" cy="80" r="60" fill="none" stroke="#e2e8f0" strokeWidth="20" />
       {segments.map(s => { const length = total ? s.count / total * circumference : 0; const start = offset; offset += length; return <circle key={s.name} cx="80" cy="80" r="60" fill="none" stroke={s.color || statisticsColors[s.name] || '#94a3b8'} strokeWidth="20" strokeDasharray={`${length} ${circumference}`} strokeDashoffset={-start} />; })}</g></svg>
-    <div className="stats-donut-center"><span>채택률</span><strong>{total ? (adopted / total * 100).toFixed(1) : '0.0'}%</strong><small>{adopted} / {total}건</small></div>
+    <div className="stats-donut-center"><span>채택률</span><strong>{total ? `${(adopted / total * 100).toFixed(1)}%` : '산출 불가'}</strong><small>{adopted} / {total}건</small></div>
   </div><div className="stats-donut-legend">{segments.map(s => <div className="stats-legend-row" key={s.name} style={{ borderColor: `${s.color || statisticsColors[s.name] || '#94a3b8'}55`, background: `${s.color || statisticsColors[s.name] || '#94a3b8'}0c` }}>
-    <span><i style={{ background: s.color || statisticsColors[s.name] || '#94a3b8' }} />{s.name}</span><span><b>{s.count}건</b><small> ({total ? (s.count / total * 100).toFixed(1) : '0.0'}%)</small></span>
+    <span><i style={{ background: s.color || statisticsColors[s.name] || '#94a3b8' }} />{s.name}</span><span><b>{s.count}건</b><small> ({total ? `${(s.count / total * 100).toFixed(1)}%` : '산출 불가'})</small></span>
   </div>)}</div></div>;
 }
 export function StatisticsVisualStyles() {
