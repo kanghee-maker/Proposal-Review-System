@@ -18,3 +18,13 @@ assert.equal(m1.sections.find(s=>s.id==='progress').rows.reduce((n,r)=>n+r.total
 const scores=m1.sections.find(s=>s.id==='judge-scores');assert.deepEqual(sortedChartRows(scores,'기본 순서').map(r=>r.name),scores.rows.map(r=>r.name));
 assert.equal(m1.sections.find(s=>s.id==='ranking').rows.length,3);assert.equal(JSON.stringify(rows),original);
 console.log('PASS: immutable sources, rank spacing audit, official order, sort invariance, zero/unknown states, exact opinions, submitted-only scores and ranking order');
+const {statisticsReportSummary}=require('../lib/statisticsReportSummary.ts');
+const summary=statisticsReportSummary(m1);
+assert.equal(summary.records.find(r=>r[0]==='전체 대상')[1],'4건');
+assert.equal(summary.records.find(r=>r[0]==='채택')[2],'33.3% · 전원 제출 완료 3건 기준');
+assert.equal(summary.records.find(r=>r[0]==='심사 중·연결 확인 필요')[1],'1건');
+const empty=statisticsReportSummary(stage0ReportModel([],()=>'',()=>'', '회차','전체','2026-11-26T00:00:00Z'));
+assert.ok(empty.summary.includes('산출하지 않았습니다'));
+assert.ok(empty.records.some(r=>r[2].includes('산출 불가')));
+assert.equal(JSON.stringify(rows),original);
+console.log('PASS: summary denominators, incomplete counts, empty scope and immutable evaluation records');
