@@ -36,3 +36,9 @@ assert.ok(executive.findings.some(f=>f.title==='점수 분포'&&f.text.includes(
 assert.equal(executiveReportFindings(stage0ReportModel([],()=>'',()=>'', '회차','전체','2026-11-26T00:00:00Z')).cards[1][1],'산출 불가');
 assert.equal(JSON.stringify(rows),original);
 console.log('PASS: executive headline and score-band concentration derive from actual filtered counts; empty rates remain uncomputed');
+const {designatedStage1Findings}=require('../lib/statisticsReportSummary.ts');
+const designated=designatedStage1Findings({...m1,sections:[...m1.sections.filter(s=>s.id!=='judge-detail'),{id:'judge-detail',records:[['추천위원','사업계획처','4','4','0','50','40','60','2'],['추첨위원','직군별 심사자(추첨)','4','4','0','40','30','50','4']]}]});
+assert.ok(designated.findings.find(f=>f.title==='심사위원 소속').text.includes('사업계획처 추천위원 2/4건'));
+assert.ok(!designated.findings.find(f=>f.title==='심사위원 소속').text.includes('추첨위원'));
+assert.ok(designated.findings.find(f=>f.title==='제안자 소속').text.includes('과락 제안 최다'));
+console.log('PASS: proposer disqualifications and reviewer under-50 ratings remain separate; department comparison excludes lottery judges');
