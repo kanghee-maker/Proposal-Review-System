@@ -5,15 +5,14 @@ export function designatedStage1Findings(model: StatisticsReportModel) {
  const bins=model.sections.find(s=>s.id==='distribution')?.rows||[];
  const peak=Math.max(0,...bins.map(r=>r.total));
  const names=bins.filter(r=>r.total===peak).map(r=>r.name);
- const most=Math.max(0,...offices.map(r=>r.total)),cut=Math.max(0,...offices.map(r=>r.values['과락']||0));
+ const most=Math.max(0,...offices.map(r=>r.total));
  const officeNames=offices.filter(r=>r.total===most).map(r=>r.name).join('·');
- const cutNames=offices.filter(r=>(r.values['과락']||0)===cut).map(r=>r.name).join('·');
- const judges=(model.sections.find(s=>s.id==='judge-detail')?.records||[]).filter(r=>offices.some(o=>o.name===r[1]));
- const low=Math.max(0,...judges.map(r=>Number(r[8])));
- const topJudges=judges.filter(r=>Number(r[8])===low);
+ const adoptedOffices=offices.filter(r=>(r.values['채택']||0)>0),adopted=offices.reduce((n,r)=>n+(r.values['채택']||0),0);
+ const maxAdopted=Math.max(0,...offices.map(r=>r.values['채택']||0));
+ const adoptedNames=offices.filter(r=>(r.values['채택']||0)===maxAdopted).map(r=>r.name).join('·');
  const findings=[{title:'점수 분포',text:peak?`${names.join('·')} 구간이 ${names.length>1?'각 ':''}${peak}건으로 최다입니다. 반올림 전 평균점수 기준입니다.`:'완료 제안이 없어 점수 분포를 산출하지 않았습니다.'},
- {title:'제안자 소속',text:most?`최다 심사대상: ${officeNames} ${most}건. ${cut?`과락 제안 최다: ${cutNames} ${cut}건.`:'과락 제안은 없습니다.'}`:'현재 조건의 제안이 없습니다.'},
- {title:'심사위원 소속',text:low?`부서 추천위원 중 50점 미만 부여 최다: ${topJudges.map(r=>`${r[1]} ${r[0]} ${r[8]}/${r[3]}건`).join('·')}.`:'부서 추천위원의 50점 미만 평가가 없거나 확인할 기록이 없습니다.'}];
+ {title:'참여 현황',text:most?`${officeNames}의 심사대상 제안이 ${most}건으로 가장 많습니다. 제안자 소속 기준입니다.`:'현재 조건의 제안이 없습니다.'},
+ {title:'채택 성과',text:adopted?`${adoptedOffices.length}개 처·실·단에서 총 ${adopted}건이 채택됐습니다. 채택 최다는 ${adoptedNames} ${maxAdopted}건입니다.`:'현재 조회 조건에서 채택된 제안은 없습니다.'}];
  return {offices,findings,other:offices.some(r=>(r.values['조건부채택']||0)+(r.values['미완료']||0)>0)};
 }
 
