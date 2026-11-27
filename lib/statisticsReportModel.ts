@@ -1,7 +1,7 @@
 import { Proposal } from './types';
 import { ResultReport } from './resultReports';
 import { dashboardEntry, dashboardSummary, dashboardGroups, officeOrder, DashboardEntry } from './stage1Dashboard';
-import { criteriaStatistics, detailedJudgeStatistics, taskStatistics, taskNotice } from './stage1Analytics';
+import { criteriaStatistics, detailedJudgeStatistics, taskStatistics, taskSummaryView, taskNotice } from './stage1Analytics';
 import taskMap from '../data/stage1-task-review-map.json';
 import { taskNames } from './stage1Analytics';
 
@@ -26,7 +26,7 @@ const rankSorts=['기본 순서','건수순','채택건수순','채택률순'];
 function fromGroup(g: ReturnType<typeof dashboardGroups>[number]):ChartRow { return {name:g.name,total:g.total,completed:g.completed,rateBase:g.completed,average:g.average,values:{...Object.fromEntries(g.decisions.map(d=>[d.name,d.count])),미완료:g.total-g.completed}}; }
 export function stage1ReportModel(report: ResultReport, entries: DashboardEntry[], filters: string, scope: string):StatisticsReportModel {
  const stats=dashboardSummary(entries), completed=entries.filter(e=>e.complete).sort((a,b)=>b.average!-a.average!);
- const judges=detailedJudgeStatistics(entries);
+ const judges=detailedJudgeStatistics(entries), taskView=taskSummaryView(entries);
  const group=(id:string,title:string,key:'proposer_office'|'category'|'proposer_rank'):ChartSpec=>({id,title,kind:'stack',note:'제안자 소속 기준 · 채택률 분모: 전원 제출 완료 건수 · 미완료는 판정에서 제외',rows:dashboardGroups(entries,key).map(fromGroup),sorts:rankSorts,defaultSort:key==='proposer_office'?'기본 순서':'건수순'});
  const departmentGroup=(id:string,title:string,key:'assigned_department'|'proposer_department'):ChartSpec=>({id,title,kind:'stack',note:`${key==='assigned_department'?'현재 실행부서':'제안자 소속부서'} 기준 · 채택률 분모: 전원 제출 완료 건수`,sorts:rankSorts,defaultSort:'기본 순서',rows:Array.from(new Set(entries.map(e=>e.row.proposal[key]||'기록 없음'))).map(name=>fromGroup({name,...dashboardSummary(entries.filter(e=>(e.row.proposal[key]||'기록 없음')===name))}))});
  const sections:ChartSpec[]=[
@@ -40,7 +40,7 @@ export function stage1ReportModel(report: ResultReport, entries: DashboardEntry[
  {id:'progress',title:'제안별 제출 진행 현황',kind:'columns',note:'분모: 현재 조건의 전체 제안 · 전원 제출 완료 / 일부 제출 / 미제출 / 연결 확인 필요를 구분',rows:[['전원 제출 완료',stats.completed],['일부 제출',entries.filter(e=>!e.issue&&!e.complete&&e.submitted>0).length],['미제출',entries.filter(e=>!e.issue&&e.submitted===0).length],['연결 확인 필요',stats.issues]].map(([name,count])=>({name:String(name),total:Number(count),values:{건수:Number(count)}}))},
  group('category','분야별 심사 결과','category'),group('rank','직급별 참여 및 심사 결과','proposer_rank'),
  {id:'criteria',title:'평가항목별 평균',kind:'bullet',max:100,note:'전원 제출 완료 제안의 위원 최종 점수 · 막대는 배점 대비 평균 비율(%)',rows:criteriaStatistics(entries).map(c=>({name:c.name,total:c.max,average:c.average,values:{평균:c.average===null?0:c.average/c.max*100},detail:`${c.average===null?'미산출':c.average.toFixed(2)} / ${c.max}점 · ${c.count}개 평가`}))},
- {id:'tasks',title:'5개 지정과제별 결과 — 재분류 검토용',kind:'stack',note:taskNotice+' · 일반제안 및 과제 미분류는 제외',rows:taskStatistics(entries).map(fromGroup)},
+ {id:'tasks',title:taskView.legacy?'5개 지정과제별 결과 — 재분류 검토용':'지정과제별 1차 심사현황',kind:'stack',note:taskView.notice,rows:taskView.groups.map(fromGroup)},
  {id:'ranking',title:'고득점 상위 10건',kind:'bullet',max:100,note:`전원 제출 완료 ${completed.length}건 중 상위 ${Math.min(10,completed.length)}건 · 공동순위 적용 · 전체 순위는 화면 상세표·엑셀`,rows:completed.slice(0,10).map(e=>({name:`${completed.findIndex(x=>x.average===e.average)+1}. ${e.row.proposal.title}`,total:100,values:{평균:e.average!},detail:`관리번호 ${e.row.proposal.board_no} · ${e.average!.toFixed(2)}점 · ${e.decision}`}))},
  rankVariants(entries.map(e=>e.row.proposal)),
  {id:'details',title:'제안별 점수 및 결과 상세',kind:'table',note:'현재 조회 조건 전체 · 상세 부록 · 긴 원문은 여러 페이지로 나눠 보존',rows:[],columns:['관리번호','제안명','소속','제출','평균총점','판정','위원별 최종 점수·의견'],records:entries.map(e=>[e.row.proposal.board_no||'',e.row.proposal.title,e.row.proposal.proposer_office||'기록 없음',`${e.submitted}/${e.required}`,e.average===null?'미산출':e.average.toFixed(2)+(e.complete?'':' (일부 제출)'),e.decision,e.row.judges.map(j=>{const s=e.scores.find(s=>s.judge_name===j.name);return `${j.name}: ${s?`${s.total_score}점 / ${s.opinion||'의견 없음'}`:'미제출'}`;}).join('\n')])}

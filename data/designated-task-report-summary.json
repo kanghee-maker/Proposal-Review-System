@@ -1,0 +1,860 @@
+{
+  "sessionId": "session-stage1-1793970010694",
+  "source": "사용자 지정 결과보고서 과제별 집계",
+  "totals": [
+    102,
+    83,
+    2,
+    17
+  ],
+  "groups": [
+    [
+      16,
+      14,
+      0,
+      2
+    ],
+    [
+      27,
+      22,
+      1,
+      4
+    ],
+    [
+      10,
+      9,
+      0,
+      1
+    ],
+    [
+      40,
+      29,
+      1,
+      10
+    ],
+    [
+      9,
+      9,
+      0,
+      0
+    ]
+  ],
+  "proposals": [
+    {
+      "boardNo": "4",
+      "ids": [
+        "session-1793120018279-prop-1",
+        "session-stage1-1793970010694-prop-1"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "15",
+      "ids": [
+        "session-1793120018279-prop-10",
+        "session-stage1-1793970010694-prop-9"
+      ],
+      "decision": "과락"
+    },
+    {
+      "boardNo": "115",
+      "ids": [
+        "session-1793120018279-prop-101",
+        "session-stage1-1793970010694-prop-89"
+      ],
+      "decision": "과락"
+    },
+    {
+      "boardNo": "116",
+      "ids": [
+        "session-1793120018279-prop-102",
+        "session-stage1-1793970010694-prop-90"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "118",
+      "ids": [
+        "session-1793120018279-prop-104",
+        "session-stage1-1793970010694-prop-91"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "119",
+      "ids": [
+        "session-1793120018279-prop-105",
+        "session-stage1-1793970010694-prop-92"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "121",
+      "ids": [
+        "session-1793120018279-prop-107",
+        "session-stage1-1793970010694-prop-93"
+      ],
+      "decision": "과락"
+    },
+    {
+      "boardNo": "122",
+      "ids": [
+        "session-1793120018279-prop-108",
+        "session-stage1-1793970010694-prop-94"
+      ],
+      "decision": "과락"
+    },
+    {
+      "boardNo": "123",
+      "ids": [
+        "session-1793120018279-prop-109",
+        "session-stage1-1793970010694-prop-95"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "17",
+      "ids": [
+        "session-1793120018279-prop-11",
+        "session-stage1-1793970010694-prop-10"
+      ],
+      "decision": "과락"
+    },
+    {
+      "boardNo": "124",
+      "ids": [
+        "session-1793120018279-prop-110",
+        "session-stage1-1793970010694-prop-96"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "125",
+      "ids": [
+        "session-1793120018279-prop-111",
+        "session-stage1-1793970010694-prop-97"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "126",
+      "ids": [
+        "session-1793120018279-prop-112",
+        "session-stage1-1793970010694-prop-98"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "127",
+      "ids": [
+        "session-1793120018279-prop-113",
+        "session-stage1-1793970010694-prop-99"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "128",
+      "ids": [
+        "session-1793120018279-prop-114",
+        "session-stage1-1793970010694-prop-100"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "130",
+      "ids": [
+        "session-1793120018279-prop-115",
+        "session-stage1-1793970010694-prop-101"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "132",
+      "ids": [
+        "session-1793120018279-prop-116",
+        "session-stage1-1793970010694-prop-102"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "133",
+      "ids": [
+        "session-1793120018279-prop-117",
+        "session-stage1-1793970010694-prop-103"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "134",
+      "ids": [
+        "session-1793120018279-prop-118",
+        "session-stage1-1793970010694-prop-104"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "135",
+      "ids": [
+        "session-1793120018279-prop-119",
+        "session-stage1-1793970010694-prop-105"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "18",
+      "ids": [
+        "session-1793120018279-prop-12",
+        "session-stage1-1793970010694-prop-11"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "136",
+      "ids": [
+        "session-1793120018279-prop-120",
+        "session-stage1-1793970010694-prop-106"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "137",
+      "ids": [
+        "session-1793120018279-prop-121",
+        "session-stage1-1793970010694-prop-107"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "138",
+      "ids": [
+        "session-1793120018279-prop-122",
+        "session-stage1-1793970010694-prop-108"
+      ],
+      "decision": "과락"
+    },
+    {
+      "boardNo": "139",
+      "ids": [
+        "session-1793120018279-prop-123",
+        "session-stage1-1793970010694-prop-109"
+      ],
+      "decision": "과락"
+    },
+    {
+      "boardNo": "140",
+      "ids": [
+        "session-1793120018279-prop-124",
+        "session-stage1-1793970010694-prop-110"
+      ],
+      "decision": "과락"
+    },
+    {
+      "boardNo": "143",
+      "ids": [
+        "session-1793120018279-prop-126",
+        "session-stage1-1793970010694-prop-111"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "21",
+      "ids": [
+        "session-1793120018279-prop-15",
+        "session-stage1-1793970010694-prop-13"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "26",
+      "ids": [
+        "session-1793120018279-prop-19",
+        "session-stage1-1793970010694-prop-15"
+      ],
+      "decision": "과락"
+    },
+    {
+      "boardNo": "5",
+      "ids": [
+        "session-1793120018279-prop-2",
+        "session-stage1-1793970010694-prop-2"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "27",
+      "ids": [
+        "session-1793120018279-prop-20",
+        "session-stage1-1793970010694-prop-16"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "28",
+      "ids": [
+        "session-1793120018279-prop-21",
+        "session-stage1-1793970010694-prop-17"
+      ],
+      "decision": "과락"
+    },
+    {
+      "boardNo": "29",
+      "ids": [
+        "session-1793120018279-prop-22",
+        "session-stage1-1793970010694-prop-18"
+      ],
+      "decision": "과락"
+    },
+    {
+      "boardNo": "30",
+      "ids": [
+        "session-1793120018279-prop-23",
+        "session-stage1-1793970010694-prop-19"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "31",
+      "ids": [
+        "session-1793120018279-prop-24",
+        "session-stage1-1793970010694-prop-20"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "33",
+      "ids": [
+        "session-1793120018279-prop-25",
+        "session-stage1-1793970010694-prop-21"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "34",
+      "ids": [
+        "session-1793120018279-prop-26",
+        "session-stage1-1793970010694-prop-22"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "35",
+      "ids": [
+        "session-1793120018279-prop-27",
+        "session-stage1-1793970010694-prop-23"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "37",
+      "ids": [
+        "session-1793120018279-prop-28",
+        "session-stage1-1793970010694-prop-24"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "38",
+      "ids": [
+        "session-1793120018279-prop-29",
+        "session-stage1-1793970010694-prop-25"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "39",
+      "ids": [
+        "session-1793120018279-prop-30",
+        "session-stage1-1793970010694-prop-26"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "40",
+      "ids": [
+        "session-1793120018279-prop-31",
+        "session-stage1-1793970010694-prop-27"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "44",
+      "ids": [
+        "session-1793120018279-prop-35",
+        "session-stage1-1793970010694-prop-31"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "45",
+      "ids": [
+        "session-1793120018279-prop-36",
+        "session-stage1-1793970010694-prop-32"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "46",
+      "ids": [
+        "session-1793120018279-prop-37",
+        "session-stage1-1793970010694-prop-33"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "47",
+      "ids": [
+        "session-1793120018279-prop-38",
+        "session-stage1-1793970010694-prop-34"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "48",
+      "ids": [
+        "session-1793120018279-prop-39",
+        "session-stage1-1793970010694-prop-35"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "49",
+      "ids": [
+        "session-1793120018279-prop-40",
+        "session-stage1-1793970010694-prop-36"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "50",
+      "ids": [
+        "session-1793120018279-prop-41",
+        "session-stage1-1793970010694-prop-37"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "51",
+      "ids": [
+        "session-1793120018279-prop-42",
+        "session-stage1-1793970010694-prop-38"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "52",
+      "ids": [
+        "session-1793120018279-prop-43",
+        "session-stage1-1793970010694-prop-39"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "53",
+      "ids": [
+        "session-1793120018279-prop-44",
+        "session-stage1-1793970010694-prop-40"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "54",
+      "ids": [
+        "session-1793120018279-prop-45",
+        "session-stage1-1793970010694-prop-41"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "55",
+      "ids": [
+        "session-1793120018279-prop-46",
+        "session-stage1-1793970010694-prop-42"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "56",
+      "ids": [
+        "session-1793120018279-prop-47",
+        "session-stage1-1793970010694-prop-43"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "58",
+      "ids": [
+        "session-1793120018279-prop-49",
+        "session-stage1-1793970010694-prop-44"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "9",
+      "ids": [
+        "session-1793120018279-prop-5",
+        "session-stage1-1793970010694-prop-5"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "59",
+      "ids": [
+        "session-1793120018279-prop-50",
+        "session-stage1-1793970010694-prop-45"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "60",
+      "ids": [
+        "session-1793120018279-prop-51",
+        "session-stage1-1793970010694-prop-46"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "63",
+      "ids": [
+        "session-1793120018279-prop-52",
+        "session-stage1-1793970010694-prop-47"
+      ],
+      "decision": "과락"
+    },
+    {
+      "boardNo": "64",
+      "ids": [
+        "session-1793120018279-prop-53",
+        "session-stage1-1793970010694-prop-48"
+      ],
+      "decision": "불채택"
+    },
+    {
+      "boardNo": "66",
+      "ids": [
+        "session-1793120018279-prop-55",
+        "session-stage1-1793970010694-prop-49"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "67",
+      "ids": [
+        "session-1793120018279-prop-56",
+        "session-stage1-1793970010694-prop-50"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "68",
+      "ids": [
+        "session-1793120018279-prop-57",
+        "session-stage1-1793970010694-prop-51"
+      ],
+      "decision": "과락"
+    },
+    {
+      "boardNo": "71",
+      "ids": [
+        "session-1793120018279-prop-59",
+        "session-stage1-1793970010694-prop-52"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "10",
+      "ids": [
+        "session-1793120018279-prop-6",
+        "session-stage1-1793970010694-prop-6"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "72",
+      "ids": [
+        "session-1793120018279-prop-60",
+        "session-stage1-1793970010694-prop-53"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "73",
+      "ids": [
+        "session-1793120018279-prop-61",
+        "session-stage1-1793970010694-prop-54"
+      ],
+      "decision": "과락"
+    },
+    {
+      "boardNo": "75",
+      "ids": [
+        "session-1793120018279-prop-63",
+        "session-stage1-1793970010694-prop-55"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "76",
+      "ids": [
+        "session-1793120018279-prop-64",
+        "session-stage1-1793970010694-prop-56"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "79",
+      "ids": [
+        "session-1793120018279-prop-67",
+        "session-stage1-1793970010694-prop-58"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "80",
+      "ids": [
+        "session-1793120018279-prop-68",
+        "session-stage1-1793970010694-prop-59"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "81",
+      "ids": [
+        "session-1793120018279-prop-69",
+        "session-stage1-1793970010694-prop-60"
+      ],
+      "decision": "과락"
+    },
+    {
+      "boardNo": "82",
+      "ids": [
+        "session-1793120018279-prop-70",
+        "session-stage1-1793970010694-prop-61"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "83",
+      "ids": [
+        "session-1793120018279-prop-71",
+        "session-stage1-1793970010694-prop-62"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "85",
+      "ids": [
+        "session-1793120018279-prop-73",
+        "session-stage1-1793970010694-prop-63"
+      ],
+      "decision": "과락"
+    },
+    {
+      "boardNo": "86",
+      "ids": [
+        "session-1793120018279-prop-74",
+        "session-stage1-1793970010694-prop-64"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "88",
+      "ids": [
+        "session-1793120018279-prop-75",
+        "session-stage1-1793970010694-prop-65"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "89",
+      "ids": [
+        "session-1793120018279-prop-76",
+        "session-stage1-1793970010694-prop-66"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "90",
+      "ids": [
+        "session-1793120018279-prop-77",
+        "session-stage1-1793970010694-prop-67"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "91",
+      "ids": [
+        "session-1793120018279-prop-78",
+        "session-stage1-1793970010694-prop-68"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "92",
+      "ids": [
+        "session-1793120018279-prop-79",
+        "session-stage1-1793970010694-prop-69"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "93",
+      "ids": [
+        "session-1793120018279-prop-80",
+        "session-stage1-1793970010694-prop-70"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "94",
+      "ids": [
+        "session-1793120018279-prop-81",
+        "session-stage1-1793970010694-prop-71"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "95",
+      "ids": [
+        "session-1793120018279-prop-82",
+        "session-stage1-1793970010694-prop-72"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "96",
+      "ids": [
+        "session-1793120018279-prop-83",
+        "session-stage1-1793970010694-prop-73"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "97",
+      "ids": [
+        "session-1793120018279-prop-84",
+        "session-stage1-1793970010694-prop-74"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "98",
+      "ids": [
+        "session-1793120018279-prop-85",
+        "session-stage1-1793970010694-prop-75"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "99",
+      "ids": [
+        "session-1793120018279-prop-86",
+        "session-stage1-1793970010694-prop-76"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "101",
+      "ids": [
+        "session-1793120018279-prop-87",
+        "session-stage1-1793970010694-prop-77"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "102",
+      "ids": [
+        "session-1793120018279-prop-88",
+        "session-stage1-1793970010694-prop-78"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "103",
+      "ids": [
+        "session-1793120018279-prop-89",
+        "session-stage1-1793970010694-prop-79"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "14",
+      "ids": [
+        "session-1793120018279-prop-9",
+        "session-stage1-1793970010694-prop-8"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "104",
+      "ids": [
+        "session-1793120018279-prop-90",
+        "session-stage1-1793970010694-prop-80"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "106",
+      "ids": [
+        "session-1793120018279-prop-92",
+        "session-stage1-1793970010694-prop-81"
+      ],
+      "decision": "과락"
+    },
+    {
+      "boardNo": "107",
+      "ids": [
+        "session-1793120018279-prop-93",
+        "session-stage1-1793970010694-prop-82"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "108",
+      "ids": [
+        "session-1793120018279-prop-94",
+        "session-stage1-1793970010694-prop-83"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "109",
+      "ids": [
+        "session-1793120018279-prop-95",
+        "session-stage1-1793970010694-prop-84"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "110",
+      "ids": [
+        "session-1793120018279-prop-96",
+        "session-stage1-1793970010694-prop-85"
+      ],
+      "decision": "불채택"
+    },
+    {
+      "boardNo": "111",
+      "ids": [
+        "session-1793120018279-prop-97",
+        "session-stage1-1793970010694-prop-86"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "112",
+      "ids": [
+        "session-1793120018279-prop-98",
+        "session-stage1-1793970010694-prop-87"
+      ],
+      "decision": "채택"
+    },
+    {
+      "boardNo": "113",
+      "ids": [
+        "session-1793120018279-prop-99",
+        "session-stage1-1793970010694-prop-88"
+      ],
+      "decision": "채택"
+    }
+  ]
+}

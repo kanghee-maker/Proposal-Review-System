@@ -1,0 +1,15 @@
+const fs=require('fs'),ts=require('typescript'),assert=require('node:assert/strict');
+require.extensions['.ts']=(m,f)=>m._compile(ts.transpileModule(fs.readFileSync(f,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2020,esModuleInterop:true}}).outputText,f);
+const approved=require('../data/designated-task-report-summary.json'),{taskSummaryView}=require('../lib/stage1Analytics.ts');
+const entries=approved.proposals.map(p=>({row:{proposal:{id:p.ids[0],board_no:p.boardNo,proposal_type:'지정제안'},stage1:[{id:p.ids[1],session_id:approved.sessionId}]},complete:true,issue:false,average:60,decision:p.decision,required:12,submitted:12}));
+const before=JSON.stringify(entries),view=taskSummaryView(entries);
+assert.equal(view.approved,true);assert.deepEqual(view.groups.map(g=>[g.total,...['채택','불채택','과락'].map(k=>g.decisions.find(d=>d.name===k).count)]),approved.groups);
+assert.deepEqual([0,1,2,3].map(i=>approved.groups.reduce((n,g)=>n+g[i],0)),approved.totals);
+assert.ok(view.groups.every(g=>g.average===null));
+assert.equal(taskSummaryView(entries.slice(1)).groups.length,0);
+assert.equal(taskSummaryView([...entries.slice(1),entries[1]]).approved,false);
+const changed=structuredClone(entries);changed[0].decision=changed[0].decision==='채택'?'과락':'채택';assert.equal(taskSummaryView(changed).groups.length,0);
+const wrong=structuredClone(entries);wrong[0].row.proposal.id='different';assert.equal(taskSummaryView(wrong).approved,false);
+assert.equal(taskSummaryView([...entries,{...entries[0],row:{...entries[0].row,proposal:{proposal_type:'자유제안'}}}]).approved,true);
+assert.equal(JSON.stringify(entries),before);
+console.log('PASS: 16/27/10/40/9 and 83/2/17 match, whole-scope identity and decisions checked, subset/changed/duplicate data not guessed, unknown means uncomputed, original records immutable');
